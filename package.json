@@ -4,9 +4,9 @@
   "description": "RoomReserve (SmartSpace) - ระบบบริหารจัดการจองห้องประชุมและทรัพยากรส่วนกลาง",
   "main": "src/app.js",
   "scripts": {
-    "start": "node --env-file=.env src/app.js",
-    "dev": "node --watch --env-file=.env src/app.js",
-    "seed": "node --env-file=.env database/seed.js",
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "seed": "node database/seed.js",
     "test": "node test/smoke.js"
   },
   "dependencies": {

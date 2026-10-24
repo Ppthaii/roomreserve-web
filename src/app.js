@@ -1,3 +1,8 @@
+const fs = require('fs');
+if (fs.existsSync('.env') && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile('.env');
+}
+
 const express = require('express');
 const session = require('express-session');
 const path = require('path');

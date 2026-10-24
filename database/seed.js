@@ -1,4 +1,7 @@
 const fs = require('fs');
+if (fs.existsSync('.env') && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile('.env');
+}
 const path = require('path');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
