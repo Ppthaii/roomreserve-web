@@ -367,49 +367,64 @@
       
       <!-- การ์ดห้องประชุมและตารางสล็อตเวลา Real-time (เลือกตึก 1, 2, 3) -->
       <div style="margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
           <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.4rem;">
             <span>เลือกอาคาร:</span>
           </div>
-          <span style="font-size: 0.8rem; color: var(--muted);">คลิกเลือกอาคารเพื่อดูห้องและคลิกช่วงเวลาว่างสีเขียวเพื่อยื่นจอง</span>
+          <span style="font-size: 0.8rem; color: var(--muted);">คลิกเลือกตึก 1, 2, 3 แล้วคลิกช่องเวลาว่างสีเขียวเพื่อเปิดแบบฟอร์มจองห้อง</span>
         </div>
 
-        <!-- แถบเลือกอาคารสไตล์โมเดิร์น (Modern Building Pill Selector) -->
-        <div class="building-selector-bar">
-          <button type="button" class="building-pill active" onclick="selectBuilding(1, this)" id="btn-building-1">
-            <span class="building-pill-icon">🏢</span>
-            <div class="building-pill-info">
-              <span class="building-pill-title">อาคาร 1</span>
-              <span class="building-pill-rooms">ห้อง 101, 102</span>
+        <!-- การ์ดเลือก 3 ตึก (ตึก 1, ตึก 2, ตึก 3) พร้อมพื้นที่รูปภาพตามภาพร่างต้นแบบ -->
+        <div class="building-cards-grid">
+          <div class="building-card active" onclick="selectBuilding(1, this)" id="btn-building-1">
+            <div class="building-card-img-wrap">
+              <img src="/images/building1.jpg" alt="ตึก 1" class="building-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="building-card-placeholder" style="display: none;">
+                <span class="placeholder-hint">ใส่รูปที่ /images/building1.jpg</span>
+              </div>
             </div>
-          </button>
+            <div class="building-card-body">
+              <div class="building-card-title">ตึก 1</div>
+              <div class="building-card-rooms">ห้อง 101 &bull; ห้อง 102</div>
+            </div>
+          </div>
 
-          <button type="button" class="building-pill" onclick="selectBuilding(2, this)" id="btn-building-2">
-            <span class="building-pill-icon">🏢</span>
-            <div class="building-pill-info">
-              <span class="building-pill-title">อาคาร 2</span>
-              <span class="building-pill-rooms">ห้อง 201, 202</span>
+          <div class="building-card" onclick="selectBuilding(2, this)" id="btn-building-2">
+            <div class="building-card-img-wrap">
+              <img src="/images/building2.jpg" alt="ตึก 2" class="building-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="building-card-placeholder" style="display: none;">
+                <span class="placeholder-hint">ใส่รูปที่ /images/building2.jpg</span>
+              </div>
             </div>
-          </button>
+            <div class="building-card-body">
+              <div class="building-card-title">ตึก 2</div>
+              <div class="building-card-rooms">ห้อง 201 &bull; ห้อง 202</div>
+            </div>
+          </div>
 
-          <button type="button" class="building-pill" onclick="selectBuilding(3, this)" id="btn-building-3">
-            <span class="building-pill-icon">🏢</span>
-            <div class="building-pill-info">
-              <span class="building-pill-title">อาคาร 3</span>
-              <span class="building-pill-rooms">ห้อง 301, 302</span>
+          <div class="building-card" onclick="selectBuilding(3, this)" id="btn-building-3">
+            <div class="building-card-img-wrap">
+              <img src="/images/building3.jpg" alt="ตึก 3" class="building-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="building-card-placeholder" style="display: none;">
+                <span class="placeholder-hint">ใส่รูปที่ /images/building3.jpg</span>
+              </div>
             </div>
-          </button>
+            <div class="building-card-body">
+              <div class="building-card-title">ตึก 3</div>
+              <div class="building-card-rooms">ห้อง 301 &bull; ห้อง 302</div>
+            </div>
+          </div>
         </div>
 
         <!-- กล่องแนะนำก่อนกดเลือกตึก (ซ่อน) -->
         <div id="noBuildingSelectedNotice" class="no-building-notice" style="display: none;">
           <div class="notice-title">กรุณาเลือกตึกที่ต้องการใช้งาน</div>
-          <div class="notice-sub">คลิกเลือกอาคาร 1, อาคาร 2 หรือ อาคาร 3 ด้านบน เพื่อแสดงห้องประชุมและเลือกช่วงเวลาจอง</div>
+          <div class="notice-sub">คลิกเลือกตึก 1, ตึก 2 หรือ ตึก 3 ด้านบน เพื่อแสดงห้องประชุมและเลือกช่วงเวลาจอง</div>
         </div>
 
         <div id="roomsContainer">
           <div id="activeBuildingHeader" class="active-building-header">
-            <span id="activeBuildingHeaderText">ห้องประชุม - อาคาร 1 (ห้อง 101 และ ห้อง 102)</span>
+            <span id="activeBuildingHeaderText">ข้อมูลห้องประชุม - ตึก 1 (ห้อง 101 และ ห้อง 102)</span>
             <span style="font-size: 0.8rem; font-weight: normal; color: var(--muted);">คลิกเลือกช่วงเวลาว่างสีเขียวเพื่อจองห้อง</span>
           </div>
           <% rooms.forEach(room => { 
