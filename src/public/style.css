@@ -1669,30 +1669,36 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 9999px;
   padding: 0.35rem 0.5rem;
   margin: 0 auto 1.5rem auto;
-  max-width: 620px;
+  width: fit-content;
+  max-width: 100%;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .desktop-nav-item {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 1.25rem;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
   border-radius: 9999px;
   border: none;
   background: transparent;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .desktop-nav-item:hover {
@@ -1714,6 +1720,7 @@ body {
   font-weight: 800;
   padding: 1px 6px;
   border-radius: 9999px;
+  line-height: 1.2;
 }
 
 /* 1. Deep Blue Gradient Header */
