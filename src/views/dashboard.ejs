@@ -82,6 +82,26 @@
       color: #475569;
       border-color: #cbd5e1;
     }
+    [data-theme="dark"] .slot-free {
+      background: #064e3b;
+      color: #a7f3d0;
+      border-color: #047857;
+    }
+    [data-theme="dark"] .slot-pending {
+      background: #451a03;
+      color: #fde68a;
+      border-color: #78350f;
+    }
+    [data-theme="dark"] .slot-booked {
+      background: #1e1b4b;
+      color: #c7d2fe;
+      border-color: #312e81;
+    }
+    [data-theme="dark"] .slot-blocked {
+      background: #1e293b;
+      color: #94a3b8;
+      border-color: #334155;
+    }
 
     /* Modal File Preview */
     .preview-modal-overlay {
@@ -108,6 +128,10 @@
       overflow: hidden;
       box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
     }
+    [data-theme="dark"] .preview-modal-content {
+      background: #111827;
+      border: 1px solid #374151;
+    }
     .preview-modal-header {
       padding: 1rem 1.5rem;
       background: #f8fafc;
@@ -115,6 +139,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+    [data-theme="dark"] .preview-modal-header {
+      background: #1f2937;
+      border-bottom-color: #374151;
+      color: #f8fafc;
     }
     .preview-modal-body {
       flex: 1;
@@ -150,8 +179,8 @@
 
   <!-- Modal สำหรับระบุเหตุผลการปฏิเสธคำขอ (Approver Rejection Modal) -->
   <div id="rejectModal" class="preview-modal-overlay" onclick="closeRejectModal(event)" style="display: none;">
-    <div class="casual-modal-box" onclick="event.stopPropagation()" style="max-width: 520px; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); border: 1px solid var(--border);">
-      <div class="casual-modal-header" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: start;">
+    <div class="casual-modal-box" onclick="event.stopPropagation()">
+      <div class="casual-modal-header">
         <div>
           <h3 style="font-size: 1.1rem; font-weight: 700; color: #991b1b; margin: 0 0 0.25rem 0;">
             ปฏิเสธคำขอจองห้อง (Reject Booking)
@@ -168,7 +197,7 @@
           <label style="font-size: 0.8rem; font-weight: 700; display: block; margin-bottom: 0.4rem; color: var(--dark);">
             เลือกเหตุผลมาตรฐานด่วน:
           </label>
-          <div style="display: flex; flex-direction: column; gap: 0.4rem; background: #f8fafc; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border);">
+          <div class="reject-preset-list">
             <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
               <input type="radio" name="preset_reason" value="ผู้บริหารมีความจำเป็นต้องใช้ห้องประชุมด่วนในช่วงเวลาดังกล่าว" checked onchange="applyPresetReason(this.value)">
               <span>ผู้บริหารมีความจำเป็นต้องใช้ห้องประชุมด่วน</span>
@@ -1014,7 +1043,7 @@
           <% } else { %>
             <div style="display: grid; gap: 1rem;">
               <% pendingApprovals.forEach(p => { %>
-                <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border);">
+                <div class="approval-item-card">
                   <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
                     <div>
                       <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 0.25rem;">
@@ -1029,7 +1058,7 @@
                         <%= new Date(p.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %>)
                       </p>
                       <% if (p.purpose) { %>
-                        <div style="font-size: 0.8rem; background: white; padding: 0.5rem 0.75rem; border-radius: 6px; margin-top: 0.5rem; border: 1px solid #edf2f7;">
+                        <div class="approval-purpose-box">
                           <strong>รายละเอียด/อุปกรณ์เสริม:</strong> <%= p.purpose %>
                         </div>
                       <% } %>
@@ -1068,7 +1097,7 @@
           %>
           <% if (approvedList.length > 0) { %>
             <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border);">
-              <h4 style="font-size: 0.95rem; font-weight: 700; color: #b45309; margin-bottom: 0.5rem;">
+              <h4 class="rollback-section-title" style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">
                 Safety Rollback (ยกเลิกการอนุมัติก่อน Check-in)
               </h4>
               <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 0.75rem;">
@@ -1076,13 +1105,13 @@
               </p>
               <div style="display: grid; gap: 0.5rem;">
                 <% approvedList.forEach(item => { %>
-                  <div style="display: flex; justify-content: space-between; align-items: center; background: #fffbeb; padding: 0.6rem 0.85rem; border-radius: 8px; border: 1px solid #fde68a;">
+                  <div class="rollback-item-card">
                     <div>
                       <strong><%= item.title %></strong> (<%= item.room_name %>)<br>
                       <small style="color: var(--muted);"><%= item.requester_name %></small>
                     </div>
                     <form action="/app/bookings/<%= item.booking_id %>/revoke" method="POST" onsubmit="return confirm('ยืนยันดึงคำขอนี้กลับมาเป็น PENDING_APPROVAL?');">
-                      <button class="btn btn-outline btn-sm" style="color: #b45309; border-color: #fde68a; font-size: 0.75rem;">
+                      <button class="btn btn-outline btn-sm rollback-revoke-btn" style="font-size: 0.75rem;">
                         ดึงสถานะกลับ
                       </button>
                     </form>
@@ -1123,7 +1152,7 @@
             <% } else { %>
               <div style="display: grid; gap: 0.75rem;">
                 <% facilityTasks.forEach(t => { %>
-                  <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                  <div class="facility-task-card">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                       <div>
                         <strong><%= t.title %></strong> (<%= t.room_name %>)<br>
