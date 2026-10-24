@@ -1229,7 +1229,142 @@ body {
   border-color: #374151;
 }
 
-/* Status Filter Group for My Bookings */
+/* ========================================================
+   Modern Segmented Filter Controls for My Bookings
+   ======================================================== */
+.my-bookings-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.my-bookings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.my-bookings-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.my-bookings-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.my-bookings-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.my-bookings-total-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.18rem 0.65rem;
+  border-radius: 9999px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.my-bookings-subtitle {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Modern Apple / Linear Segmented Control Bar */
+.segmented-control-container {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  gap: 3px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.segmented-item {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate);
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.segmented-item:hover {
+  color: var(--dark);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.segmented-item.active {
+  background: #ffffff;
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.segmented-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--muted);
+  transition: all 0.18s ease;
+}
+
+.segmented-item.active .segmented-badge {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.badge-active-pulse {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.badge-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.badge-approved {
+  background: #d1fae5;
+  color: #047857;
+}
+
+/* Backward compatibility for status-filter-chip */
 .status-filter-group {
   display: flex;
   gap: 0.5rem;
@@ -1237,7 +1372,6 @@ body {
   align-items: center;
   margin-bottom: 0.85rem;
 }
-
 .status-filter-chip {
   padding: 0.35rem 0.85rem;
   font-size: 0.8rem;
@@ -1251,38 +1385,79 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  user-select: none;
 }
-
-.status-filter-chip:hover {
-  background: var(--bg);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
 .status-filter-chip.active {
   background: var(--primary);
   border-color: var(--primary);
   color: #ffffff;
-  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);
 }
 
-[data-theme="dark"] .status-filter-chip {
+/* Dark Mode Overrides for Modern Segmented Controls */
+[data-theme="dark"] .my-bookings-card {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .segmented-control-container {
   background: #1e293b;
   border-color: #334155;
+}
+
+[data-theme="dark"] .segmented-item {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .segmented-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .segmented-item.active {
+  background: #0f172a;
+  color: #818cf8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .segmented-badge {
+  background: rgba(255, 255, 255, 0.1);
   color: #cbd5e1;
 }
 
-[data-theme="dark"] .status-filter-chip:hover {
-  background: #334155;
-  color: #f8fafc;
+[data-theme="dark"] .segmented-item.active .segmented-badge {
+  background: #1e1b4b;
+  color: #c7d2fe;
 }
 
-[data-theme="dark"] .status-filter-chip.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
+[data-theme="dark"] .badge-active-pulse {
+  background: #1e1b4b;
+  color: #a5b4fc;
 }
+
+[data-theme="dark"] .badge-pending {
+  background: #451a03;
+  color: #fde68a;
+}
+
+[data-theme="dark"] .badge-approved {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
+/* Dark Mode Overrides for Clean Table */
+[data-theme="dark"] .clean-table th {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-bottom-color: #334155;
+}
+
+[data-theme="dark"] .clean-table td {
+  border-bottom-color: #1e293b;
+  color: var(--dark);
+}
+
+[data-theme="dark"] .clean-table tbody tr:hover {
+  background: #1e293b;
+}
+
 
 /* Placeholder แสดงก่อนกดเลือกตึก */
 .no-building-notice {

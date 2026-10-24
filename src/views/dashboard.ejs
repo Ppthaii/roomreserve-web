@@ -677,58 +677,58 @@
         </div>
       </div>
 
-      <!-- ================= ส่วนตารางคำขอของฉัน (My Bookings Clean Table) จบในหน้าเดียว ================= -->
-      <div class="card" style="margin-top: 1.25rem;">
+      <!-- ================= ส่วนตารางคำขอของฉัน (My Bookings Modern Card) ================= -->
+      <div class="card my-bookings-card" style="margin-top: 1.5rem;">
         <%
           const pendingCount = myBookings.filter(b => b.status === 'PENDING_APPROVAL').length;
           const approvedCount = myBookings.filter(b => b.status === 'APPROVED').length;
           const inUseCount = myBookings.filter(b => b.status === 'IN_USE').length;
+          const activeCount = pendingCount + approvedCount + inUseCount;
           const completedCount = myBookings.filter(b => b.status === 'COMPLETED').length;
           const rejectCount = myBookings.filter(b => ['REJECTED', 'CANCELLED'].includes(b.status)).length;
           const finishedCount = completedCount + rejectCount;
         %>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
-          <div>
-            <div class="card-title" style="margin-bottom: 0.15rem;">รายการคำขอของฉัน (<span id="myBookingsTotalCount"><%= myBookings.length %></span> รายการ)</div>
-            <span style="font-size: 0.8rem; color: var(--muted);">แสดงประวัติและสถานะการพิจารณาคำขอของคุณ</span>
+        
+        <!-- Header: จัดวางหัวข้อการ์ดและ Segmented Filter Bar สไตล์โมเดิร์น -->
+        <div class="my-bookings-header">
+          <div class="my-bookings-title-area">
+            <div class="my-bookings-heading">
+              <h3 class="my-bookings-title">รายการคำขอของฉัน</h3>
+              <span class="my-bookings-total-pill">
+                <span id="myBookingsTotalCount"><%= myBookings.length %></span> รายการ
+              </span>
+            </div>
+            <div class="my-bookings-subtitle">
+              แสดงประวัติและสถานะการพิจารณาคำขอจองห้องประชุมของคุณ
+            </div>
           </div>
 
           <% if (myBookings.length > 0) { %>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <button type="button" id="btnToggleFinished" class="btn btn-outline btn-sm" onclick="toggleHideFinished()" style="font-size: 0.78rem; display: flex; align-items: center; gap: 0.35rem; color: var(--slate); border-color: var(--border);" title="ซ่อนหรือแสดงรายการประวัติที่สิ้นสุดแล้ว">
-                <span id="toggleFinishedIcon">👁️</span> <span id="toggleFinishedText">ซ่อนรายการที่สิ้นสุดแล้ว (<%= finishedCount %>)</span>
+            <!-- Modern Segmented Control Bar -->
+            <div class="segmented-control-container" role="tablist" aria-label="กรองสถานะคำขอ">
+              <button type="button" class="segmented-item active" data-category="ALL" onclick="filterMyBookings('ALL', this)" title="ดูรายการทั้งหมด">
+                <span class="segmented-label">ทั้งหมด</span>
+                <span class="segmented-badge"><%= myBookings.length %></span>
+              </button>
+              <button type="button" class="segmented-item" data-category="ACTIVE" onclick="filterMyBookings('ACTIVE', this)" title="ดูเฉพาะรายการที่ยังไม่สิ้นสุด">
+                <span class="segmented-label">กำลังดำเนินการ</span>
+                <span class="segmented-badge <%= activeCount > 0 ? 'badge-active-pulse' : '' %>"><%= activeCount %></span>
+              </button>
+              <button type="button" class="segmented-item" data-category="PENDING" onclick="filterMyBookings('PENDING', this)" title="รอหัวหน้างานอนุมัติ">
+                <span class="segmented-label">รออนุมัติ</span>
+                <span class="segmented-badge <%= pendingCount > 0 ? 'badge-pending' : '' %>"><%= pendingCount %></span>
+              </button>
+              <button type="button" class="segmented-item" data-category="APPROVED" onclick="filterMyBookings('APPROVED', this)" title="อนุมัติแล้ว และพร้อมใช้งาน">
+                <span class="segmented-label">อนุมัติแล้ว</span>
+                <span class="segmented-badge <%= approvedCount > 0 ? 'badge-approved' : '' %>"><%= approvedCount %></span>
+              </button>
+              <button type="button" class="segmented-item" data-category="FINISHED" onclick="filterMyBookings('FINISHED', this)" title="ประวัติที่สิ้นสุดแล้ว (เสร็จสิ้น/ยกเลิก/ปฏิเสธ)">
+                <span class="segmented-label">ประวัติสิ้นสุด</span>
+                <span class="segmented-badge"><%= finishedCount %></span>
               </button>
             </div>
           <% } %>
         </div>
-
-        <!-- แยกหมวดหมู่คำขอ (ทั้งหมด, เฉพาะที่กำลังรอใช้, รออนุมัติ, อนุมัติแล้ว, กำลังใช้งาน, เสร็จสิ้น, ยกเลิก/ปฏิเสธ) -->
-        <% if (myBookings.length > 0) { %>
-          <div class="status-filter-group">
-            <span style="font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-right: 0.25rem;">หมวดหมู่:</span>
-            <button type="button" class="status-filter-chip active" onclick="filterMyBookings('ALL', this)">
-              ทั้งหมด (<%= myBookings.length %>)
-            </button>
-            <button type="button" class="status-filter-chip" onclick="filterMyBookings('ACTIVE', this)">
-              กำลังดำเนินการ (<%= pendingCount + approvedCount + inUseCount %>)
-            </button>
-            <button type="button" class="status-filter-chip" onclick="filterMyBookings('PENDING', this)">
-              รออนุมัติ (<%= pendingCount %>)
-            </button>
-            <button type="button" class="status-filter-chip" onclick="filterMyBookings('APPROVED', this)" title="อนุมัติแล้ว รอเข้าใช้งาน (ยังสามารถยกเลิกได้)">
-              อนุมัติแล้ว (<%= approvedCount %>)
-            </button>
-            <button type="button" class="status-filter-chip" onclick="filterMyBookings('IN_USE', this)" title="เจ้าหน้าที่กดส่งมอบห้องแล้ว ไม่สามารถยกเลิกคำขอได้">
-              กำลังใช้งาน (<%= inUseCount %>)
-            </button>
-            <button type="button" class="status-filter-chip" onclick="filterMyBookings('COMPLETED', this)" title="ใช้งานเสร็จสิ้นแล้ว">
-              เสร็จสิ้น (<%= completedCount %>)
-            </button>
-            <button type="button" class="status-filter-chip" onclick="filterMyBookings('REJECT', this)">
-              ยกเลิก/ปฏิเสธ (<%= rejectCount %>)
-            </button>
-          </div>
-        <% } %>
 
         <% if (myBookings.length === 0) { %>
           <div class="empty-state">
@@ -837,8 +837,12 @@
                   </tr>
                 <% }) %>
                 <tr id="myBookingsEmptyFilterRow" style="display: none;">
-                  <td colspan="7" style="text-align: center; padding: 2rem; color: var(--muted);">
-                    ไม่มีรายการคำขอในหมวดหมู่นี้
+                  <td colspan="7" style="text-align: center; padding: 3rem 1.5rem; color: var(--muted);">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;">
+                      <span style="font-size: 1.75rem; opacity: 0.5;">📋</span>
+                      <div style="font-weight: 600; color: var(--slate); font-size: 0.92rem;">ไม่มีรายการคำขอในหมวดหมู่นี้</div>
+                      <div style="font-size: 0.8rem; color: var(--muted);">คุณสามารถกดดูที่แท็บ "ทั้งหมด" เพื่อดูประวัติคำขอทั้งหมดได้ตลอดเวลา</div>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -1179,9 +1183,9 @@
       }
     }
 
-    // แยกหมวดหมู่คำขอของฉัน (ทั้งหมด, กำลังดำเนินการ, รออนุมัติ, อนุมัติแล้ว, กำลังใช้งาน, เสร็จสิ้น, ยกเลิก/ปฏิเสธ)
+    // กรองหมวดหมู่คำขอของฉันด้วย Modern Segmented Controls
     function filterMyBookings(category, btn) {
-      document.querySelectorAll('.status-filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.segmented-item, .status-filter-chip').forEach(c => c.classList.remove('active'));
       if (btn) btn.classList.add('active');
 
       let visibleCount = 0;
@@ -1192,9 +1196,19 @@
 
         let show = false;
         if (category === 'ALL') {
-          show = !isFinishedHidden || !isFin;
+          show = true;
         } else if (category === 'ACTIVE') {
-          show = !isFin;
+          show = !isFin; // แสดงเฉพาะรายการที่ยังไม่สิ้นสุด (รออนุมัติ, อนุมัติแล้ว, กำลังใช้งาน)
+        } else if (category === 'PENDING') {
+          show = (rowCat === 'PENDING');
+        } else if (category === 'APPROVED') {
+          show = (rowCat === 'APPROVED' || rowCat === 'IN_USE');
+        } else if (category === 'FINISHED') {
+          show = isFin; // แสดงรายการประวัติที่จบแล้ว (เสร็จสิ้น, ยกเลิก, ปฏิเสธ)
+        } else if (category === 'COMPLETED') {
+          show = (rowCat === 'COMPLETED');
+        } else if (category === 'REJECT') {
+          show = (rowCat === 'REJECT');
         } else if (rowCat === category) {
           show = true;
         }
