@@ -5,12 +5,16 @@ if (fs.existsSync('.env') && typeof process.loadEnvFile === 'function') {
 
 const express = require('express');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const pool = require('./config/db');
 const { logAudit } = require('./middlewares/auth');
 
 const app = express();
+
+// เชื่อถือ Reverse Proxy (Render / Cloudflare) ป้องกัน Cookie และ Session หลุด
+app.set('trust proxy', 1);
 
 // ตั้งค่า View Engine (EJS ตามที่อาจารย์สอน)
 app.set('view engine', 'ejs');
@@ -21,15 +25,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session Configuration (Session-based Auth ตามที่อาจารย์สอน)
+// Session Configuration (จัดเก็บลง PostgreSQL เพื่อไม่ให้เซสชันหลุดเมื่อรีสตาร์ตเซิร์ฟเวอร์)
 app.use(session({
+  store: new pgSession({
+    pool: pool,
+    tableName: 'user_sessions',
+    createTableIfMissing: true
+  }),
   secret: process.env.SESSION_SECRET || 'roomreserve_secret_2026',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    maxAge: 2 * 60 * 60 * 1000 // 2 ชั่วโมง
+    maxAge: 7 * 24 * 60 * 60 * 1000 // เก็บคุกกี้ 7 วัน ไม่หลุดบ่อย
   }
 }));
 
@@ -52,9 +61,13 @@ app.use((req, res, next) => {
 // หน้า Login
 app.get('/login', (req, res) => {
   if (req.session.userId) return res.redirect('/app');
+  let errorMsg = req.query.error || '';
+  if (errorMsg === 'unauthorized') {
+    errorMsg = 'เซสชันหมดอายุ หรือกรุณาเข้าสู่ระบบก่อนทำรายการ';
+  }
   res.render('login', {
     title: 'เข้าสู่ระบบ | RoomReserve',
-    error: req.query.error || '',
+    error: errorMsg,
     success: req.query.success || ''
   });
 });
