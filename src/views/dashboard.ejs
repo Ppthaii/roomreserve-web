@@ -289,7 +289,8 @@
     <% 
       const perms = (locals.userPermissions && Array.isArray(locals.userPermissions)) ? locals.userPermissions : [];
       const canApprove = perms.includes('booking.approve');
-      const canFacility = perms.includes('facility.checkin') || perms.includes('facility.checkout') || perms.includes('room.block_schedule');
+      const canFacility = perms.includes('facility.checkin') || perms.includes('facility.checkout');
+      const canBlockSchedule = perms.includes('room.block_schedule');
       const isAdminUser = user.roleName === 'admin' || perms.includes('acl.manage');
       const isApproverRole = user.roleName === 'approver' || canApprove;
       const isFacilityRole = user.roleName === 'facility' || canFacility;
@@ -323,10 +324,16 @@
 
         <% if (isFacilityRole || isAdminRole) { %>
           <button type="button" class="desktop-nav-item" data-view="facility" onclick="switchRequesterView('facility', this)">
-            <span>🔧</span> งานหน้างาน
+            <span>📋</span> งานส่งมอบห้อง
             <% if (facilityTasks.length > 0) { %>
               <span class="desktop-nav-badge" style="background: #10b981;"><%= facilityTasks.length %></span>
             <% } %>
+          </button>
+        <% } %>
+
+        <% if (canBlockSchedule || isAdminRole) { %>
+          <button type="button" class="desktop-nav-item" data-view="facility-block" onclick="switchRequesterView('facility-block', this)">
+            <span>🛠️</span> ปิดซ่อมบำรุง
           </button>
         <% } %>
 
@@ -1156,117 +1163,188 @@
       </div>
     <% } %>
 
-    <!-- ================= TAB 4: คิวงานหน้างาน & ปิดซ่อม (Facility Ops) ================= -->
-    <% if (canFacility || isAdminUser) { %>
+    <!-- ================= TAB 4: คิวงานส่งมอบห้อง & ตรวจรับ (Facility Tasks) ================= -->
+    <% if (canFacility || isAdminRole) { %>
       <div id="req-view-facility" class="req-subview" style="display: none;">
         <div class="card" style="margin-bottom: 1rem; border-left: 4px solid var(--success);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
             <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0;">
-              คิวงานหน้างาน & ปิดซ่อมบำรุง (<%= facilityTasks.length %>)
+              คิวงานส่งมอบห้อง & ตรวจรับ (<%= facilityTasks.length %>)
             </h3>
             <button type="button" class="btn btn-outline btn-xs" onclick="switchRequesterView('home')">
               &larr; กลับหน้าแรก
             </button>
           </div>
           <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
-            ส่งมอบห้อง (Check-in), ตรวจสภาพห้องหลังใช้งาน (Check-out) และบล็อกปิดซ่อม
+            ส่งมอบห้อง (Check-in) และตรวจสภาพความพร้อมของห้องหลังใช้งาน (Check-out)
           </p>
         </div>
-        <div class="grid-2">
-          
-          <!-- คิวงาน Check-in & Check-out -->
-          <div class="card" style="border-left: 4px solid var(--success);">
-            <div class="card-title">คิวงานส่งมอบห้อง & ตรวจรับ (<%= facilityTasks.length %>)</div>
-            <% if (facilityTasks.length === 0) { %>
-              <div style="text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem;">
-                ไม่มีคิวงานเปิดห้องหรือปิดห้องในขณะนี้
+
+        <div class="card" style="border-left: 4px solid var(--success);">
+          <div class="card-title">รายการงานส่งมอบ & ตรวจสภาพห้อง (<%= facilityTasks.length %>)</div>
+          <% if (facilityTasks.length === 0) { %>
+            <div style="text-align: center; padding: 2.5rem; color: var(--muted); font-size: 0.9rem;">
+              <div style="font-size: 1.8rem; margin-bottom: 0.5rem; opacity: 0.6;">✨</div>
+              ไม่มีคิวงานส่งมอบหรือตรวจรับห้องในขณะนี้ ทุกห้องพร้อมใช้งานเรียบร้อย
+            </div>
+          <% } else { %>
+            <div style="display: grid; gap: 0.85rem;">
+              <% facilityTasks.forEach(t => { %>
+                <div class="facility-task-card">
+                  <div style="display: flex; justify-content: space-between; align-items: start; gap: 0.75rem; flex-wrap: wrap;">
+                    <div>
+                      <strong style="font-size: 1.05rem; color: var(--dark);"><%= t.title %></strong>
+                      <div style="font-size: 0.85rem; color: var(--slate); margin-top: 0.2rem;">
+                        📍 <strong>ห้อง:</strong> <%= t.room_name %> &bull; 👤 <strong>ผู้ขอ:</strong> <%= t.requester_name %>
+                      </div>
+                      <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem;">
+                        ⏰ <%= new Date(t.start_time).toLocaleDateString('th-TH') %> 
+                        (<%= new Date(t.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> - 
+                        <%= new Date(t.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> น.)
+                      </div>
+                    </div>
+                    <span class="status-badge status-<%= t.status %>"><%= t.status %></span>
+                  </div>
+
+                  <% if (t.attachment_id) { %>
+                    <div style="margin: 0.65rem 0;">
+                      <button type="button" class="btn btn-outline btn-xs" onclick="openFilePreview('<%= t.attachment_id %>', '<%= t.file_name %>')" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                        📎 ดูผังจัดห้อง / วาระการประชุม
+                      </button>
+                    </div>
+                  <% } %>
+
+                  <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed var(--border);">
+                    <% if (t.status === 'APPROVED') { %>
+                      <form action="/app/facility/checkin/<%= t.booking_id %>" method="POST" style="margin: 0;">
+                        <button class="btn btn-primary btn-sm" style="width: 100%; font-weight: 700; padding: 0.6rem;">
+                          🚪 ส่งมอบห้อง & เปิดระบบ (Check-in)
+                        </button>
+                      </form>
+                    <% } else if (t.status === 'IN_USE') { %>
+                      <form action="/app/facility/checkout/<%= t.booking_id %>" method="POST" enctype="multipart/form-data" style="margin: 0;">
+                        <div class="form-group" style="margin-bottom: 0.65rem;">
+                          <label style="font-size: 0.8rem; font-weight: 700; color: var(--dark);">ถ่ายรูปตรวจสภาพห้องหลังใช้ (Inspection Photo):</label>
+                          <input type="file" name="inspection_file" class="form-control" style="font-size: 0.8rem;" accept="image/*,.pdf">
+                        </div>
+                        <button class="btn btn-success btn-sm" style="width: 100%; font-weight: 700; padding: 0.6rem;">
+                          ✅ ตรวจสภาพเรียบร้อย & ปิดงาน (Check-out)
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- ================= TAB: บล็อกปิดห้องซ่อมบำรุง (Maintenance / Block Schedule) ================= -->
+    <% if (canBlockSchedule || isAdminRole) { %>
+      <div id="req-view-facility-block" class="req-subview" style="display: none;">
+        <div class="card" style="margin-bottom: 1rem; border-left: 4px solid var(--warning);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0;">
+              บล็อกปิดห้องซ่อมบำรุง & งานพิเศษ
+            </h3>
+            <button type="button" class="btn btn-outline btn-xs" onclick="switchRequesterView('home')">
+              &larr; กลับหน้าแรก
+            </button>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
+            ระงับการจองห้องชั่วคราวสำหรับงานช่าง ซ่อมบำรุงระบบ หรือจัดกิจกรรมเฉพาะกิจส่วนกลาง
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
+          <!-- ฟอร์มบล็อกปิดห้องซ่อมบำรุง -->
+          <div class="card" style="border-left: 4px solid var(--warning);">
+            <div class="card-title" style="display: flex; align-items: center; gap: 0.4rem;">
+              <span>🛠️</span> แบบฟอร์มระงับการใช้งานห้อง
+            </div>
+            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem;">
+              เมื่อระงับการใช้งานแล้ว ปฏิทินจะขึ้นแถบสีเทาและไม่อนุญาตให้พนักงานจองช่วงเวลานี้
+            </p>
+
+            <form action="/app/facility/block" method="POST">
+              <div class="form-group" style="margin-bottom: 0.85rem;">
+                <label for="block_date_input" style="font-size: 0.82rem; font-weight: 700;">วันที่ต้องการบล็อก *</label>
+                <input type="date" name="block_date" id="block_date_input" class="form-control" value="<%= selectedDate %>" min="<%= todayStr %>" required>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.85rem;">
+                <label for="block_room_id" style="font-size: 0.82rem; font-weight: 700;">เลือกห้องที่จะบล็อก *</label>
+                <select name="room_id" id="block_room_id" class="form-control" required style="font-weight: 600;">
+                  <% rooms.forEach(r => { %>
+                    <option value="<%= r.room_id %>"><%= r.room_name %> (<%= r.location %>)</option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.85rem;">
+                <label for="reason" style="font-size: 0.82rem; font-weight: 700;">เหตุผลที่ปิดห้อง *</label>
+                <input type="text" name="reason" id="reason" class="form-control" placeholder="เช่น ช่างเข้าซ่อมระบบแอร์ / งานสัมมนาใหญ่" required>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="b_start" style="font-size: 0.82rem; font-weight: 700;">ตั้งแต่เวลา</label>
+                  <input type="time" name="start_time_str" id="b_start" class="form-control" value="08:00" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="b_end" style="font-size: 0.82rem; font-weight: 700;">ถึงเวลา</label>
+                  <input type="time" name="end_time_str" id="b_end" class="form-control" value="12:00" required>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-danger" style="width: 100%; font-weight: 800; padding: 0.75rem;">
+                🔒 บล็อกช่วงเวลานี้ทันที
+              </button>
+            </form>
+          </div>
+
+          <!-- รายการห้องที่ปิดซ่อมในวันนี้ -->
+          <div class="card" style="border-left: 4px solid var(--slate);">
+            <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="display: flex; align-items: center; gap: 0.4rem;">
+                <span>📋</span> รายการที่ปิดซ่อมในวันที่เลือก
+              </span>
+              <span style="font-size: 0.78rem; color: var(--muted);"><%= selectedDate %></span>
+            </div>
+
+            <% 
+              const blockedBookingsToday = dayBookings.filter(b => b.status === 'BLOCKED');
+            %>
+            <% if (blockedBookingsToday.length === 0) { %>
+              <div style="text-align: center; padding: 2.5rem; color: var(--muted); font-size: 0.88rem;">
+                <div style="font-size: 1.8rem; margin-bottom: 0.5rem; opacity: 0.6;">✅</div>
+                ไม่มีรายการบล็อกปิดซ่อมในวันที่เลือก<br>
+                ทุกห้องเปิดให้ใช้งานตามปกติ
               </div>
             <% } else { %>
               <div style="display: grid; gap: 0.75rem;">
-                <% facilityTasks.forEach(t => { %>
-                  <div class="facility-task-card">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                      <div>
-                        <strong><%= t.title %></strong> (<%= t.room_name %>)<br>
-                        <small style="color: var(--muted);">ผู้ขอ: <%= t.requester_name %></small>
-                      </div>
-                      <span class="status-badge status-<%= t.status %>"><%= t.status %></span>
+                <% blockedBookingsToday.forEach(b => { 
+                  const bStart = new Date(b.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                  const bEnd = new Date(b.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                %>
+                  <div style="padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.35rem;">
+                      <strong style="color: var(--dark); font-size: 0.95rem;"><%= b.room_name %></strong>
+                      <span class="status-badge status-BLOCKED" style="font-size: 0.7rem; padding: 2px 7px;">BLOCKED</span>
                     </div>
-
-                    <% if (t.attachment_id) { %>
-                      <div style="margin: 0.5rem 0;">
-                        <button type="button" class="btn btn-outline btn-sm" onclick="openFilePreview('<%= t.attachment_id %>', '<%= t.file_name %>')">
-                          ดูผังจัดห้อง/วาระ
-                        </button>
-                      </div>
-                    <% } %>
-
-                    <div style="margin-top: 0.75rem;">
-                      <% if (t.status === 'APPROVED') { %>
-                        <form action="/app/facility/checkin/<%= t.booking_id %>" method="POST">
-                          <button class="btn btn-primary btn-sm" style="width: 100%;">
-                            ส่งมอบห้อง & เปิดระบบ (Check-in)
-                          </button>
-                        </form>
-                      <% } else if (t.status === 'IN_USE') { %>
-                        <form action="/app/facility/checkout/<%= t.booking_id %>" method="POST" enctype="multipart/form-data">
-                          <div class="form-group" style="margin-bottom: 0.5rem;">
-                            <label style="font-size: 0.75rem;">ถ่ายรูปตรวจสภาพห้องหลังใช้ (Inspection Photo):</label>
-                            <input type="file" name="inspection_file" class="form-control" style="font-size: 0.75rem;" accept="image/*,.pdf">
-                          </div>
-                          <button class="btn btn-success btn-sm" style="width: 100%;">
-                            ตรวจสภาพเรียบร้อย & ปิดงาน (Check-out)
-                          </button>
-                        </form>
-                      <% } %>
+                    <div style="font-size: 0.82rem; color: var(--slate); margin-bottom: 0.2rem;">
+                      ⏰ <%= bStart %> - <%= bEnd %> น.
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--muted);">
+                      <strong>เหตุผล:</strong> <%= b.title || 'ปิดซ่อมบำรุง' %>
                     </div>
                   </div>
                 <% }) %>
               </div>
             <% } %>
           </div>
-
-          <!-- ฟอร์มบล็อกปิดห้องซ่อมบำรุง -->
-          <div class="card" style="border-left: 4px solid var(--warning);">
-            <div class="card-title">บล็อกปิดห้อง (ซ่อมบำรุง / งานใหญ่)</div>
-            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 0.75rem;">
-              เมื่อบล็อกแล้ว ปฏิทินจะขึ้นแถบสีเทาและไม่อนุญาตให้พนักงานจองช่วงเวลานี้
-            </p>
-
-            <form action="/app/facility/block" method="POST">
-              <input type="hidden" name="block_date" value="<%= selectedDate %>">
-
-              <div class="form-group">
-                <label for="block_room_id">เลือกห้องที่จะบล็อก</label>
-                <select name="room_id" id="block_room_id" class="form-control" required>
-                  <% rooms.forEach(r => { %>
-                    <option value="<%= r.room_id %>"><%= r.room_name %></option>
-                  <% }) %>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="reason">เหตุผลที่ปิดห้อง *</label>
-                <input type="text" name="reason" id="reason" class="form-control" placeholder="เช่น ช่างเข้าซ่อมระบบแอร์ / งานสัมมนาใหญ่" required>
-              </div>
-
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <div class="form-group">
-                  <label for="b_start">ตั้งแต่เวลา</label>
-                  <input type="time" name="start_time_str" id="b_start" class="form-control" value="08:00" required>
-                </div>
-                <div class="form-group">
-                  <label for="b_end">ถึงเวลา</label>
-                  <input type="time" name="end_time_str" id="b_end" class="form-control" value="12:00" required>
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-danger btn-sm" style="width: 100%;">
-                บล็อกช่วงเวลานี้ทันที
-              </button>
-            </form>
-          </div>
-
         </div>
       </div>
     <% } %>
@@ -2013,7 +2091,7 @@
       const viewParam = urlParams.get('view') || urlParams.get('tab');
       if (viewParam) {
         const cleanView = viewParam.replace('tab-', '');
-        const validViews = ['home', 'booking', 'mybookings', 'profile', 'approvals', 'facility', 'timeline'];
+        const validViews = ['home', 'booking', 'mybookings', 'profile', 'approvals', 'facility', 'facility-block', 'timeline'];
         if (validViews.includes(cleanView)) {
           switchRequesterView(cleanView);
         }
@@ -2040,11 +2118,18 @@
 
     <% if (isFacilityRole || isAdminRole) { %>
       <button type="button" class="bottom-nav-item" data-view="facility" onclick="switchRequesterView('facility', this)">
-        <span class="nav-icon">🔧</span>
-        <span>หน้างาน</span>
+        <span class="nav-icon">📋</span>
+        <span>ส่งมอบ</span>
         <% if (facilityTasks.length > 0) { %>
           <span class="nav-badge" style="background: #10b981;"><%= facilityTasks.length %></span>
         <% } %>
+      </button>
+    <% } %>
+
+    <% if (canBlockSchedule || isAdminRole) { %>
+      <button type="button" class="bottom-nav-item" data-view="facility-block" onclick="switchRequesterView('facility-block', this)">
+        <span class="nav-icon">🛠️</span>
+        <span>ปิดซ่อม</span>
       </button>
     <% } %>
 

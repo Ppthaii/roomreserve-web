@@ -12,7 +12,7 @@ async function testUser(username, password) {
       }
     }, (res) => {
       const setCookie = res.headers['set-cookie'];
-      if (!setCookie) return reject(new Error('No set-cookie returned'));
+      if (!setCookie) return reject(new Error('No set-cookie returned. status: ' + res.statusCode + ' loc: ' + res.headers['location']));
       resolve(setCookie.map(c => c.split(';')[0]).join('; '));
     });
     req.on('error', reject);
@@ -47,11 +47,15 @@ async function run() {
   const managerHasBookingTab = managerHtml.includes('data-view="booking"');
   const managerHasBookingView = managerHtml.includes('id="req-view-booking"');
   const managerHasApprovalsTab = managerHtml.includes('data-view="approvals"');
+  const managerHasFacilityTab = managerHtml.includes('data-view="facility"');
+  const managerHasBlockTab = managerHtml.includes('data-view="facility-block"');
   console.log('Manager (Approver):');
   console.log(' - Has Booking Tab:', managerHasBookingTab, '(Expected: false)');
   console.log(' - Has Booking View (#req-view-booking):', managerHasBookingView, '(Expected: false)');
   console.log(' - Has Approvals Tab:', managerHasApprovalsTab, '(Expected: true)');
-  if (managerHasBookingTab || managerHasBookingView || !managerHasApprovalsTab) {
+  console.log(' - Has Facility Handover Tab:', managerHasFacilityTab, '(Expected: false)');
+  console.log(' - Has Facility Block Tab:', managerHasBlockTab, '(Expected: false)');
+  if (managerHasBookingTab || managerHasBookingView || !managerHasApprovalsTab || managerHasFacilityTab || managerHasBlockTab) {
     throw new Error('Manager view permission test failed!');
   }
 
@@ -60,11 +64,17 @@ async function run() {
   const facilityHasBookingTab = facilityHtml.includes('data-view="booking"');
   const facilityHasBookingView = facilityHtml.includes('id="req-view-booking"');
   const facilityHasFacilityTab = facilityHtml.includes('data-view="facility"');
+  const facilityHasBlockTab = facilityHtml.includes('data-view="facility-block"');
+  const facilityHasHandoverView = facilityHtml.includes('id="req-view-facility"');
+  const facilityHasBlockView = facilityHtml.includes('id="req-view-facility-block"');
   console.log('Facility:');
   console.log(' - Has Booking Tab:', facilityHasBookingTab, '(Expected: false)');
   console.log(' - Has Booking View (#req-view-booking):', facilityHasBookingView, '(Expected: false)');
-  console.log(' - Has Facility Tab:', facilityHasFacilityTab, '(Expected: true)');
-  if (facilityHasBookingTab || facilityHasBookingView || !facilityHasFacilityTab) {
+  console.log(' - Has Handover Tab (data-view="facility"):', facilityHasFacilityTab, '(Expected: true)');
+  console.log(' - Has Block Tab (data-view="facility-block"):', facilityHasBlockTab, '(Expected: true)');
+  console.log(' - Has Handover View (#req-view-facility):', facilityHasHandoverView, '(Expected: true)');
+  console.log(' - Has Block View (#req-view-facility-block):', facilityHasBlockView, '(Expected: true)');
+  if (facilityHasBookingTab || facilityHasBookingView || !facilityHasFacilityTab || !facilityHasBlockTab || !facilityHasHandoverView || !facilityHasBlockView) {
     throw new Error('Facility view permission test failed!');
   }
 
