@@ -1672,3 +1672,379 @@ body {
   color: #f1f5f9;
 }
 
+/* ========================================================
+   Mobile & Requester Modern App Layout (Adapted from Reference)
+   ======================================================== */
+.requester-view-container {
+  max-width: 840px;
+  margin: 0 auto;
+  padding-bottom: 5.5rem; /* space for fixed bottom nav */
+}
+
+/* 1. Deep Blue Gradient Header */
+.hero-blue-header {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff;
+  border-radius: 0 0 28px 28px;
+  padding: 1.5rem 1.25rem 3.75rem 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.25);
+  margin: -1.5rem -1rem 0 -1rem;
+}
+
+.hero-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.hero-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.hero-brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0f172a;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #60a5fa;
+  font-size: 1.15rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.hero-date-badge {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hero-user-capsule {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: #e0e7ff;
+  color: #4338ca;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* 2. Floating Quick Booking Card */
+.quick-booking-card {
+  background: var(--card-bg);
+  border-radius: 22px;
+  padding: 1.5rem;
+  margin: -2.75rem 1rem 1.5rem 1rem;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border);
+  text-align: center;
+  position: relative;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.quick-booking-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #2563eb;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.quick-booking-title {
+  font-size: 1.28rem;
+  font-weight: 800;
+  color: var(--dark);
+  margin: 0 0 1.15rem 0;
+  letter-spacing: -0.01em;
+}
+
+.quick-booking-btn {
+  background: #2563eb;
+  color: #ffffff;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.quick-booking-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}
+
+.quick-booking-link {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 0.85rem;
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.quick-booking-link:hover {
+  color: #2563eb;
+}
+
+/* 3. Instant Available Rooms List */
+.available-now-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 1.15rem 0.85rem 1.15rem;
+}
+
+.available-room-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  padding: 0.85rem 1.15rem;
+  margin: 0 1rem 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.available-room-card:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
+}
+
+.available-room-img {
+  width: 95px;
+  height: 65px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.available-room-details {
+  flex: 1;
+}
+
+.available-room-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 0.25rem;
+}
+
+.available-room-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.available-room-arrow {
+  color: var(--muted);
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding-left: 0.5rem;
+}
+
+/* 4. Interactive Time Range Grid (Screenshot 2) */
+.time-range-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 500px) {
+  .time-range-picker-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.time-slot-pill {
+  padding: 0.75rem 0.4rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--card-bg);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--dark);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: center;
+  user-select: none;
+}
+
+.time-slot-pill:hover:not(.is-booked) {
+  border-color: #2563eb;
+  background: var(--bg);
+}
+
+.time-slot-pill.is-start,
+.time-slot-pill.is-end {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+}
+
+.time-slot-pill.in-range {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+  border-color: #bfdbfe !important;
+  font-weight: 700;
+}
+
+.time-slot-pill.is-booked {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* 5. Mobile & Tablet Bottom Navigation Bar */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem 0.25rem 0.65rem 0.25rem;
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  padding: 0.25rem 0.85rem;
+  border-radius: 12px;
+  transition: all 0.18s ease;
+}
+
+.bottom-nav-item .nav-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bottom-nav-item.active {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.bottom-nav-item.active .nav-icon {
+  transform: translateY(-2px) scale(1.1);
+}
+
+.bottom-nav-item .nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 12px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 9999px;
+  line-height: 1.2;
+}
+
+/* Dark Mode Overrides for Mobile Layout */
+[data-theme="dark"] .quick-booking-card {
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .quick-booking-tag {
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .quick-booking-title {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .time-slot-pill {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .time-slot-pill.in-range {
+  background: #1e3a8a !important;
+  color: #bfdbfe !important;
+  border-color: #2563eb !important;
+}
+
+[data-theme="dark"] .mobile-bottom-nav {
+  background: #111827;
+  border-top-color: #1f2937;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .bottom-nav-item.active {
+  color: #60a5fa;
+}
+
+
