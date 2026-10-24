@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+</head>
+<body>
+  <!-- Navbar หลัก -->
+  <nav class="navbar">
+    <a href="/app" class="nav-brand">RoomReserve</a>
+    <div class="nav-links">
+      <a href="/app">ตารางปฏิทิน & คิวงาน</a>
+      <a href="/admin/acl">ตารางสิทธิ์ (Dynamic ACL)</a>
+      <a href="/admin/logs" class="active" style="color: #4f46e5; font-weight: 700;">Audit Logs</a>
+      <a href="/admin/users">ผู้ใช้งาน</a>
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
+      <div class="user-badge">
+        <span><%= user.username %></span>
+        <span class="role-pill"><%= user.roleName %></span>
+      </div>
+      <form action="/logout" method="POST" style="margin: 0;">
+        <button type="submit" class="btn btn-outline btn-sm">ออกจากระบบ</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">บันทึกประวัติความปลอดภัยและการทำงาน (Audit Logs)</h2>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        ข้อมูลถูกจัดเก็บถาวรลงตารางใน PostgreSQL (Zero Credential Exposure - ไม่เก็บรหัสผ่านหรือ Session Token)
+      </p>
+
+      <!-- แถบค้นหาและกรองข้อมูล (Filter Form: รองรับการกรองตามคำค้นหา, Action, Status, และช่วงเวลา From - To) -->
+      <form action="/admin/logs" method="GET" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 8px; align-items: center;">
+        <div style="flex: 1; min-width: 180px;">
+          <input type="text" name="search" class="form-control" placeholder="ค้นหา Username, Resource..." value="<%= search %>">
+        </div>
+        <div>
+          <select name="action" class="form-control">
+            <option value="">-- ทุกการกระทำ (All Actions) --</option>
+            <% actions.forEach(act => { %>
+              <option value="<%= act %>" <%= filterAction === act ? 'selected' : '' %>><%= act %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <select name="status" class="form-control">
+            <option value="">-- ทุกสถานะ (All Status) --</option>
+            <option value="SUCCESS" <%= filterStatus === 'SUCCESS' ? 'selected' : '' %>>SUCCESS</option>
+            <option value="FAILED" <%= filterStatus === 'FAILED' ? 'selected' : '' %>>FAILED</option>
+            <option value="DENIED" <%= filterStatus === 'DENIED' ? 'selected' : '' %>>DENIED (403)</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.25rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); margin: 0;">จาก:</label>
+          <input type="date" name="from" class="form-control" value="<%= filterFrom %>" title="ตั้งแต่วันที่">
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.25rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); margin: 0;">ถึง:</label>
+          <input type="date" name="to" class="form-control" value="<%= filterTo %>" title="ถึงวันที่">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">กรองข้อมูล</button>
+        <a href="/admin/logs" class="btn btn-outline btn-sm">รีเซ็ต</a>
+        <a href="/admin/logs/export?search=<%= encodeURIComponent(search) %>&action=<%= encodeURIComponent(filterAction) %>&status=<%= encodeURIComponent(filterStatus) %>&from=<%= encodeURIComponent(filterFrom) %>&to=<%= encodeURIComponent(filterTo) %>" class="btn btn-success btn-sm" style="margin-left: auto;">Export เป็นไฟล์ CSV (Excel)</a>
+      </form>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>วันเวลา (Timestamp)</th>
+              <th>ผู้กระทำ (User)</th>
+              <th>เหตุการณ์ (Action)</th>
+              <th>เป้าหมาย (Resource)</th>
+              <th>สถานะ</th>
+              <th>รายละเอียด (Details)</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (logs.length === 0) { %>
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--muted); padding: 2rem;">ไม่พบบันทึกประวัติที่ตรงกับเงื่อนไข</td>
+              </tr>
+            <% } else { %>
+              <% logs.forEach(l => { %>
+                <tr>
+                  <td style="font-size: 0.8rem; white-space: nowrap;">
+                    <%= new Date(l.created_at).toLocaleString('th-TH') %>
+                  </td>
+                  <td>
+                    <strong><%= l.username %></strong>
+                    <% if (l.role_name) { %><br><small style="color: var(--muted);"><%= l.role_name %></small><% } %>
+                  </td>
+                  <td><code><%= l.action %></code></td>
+                  <td><%= l.resource %> (<%= l.resource_id || '-' %>)</td>
+                  <td>
+                    <% if (l.status === 'SUCCESS') { %>
+                      <span class="status-badge status-COMPLETED">SUCCESS</span>
+                    <% } else if (l.status === 'DENIED') { %>
+                      <span class="status-badge status-REJECTED">DENIED (403)</span>
+                    <% } else { %>
+                      <span class="status-badge status-BLOCKED"><%= l.status %></span>
+                    <% } %>
+                  </td>
+                  <td style="font-size: 0.85rem; max-width: 300px;"><%= l.details || '-' %></td>
+                  <td style="font-size: 0.8rem; color: var(--muted);"><%= l.ip_address %></td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

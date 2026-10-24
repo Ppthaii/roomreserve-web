@@ -1,0 +1,142 @@
+-- ====================================================================
+-- โครงสร้างฐานข้อมูล RoomReserve (SmartSpace)
+-- วิชา: พัฒนาเว็บแอปพลิเคชัน สำหรับบริหารจัดการระบบงาน (30 คะแนน)
+-- ====================================================================
+
+-- 1. Extension สำหรับการคำนวณและ Exclusion Constraint (ป้องกัน Race Condition)
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+-- 2. ตารางบทบาทผู้ใช้ (Roles)
+DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS booking_attachments CASCADE;
+DROP TABLE IF EXISTS room_bookings CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS role_permissions CASCADE;
+DROP TABLE IF EXISTS permissions CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+
+CREATE TABLE roles (
+  role_id SERIAL PRIMARY KEY,
+  role_name VARCHAR(50) UNIQUE NOT NULL,
+  display_name VARCHAR(100) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. ตารางสิทธิ์การใช้งาน (Permissions)
+CREATE TABLE permissions (
+  permission_id SERIAL PRIMARY KEY,
+  permission_code VARCHAR(100) UNIQUE NOT NULL,
+  description TEXT NOT NULL,
+  category VARCHAR(50) DEFAULT 'general'
+);
+
+-- 4. ตารางความสัมพันธ์สิทธิ์ตามบทบาท (Role_Permissions - Dynamic ACL Matrix)
+CREATE TABLE role_permissions (
+  role_id INT NOT NULL REFERENCES roles(role_id) ON DELETE CASCADE,
+  permission_id INT NOT NULL REFERENCES permissions(permission_id) ON DELETE CASCADE,
+  granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (role_id, permission_id)
+);
+
+-- 5. ตารางผู้ใช้งาน (Users)
+CREATE TABLE users (
+  user_id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  department VARCHAR(100),
+  role_id INT NOT NULL REFERENCES roles(role_id),
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. ตารางห้องประชุมและทรัพยากร (Rooms)
+CREATE TABLE rooms (
+  room_id SERIAL PRIMARY KEY,
+  room_name VARCHAR(100) UNIQUE NOT NULL,
+  capacity INT NOT NULL,
+  location VARCHAR(100) NOT NULL,
+  equipment_description TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7. ตารางการจองห้อง (Room Bookings)
+-- มี Exclusion Constraint ป้องกันช่วงเวลาทับซ้อน (Double-Booking / Race Condition Guard)
+CREATE TABLE room_bookings (
+  booking_id SERIAL PRIMARY KEY,
+  room_id INT NOT NULL REFERENCES rooms(room_id) ON DELETE RESTRICT,
+  user_id INT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
+  title VARCHAR(200) NOT NULL,
+  purpose TEXT,
+  attendees_count INT DEFAULT 1,
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING_APPROVAL',
+  
+  -- ข้อมูลการพิจารณาอนุมัติ
+  approver_id INT REFERENCES users(user_id),
+  approver_comment TEXT,
+  approved_at TIMESTAMP,
+  
+  -- ข้อมูลการส่งมอบและตรวจสภาพห้องหน้างาน
+  facility_officer_id INT REFERENCES users(user_id),
+  facility_comment TEXT,
+  checked_in_at TIMESTAMP,
+  checked_out_at TIMESTAMP,
+  
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  
+  -- กฎข้อบังคับความถูกต้องของข้อมูล
+  CONSTRAINT check_time_validity CHECK (end_time > start_time),
+  CONSTRAINT check_booking_status CHECK (
+    status IN ('PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'IN_USE', 'COMPLETED', 'CANCELLED', 'BLOCKED')
+  ),
+  
+  -- ⚡ หัวใจการป้องกัน Concurrency & Double-Booking ระดับ Database Engine
+  CONSTRAINT no_overlapping_active_bookings EXCLUDE USING gist (
+    room_id WITH =,
+    tsrange(start_time, end_time) WITH &&
+  ) WHERE (status IN ('PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'))
+);
+
+-- 8. ตารางไฟล์แนบ (Booking Attachments - Protected Storage)
+CREATE TABLE booking_attachments (
+  attachment_id SERIAL PRIMARY KEY,
+  booking_id INT NOT NULL REFERENCES room_bookings(booking_id) ON DELETE CASCADE,
+  uploaded_by INT NOT NULL REFERENCES users(user_id),
+  attachment_type VARCHAR(30) NOT NULL, -- 'AGENDA' หรือ 'INSPECTION'
+  original_name VARCHAR(255) NOT NULL,
+  storage_name VARCHAR(255) NOT NULL UNIQUE,
+  file_path VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(100) NOT NULL,
+  file_size INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9. ตารางบันทึกประวัติความปลอดภัยและการทำงาน (Audit Logs)
+CREATE TABLE audit_logs (
+  log_id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(user_id) ON DELETE SET NULL,
+  username VARCHAR(50),
+  role_name VARCHAR(50),
+  action VARCHAR(50) NOT NULL,
+  resource VARCHAR(50) NOT NULL,
+  resource_id VARCHAR(50),
+  status VARCHAR(20) NOT NULL, -- 'SUCCESS', 'FAILED', 'DENIED'
+  details TEXT,
+  ip_address VARCHAR(50),
+  user_agent TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index สำหรับค้นหา Log ย้อนหลังได้อย่างรวดเร็ว
+CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at DESC);
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX idx_audit_logs_username ON audit_logs(username);
+CREATE INDEX idx_room_bookings_room_time ON room_bookings(room_id, start_time, end_time);
+CREATE INDEX idx_room_bookings_user_created ON room_bookings(user_id, created_at DESC);
+CREATE INDEX idx_room_bookings_status_time ON room_bookings(status, start_time ASC);
+CREATE INDEX idx_room_bookings_start_time ON room_bookings(start_time ASC);

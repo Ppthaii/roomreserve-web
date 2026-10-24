@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <style>
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      padding: 1.5rem;
+    }
+    .login-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-logo {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .login-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .login-sub {
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+    .quick-box {
+      margin-top: 1.75rem;
+      padding-top: 1.5rem;
+      border-top: 1px dashed #e2e8f0;
+    }
+    .quick-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .quick-btn {
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quick-btn:hover {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+    }
+    .quick-role {
+      font-weight: 700;
+      color: #4f46e5;
+      display: block;
+    }
+    .quick-cred {
+      color: #64748b;
+      font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper" style="position: relative;">
+    <div style="position: absolute; top: 1.25rem; right: 1.5rem; z-index: 10;">
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" style="background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3); backdrop-filter: blur(4px);" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
+    </div>
+    <div class="login-card">
+      <div class="login-header">
+        <h1 class="login-title">RoomReserve</h1>
+        <p class="login-sub">SmartSpace Management & Concurrency Guard</p>
+      </div>
+
+      <% if (error) { %>
+        <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+          <%= error %>
+        </div>
+      <% } %>
+
+      <% if (success) { %>
+        <div class="alert alert-success" style="margin-bottom: 1.25rem;">
+          <%= success %>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label for="username">ชื่อผู้ใช้งาน (Username)</label>
+          <input type="text" id="username" name="username" class="form-control" placeholder="เช่น somchai, manager, facility, admin" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="password">รหัสผ่าน (Password)</label>
+          <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem;">
+          เข้าสู่ระบบ
+        </button>
+      </form>
+
+      <!-- ปุ่มทดสอบสลับ Role ได้ทันที 1 คลิก สำหรับนำเสนออาจารย์ -->
+      <div class="quick-box">
+        <div class="quick-title">บัญชีทดสอบสำหรับสาธิต 4 Roles</div>
+        <div class="quick-grid">
+          <button type="button" class="quick-btn" onclick="fillLogin('somchai', 'user123')">
+            <span class="quick-role">Requester</span>
+            <span class="quick-cred">somchai / user123</span>
+          </button>
+          <button type="button" class="quick-btn" onclick="fillLogin('manager', 'approver123')">
+            <span class="quick-role">Approver</span>
+            <span class="quick-cred">manager / approver123</span>
+          </button>
+          <button type="button" class="quick-btn" onclick="fillLogin('facility', 'facility123')">
+            <span class="quick-role">Facility Officer</span>
+            <span class="quick-cred">facility / facility123</span>
+          </button>
+          <button type="button" class="quick-btn" onclick="fillLogin('admin', 'admin123')">
+            <span class="quick-role">Admin</span>
+            <span class="quick-cred">admin / admin123</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fillLogin(u, p) {
+      document.getElementById('username').value = u;
+      document.getElementById('password').value = p;
+    }
+  </script>
+</body>
+</html>

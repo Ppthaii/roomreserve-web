@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+</head>
+<body>
+  <!-- Navbar หลัก -->
+  <nav class="navbar">
+    <a href="/app" class="nav-brand">RoomReserve</a>
+    <div class="nav-links">
+      <a href="/app">ตารางปฏิทิน & คิวงาน</a>
+      <a href="/admin/acl">ตารางสิทธิ์ (Dynamic ACL)</a>
+      <a href="/admin/logs">Audit Logs</a>
+      <a href="/admin/users" class="active" style="color: #4f46e5; font-weight: 700;">ผู้ใช้งาน</a>
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
+      <div class="user-badge">
+        <span><%= user.username %></span>
+        <span class="role-pill"><%= user.roleName %></span>
+      </div>
+      <form action="/logout" method="POST" style="margin: 0;">
+        <button type="submit" class="btn btn-outline btn-sm">ออกจากระบบ</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="container">
+    <% if (success) { %>
+      <div class="alert alert-success"><%= success %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-danger"><%= error %></div>
+    <% } %>
+
+    <div class="card">
+      <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">จัดการบัญชีผู้ใช้งาน (User Management)</h2>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+        ระบบแสดงรายชื่อผู้ใช้ทั้ง 4 Roles และสามารถสลับสถานะเปิดใช้งาน/ระงับการใช้งานได้ทันที
+      </p>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>แผนก / สังกัด</th>
+              <th>บทบาท (Role)</th>
+              <th>สถานะบัญชี</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(u => { %>
+              <tr>
+                <td><%= u.user_id %></td>
+                <td><strong><%= u.username %></strong></td>
+                <td><%= u.full_name %></td>
+                <td><%= u.department || '-' %></td>
+                <td>
+                  <form action="/admin/users/<%= u.user_id %>/role" method="POST" style="display:inline-flex; align-items:center; gap:0.35rem;">
+                    <select name="role_id" class="form-control" style="padding:0.25rem 0.5rem; font-size:0.8rem; width:auto;" onchange="this.form.submit()">
+                      <% roles.forEach(r => { %>
+                        <option value="<%= r.role_id %>" <%= r.role_id === u.role_id ? 'selected' : '' %>>
+                          <%= r.display_name %>
+                        </option>
+                      <% }) %>
+                    </select>
+                  </form>
+                </td>
+                <td>
+                  <% if (u.is_active) { %>
+                    <span class="status-badge status-COMPLETED">เปิดใช้งาน (Active)</span>
+                  <% } else { %>
+                    <span class="status-badge status-REJECTED">ระงับชั่วคราว (Suspended)</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (u.user_id === user.id) { %>
+                    <span style="color: var(--muted); font-size: 0.8rem;">(บัญชีปัจจุบัน)</span>
+                  <% } else { %>
+                    <form action="/admin/users/<%= u.user_id %>/toggle" method="POST" style="display:inline;">
+                      <button class="btn <%= u.is_active ? 'btn-danger' : 'btn-success' %> btn-sm">
+                        <%= u.is_active ? 'ระงับการใช้งาน' : 'เปิดใช้งาน' %>
+                      </button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

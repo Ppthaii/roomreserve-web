@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+</head>
+<body>
+  <!-- Navbar หลัก -->
+  <nav class="navbar">
+    <a href="/app" class="nav-brand">RoomReserve</a>
+    <div class="nav-links">
+      <a href="/app">ตารางปฏิทิน & คิวงาน</a>
+      <a href="/app/rooms" class="active">จัดการห้องประชุม</a>
+      <% if (user.roleName === 'admin') { %>
+        <a href="/admin/acl" style="color: #4f46e5; font-weight: 700;">ตารางสิทธิ์ (Dynamic ACL)</a>
+        <a href="/admin/logs" style="color: #4f46e5;">Audit Logs</a>
+        <a href="/admin/users" style="color: #4f46e5;">ผู้ใช้งาน</a>
+      <% } %>
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
+      <div class="user-badge">
+        <span><%= user.username %></span>
+        <span class="role-pill"><%= user.roleName %></span>
+      </div>
+      <form action="/logout" method="POST" style="margin: 0;">
+        <button type="submit" class="btn btn-outline btn-sm">ออกจากระบบ</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="container">
+    <% if (success) { %>
+      <div class="alert alert-success"><%= success %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-danger"><%= error %></div>
+    <% } %>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 800;">รายชื่อห้องประชุมและทรัพยากรส่วนกลาง</h2>
+          <p style="color: var(--muted); font-size: 0.85rem;">
+            จัดการข้อมูลห้อง ความจุ อุปกรณ์โสตทัศนูปกรณ์ และสถานะเปิดใช้งาน/ปิดปรับปรุง
+          </p>
+        </div>
+        <% if (['facility', 'admin'].includes(user.roleName)) { %>
+          <button type="button" class="btn btn-primary btn-sm" onclick="toggleModal('modal-add-room')">
+            เพิ่มห้องประชุมใหม่
+          </button>
+        <% } %>
+      </div>
+
+      <!-- ฟอร์มเพิ่มห้องประชุมใหม่ (Toggleable) -->
+      <div id="modal-add-room" style="display: none; background: #f8fafc; border: 1px solid var(--border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;">เพิ่มห้องประชุมใหม่</h3>
+        <form action="/app/rooms/create" method="POST" style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 0.75rem;">
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 0.75rem;">ชื่อห้องประชุม *</label>
+            <input type="text" name="room_name" class="form-control" placeholder="เช่น ห้องสัมมนาเธียเตอร์ (Room 401)" required>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 0.75rem;">ความจุ (ที่นั่ง) *</label>
+            <input type="number" name="capacity" class="form-control" placeholder="50" min="1" required>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label style="font-size: 0.75rem;">สถานที่ตั้ง (Location) *</label>
+            <input type="text" name="location" class="form-control" placeholder="ชั้น 4 อาคารเรียนรวม" required>
+          </div>
+          <div class="form-group" style="grid-column: span 3; margin: 0;">
+            <label style="font-size: 0.75rem;">อุปกรณ์ประจำห้อง</label>
+            <input type="text" name="equipment_description" class="form-control" placeholder="เช่น โปรเจกเตอร์ 2 ตัว, เครื่องเสียงชุดใหญ่, ไมค์ลอย 4 ตัว, โพเดียม">
+          </div>
+          <div style="grid-column: span 3; display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary btn-sm">บันทึกเพิ่มห้อง</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-room')">ยกเลิก</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ตารางรายชื่อห้อง -->
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ชื่อห้องประชุม</th>
+              <th>ความจุ</th>
+              <th>สถานที่ตั้ง</th>
+              <th>อุปกรณ์ประจำห้อง</th>
+              <th>สถานะห้อง</th>
+              <% if (['facility', 'admin'].includes(user.roleName)) { %>
+                <th>จัดการ</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <% rooms.forEach(r => { %>
+              <tr>
+                <td><%= r.room_id %></td>
+                <td>
+                  <strong><%= r.room_name %></strong>
+                  <br>
+                  <small style="color: var(--muted);">ใช้งานเสร็จสิ้นแล้ว <%= r.total_completed_bookings %> ครั้ง</small>
+                </td>
+                <td><strong><%= r.capacity %></strong> ที่นั่ง</td>
+                <td><%= r.location %></td>
+                <td style="font-size: 0.85rem; color: var(--slate); max-width: 320px;">
+                  <%= r.equipment_description || 'ไม่มีข้อมูลอุปกรณ์' %>
+                </td>
+                <td>
+                  <% if (r.is_active) { %>
+                    <span class="status-badge status-COMPLETED">เปิดใช้งาน (Active)</span>
+                  <% } else { %>
+                    <span class="status-badge status-BLOCKED">ปิดปรับปรุง (Maintenance)</span>
+                  <% } %>
+                </td>
+                <% if (['facility', 'admin'].includes(user.roleName)) { %>
+                  <td>
+                    <form action="/app/rooms/<%= r.room_id %>/toggle" method="POST" style="display:inline;">
+                      <button class="btn <%= r.is_active ? 'btn-danger' : 'btn-success' %> btn-sm">
+                        <%= r.is_active ? 'ปิดปรับปรุง' : 'เปิดใช้งาน' %>
+                      </button>
+                    </form>
+                  </td>
+                <% } %>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleModal(id) {
+      const el = document.getElementById(id);
+      el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
