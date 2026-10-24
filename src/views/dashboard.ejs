@@ -273,27 +273,29 @@
       const fullyFreeRoomsCount = rooms.filter(r => r.is_active && !bookedRoomIds.has(r.room_id)).length;
     %>
 
-    <!-- Header สรุปวันและแถบนำทางแบบ 1-คลิก -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
-      <div>
-        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-          ระบบจองห้องประชุม RoomReserve
-        </h2>
-        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; margin-bottom: 0;">
-          <strong><%= formattedThaiDate %></strong>
-        </p>
-      </div>
+    <% if (['approver', 'facility', 'admin'].includes(user.roleName)) { %>
+      <!-- Header สรุปวันและแถบนำทางแบบ 1-คลิก (สำหรับบทบาทบริหาร/จัดการ) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+            ระบบจองห้องประชุม RoomReserve
+          </h2>
+          <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; margin-bottom: 0;">
+            <strong><%= formattedThaiDate %></strong>
+          </p>
+        </div>
 
-      <!-- แถบนำทางวันที่แบบรวดเร็ว (1-Click Date Navigator) -->
-      <div class="date-navigator">
-        <a href="/app?date=<%= todayStr %>" class="date-nav-btn <%= isToday ? 'today' : '' %>" title="กลับมาวันนี้">วันนี้</a>
-        <a href="/app?date=<%= nextDateStr %>" class="date-nav-btn" title="วันถัดไป">พรุ่งนี้</a>
-        
-        <form action="/app" method="GET" style="display: inline-flex; align-items: center; margin: 0; margin-left: 0.35rem;">
-          <input type="date" name="date" value="<%= selectedDate %>" min="<%= todayStr %>" onchange="this.form.submit()" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: auto; height: 30px;" title="เลือกวันอื่นๆ ในปฏิทิน">
-        </form>
+        <!-- แถบนำทางวันที่แบบรวดเร็ว (1-Click Date Navigator) -->
+        <div class="date-navigator">
+          <a href="/app?date=<%= todayStr %>" class="date-nav-btn <%= isToday ? 'today' : '' %>" title="กลับมาวันนี้">วันนี้</a>
+          <a href="/app?date=<%= nextDateStr %>" class="date-nav-btn" title="วันถัดไป">พรุ่งนี้</a>
+          
+          <form action="/app" method="GET" style="display: inline-flex; align-items: center; margin: 0; margin-left: 0.35rem;">
+            <input type="date" name="date" value="<%= selectedDate %>" min="<%= todayStr %>" onchange="this.form.submit()" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: auto; height: 30px;" title="เลือกวันอื่นๆ ในปฏิทิน">
+          </form>
+        </div>
       </div>
-    </div>
+    <% } %>
 
     <!-- แถบสรุปสถานะแบบกระชับ (Stat Summary Bar) - แสดงเฉพาะบทบาทบริหาร/จัดการ ไม่กวนสายตา Requester -->
     <% if (['approver', 'facility', 'admin'].includes(user.roleName)) { %>
@@ -362,9 +364,28 @@
       </div>
     <% } %>
 
-    <!-- ================= TAB 1: หน้าจอหลัก Requester (Adapted from Reference Design) ================= -->
+    <!-- ================= TAB 1: หน้าจอหลัก Requester (Adaptive Web Desktop + Mobile) ================= -->
     <div id="tab-rooms" class="tab-content active">
       <div class="requester-view-container">
+
+        <!-- แถบนำทางด้านบนสำหรับ Desktop Web (Desktop Sub-Navigation Bar) -->
+        <div class="desktop-sub-nav">
+          <button type="button" class="desktop-nav-item active" data-view="home" onclick="switchRequesterView('home', this)">
+            <span>🏠</span> หน้าแรก
+          </button>
+          <button type="button" class="desktop-nav-item" data-view="booking" onclick="switchRequesterView('booking', this)">
+            <span>📅</span> จองห้อง
+          </button>
+          <button type="button" class="desktop-nav-item" data-view="mybookings" onclick="switchRequesterView('mybookings', this)">
+            <span>📋</span> การจองของฉัน
+            <% if (myBookings.length > 0) { %>
+              <span class="desktop-nav-badge"><%= myBookings.length %></span>
+            <% } %>
+          </button>
+          <button type="button" class="desktop-nav-item" data-view="profile" onclick="switchRequesterView('profile', this)">
+            <span>👤</span> โปรไฟล์
+          </button>
+        </div>
 
         <!-- ================= SUBVIEW 1: หน้าแรก (Home Dashboard - Screenshot 1) ================= -->
         <div id="req-view-home" class="req-subview">
@@ -375,13 +396,21 @@
               <div class="hero-brand-wrap">
                 <div class="hero-brand-logo">RR</div>
                 <div>
-                  <div style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em;">RoomReserve</div>
-                  <div style="font-size: 0.72rem; opacity: 0.85;">Smart Meeting Space</div>
+                  <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em;">RoomReserve</div>
+                  <div style="font-size: 0.75rem; opacity: 0.85;">Smart Meeting Space</div>
                 </div>
               </div>
+
+              <!-- Date Selector & 1-Click Navigator Built right into Hero -->
               <div class="hero-date-badge">
                 <span>📅</span>
-                <span><%= formattedThaiDate %></span>
+                <a href="/app?date=<%= todayStr %>" style="color: #fff; text-decoration: <%= isToday ? 'underline' : 'none' %>; font-weight: <%= isToday ? '800' : '600' %>;">วันนี้</a>
+                <span style="opacity: 0.4;">|</span>
+                <a href="/app?date=<%= nextDateStr %>" style="color: #fff; text-decoration: none; font-weight: 600;">พรุ่งนี้</a>
+                <span style="opacity: 0.4;">|</span>
+                <form action="/app" method="GET" style="display: inline-flex; align-items: center; margin: 0;">
+                  <input type="date" name="date" value="<%= selectedDate %>" min="<%= todayStr %>" onchange="this.form.submit()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 6px; padding: 2px 6px; font-size: 0.75rem; cursor: pointer; height: 26px;">
+                </form>
               </div>
             </div>
 
@@ -390,11 +419,11 @@
                 <%= user.fullName ? user.fullName.charAt(0) : 'U' %>
               </div>
               <div style="flex: 1;">
-                <div style="font-size: 0.78rem; opacity: 0.9;">สวัสดี, วันนี้พร้อมจองห้องไหม</div>
-                <div style="font-size: 1.05rem; font-weight: 800; line-height: 1.25;"><%= user.fullName %></div>
-                <div style="font-size: 0.75rem; opacity: 0.85; margin-top: 0.2rem;">
+                <div style="font-size: 0.8rem; opacity: 0.9;">สวัสดี, วันนี้พร้อมจองห้องไหม</div>
+                <div style="font-size: 1.15rem; font-weight: 800; line-height: 1.25;"><%= user.fullName %></div>
+                <div style="font-size: 0.78rem; opacity: 0.85; margin-top: 0.2rem;">
                   <span>สังกัด: <%= user.department || 'สำนักงานใหญ่' %></span> &bull; 
-                  <span class="role-pill" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.68rem; padding: 1px 6px;"><%= user.roleDisplay %></span>
+                  <span class="role-pill" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.7rem; padding: 2px 7px;"><%= user.roleDisplay %></span>
                 </div>
               </div>
             </div>
@@ -1611,13 +1640,14 @@
       const targetView = document.getElementById('req-view-' + viewName);
       if (targetView) targetView.style.display = 'block';
 
-      document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
-      if (btnEl) {
-        btnEl.classList.add('active');
-      } else {
-        const navBtn = document.querySelector(`.bottom-nav-item[data-view="${viewName}"]`);
-        if (navBtn) navBtn.classList.add('active');
-      }
+      // ซิงก์สถานะ Active ทั้งบน Desktop Sub-Nav และ Mobile Bottom Nav
+      document.querySelectorAll('.bottom-nav-item, .desktop-nav-item').forEach(b => {
+        if (b.getAttribute('data-view') === viewName) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
