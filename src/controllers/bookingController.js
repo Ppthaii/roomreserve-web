@@ -351,12 +351,12 @@ async function revokeApproval(req, res, next) {
   }
 }
 
-// 6. ล้างประวัติคำขอเฉพาะรายการที่ใช้งานเสร็จสิ้นแล้ว (COMPLETED) ของตนเอง
+// 6. ล้างประวัติคำขอเฉพาะรายการที่สิ้นสุดแล้ว (COMPLETED, CANCELLED, REJECTED) ของตนเอง
 async function clearBookingHistory(req, res, next) {
   try {
     const result = await pool.query(`
       DELETE FROM room_bookings
-      WHERE user_id = $1 AND status = 'COMPLETED'
+      WHERE user_id = $1 AND status IN ('COMPLETED', 'CANCELLED', 'REJECTED')
     `, [req.session.userId]);
 
     await logAudit({
@@ -365,30 +365,30 @@ async function clearBookingHistory(req, res, next) {
       roleName: req.session.roleName,
       action: 'BOOKING_CLEAR_HISTORY',
       resource: 'BOOKING',
-      resourceId: 'COMPLETED_ONLY',
+      resourceId: 'FINISHED_ONLY',
       status: 'SUCCESS',
-      details: `ล้างประวัติคำขอเฉพาะที่เสร็จสิ้น (COMPLETED) จำนวน ${result.rowCount} รายการ`,
+      details: `ล้างประวัติคำขอที่สิ้นสุดแล้ว จำนวน ${result.rowCount} รายการ`,
       ip: req.ip,
       ua: req.get('user-agent')
     });
 
     if (result.rowCount === 0) {
-      return res.redirect(`/app?error=${encodeURIComponent('ไม่มีรายการประวัติที่ใช้งานเสร็จสิ้น (COMPLETED) ให้เคลียร์')}`);
+      return res.redirect(`/app?error=${encodeURIComponent('ไม่มีรายการประวัติที่สิ้นสุดแล้ว (เสร็จสิ้น/ยกเลิก/ปฏิเสธ) ให้เคลียร์')}`);
     }
 
-    res.redirect(`/app?success=${encodeURIComponent(`เคลียร์ประวัติเฉพาะที่เสร็จสิ้น (COMPLETED) เรียบร้อยแล้ว (${result.rowCount} รายการ)`)}`);
+    res.redirect(`/app?success=${encodeURIComponent(`เคลียร์ประวัติที่สิ้นสุดแล้วเรียบร้อย (${result.rowCount} รายการ)`)}`);
   } catch (err) {
     next(err);
   }
 }
 
-// 7. ลบประวัติคำขอรายการเดียวเฉพาะที่เสร็จสิ้นแล้ว (COMPLETED)
+// 7. ลบประวัติคำขอรายการเดียวเฉพาะที่สิ้นสุดแล้ว (COMPLETED, CANCELLED, REJECTED)
 async function deleteBookingHistory(req, res, next) {
   try {
     const { id } = req.params;
     const result = await pool.query(`
       DELETE FROM room_bookings
-      WHERE booking_id = $1 AND user_id = $2 AND status = 'COMPLETED'
+      WHERE booking_id = $1 AND user_id = $2 AND status IN ('COMPLETED', 'CANCELLED', 'REJECTED')
     `, [id, req.session.userId]);
 
     if (result.rowCount > 0) {
@@ -400,14 +400,14 @@ async function deleteBookingHistory(req, res, next) {
         resource: 'BOOKING',
         resourceId: id,
         status: 'SUCCESS',
-        details: `ลบประวัติคำขอที่เสร็จสิ้น (COMPLETED) ID ${id}`,
+        details: `ลบประวัติคำขอ ID ${id}`,
         ip: req.ip,
         ua: req.get('user-agent')
       });
       return res.redirect(`/app?success=${encodeURIComponent('ลบรายการประวัติเรียบร้อยแล้ว')}`);
     }
 
-    res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถลบได้ (ลบได้เฉพาะรายการที่ใช้งานเสร็จสิ้นแล้วเท่านั้น)')}`);
+    res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถลบได้ (ลบได้เฉพาะรายการที่สิ้นสุดแล้วเท่านั้น)')}`);
   } catch (err) {
     next(err);
   }

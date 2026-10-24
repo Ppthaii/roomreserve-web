@@ -685,6 +685,7 @@
           const inUseCount = myBookings.filter(b => b.status === 'IN_USE').length;
           const completedCount = myBookings.filter(b => b.status === 'COMPLETED').length;
           const rejectCount = myBookings.filter(b => ['REJECTED', 'CANCELLED'].includes(b.status)).length;
+          const finishedCount = completedCount + rejectCount;
         %>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
           <div>
@@ -693,9 +694,9 @@
           </div>
 
           <% if (myBookings.length > 0) { %>
-            <form action="/app/bookings/clear-history" method="POST" onsubmit="if (<%= completedCount %> === 0) { alert('ไม่มีรายการที่เสร็จสิ้น (COMPLETED) ให้เคลียร์'); return false; } return confirm('ยืนยันล้างประวัติเฉพาะรายการที่เสร็จสิ้นแล้ว (COMPLETED) จำนวน <%= completedCount %> รายการ?');" style="margin: 0;">
-              <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4); display: flex; align-items: center; gap: 0.35rem;" title="ล้างประวัติเฉพาะรายการที่ใช้งานเสร็จสิ้นแล้ว (COMPLETED) เท่านั้น" <%= completedCount === 0 ? 'disabled' : '' %>>
-                เคลียร์ประวัติ (Completed: <%= completedCount %>)
+            <form action="/app/bookings/clear-history" method="POST" onsubmit="if (<%= finishedCount %> === 0) { alert('ไม่มีรายการประวัติที่สิ้นสุดแล้ว (เสร็จสิ้น/ยกเลิก/ปฏิเสธ) ให้เคลียร์'); return false; } return confirm('ยืนยันล้างประวัติคำขอที่สิ้นสุดแล้วจำนวน <%= finishedCount %> รายการ?');" style="margin: 0;">
+              <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4); display: flex; align-items: center; gap: 0.35rem;" title="ล้างประวัติคำขอที่สิ้นสุดแล้ว (COMPLETED, CANCELLED, REJECTED)" <%= finishedCount === 0 ? 'disabled' : '' %>>
+                เคลียร์ประวัติ (<%= finishedCount %> รายการสิ้นสุด)
               </button>
             </form>
           <% } %>
@@ -819,7 +820,7 @@
                         </form>
                       <% } else if (b.status === 'IN_USE') { %>
                         <span class="badge" style="background: rgba(239, 68, 68, 0.08); color: var(--danger); font-size: 0.72rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.2);" title="เจ้าหน้าที่ส่งมอบห้องเรียบร้อยแล้ว ไม่สามารถยกเลิกได้">ส่งมอบแล้ว (ยกเลิกไม่ได้)</span>
-                      <% } else if (b.status === 'COMPLETED') { %>
+                      <% } else if (['COMPLETED', 'CANCELLED', 'REJECTED'].includes(b.status)) { %>
                         <form action="/app/bookings/<%= b.booking_id %>/delete" method="POST" onsubmit="return confirm('ยืนยันลบรายการนี้ออกจากประวัติ?');" style="display:inline;">
                           <button type="submit" class="btn btn-outline btn-xs" style="color: var(--muted); border-color: var(--border);" title="ลบรายการนี้ออกจากประวัติ">
                             ลบ
