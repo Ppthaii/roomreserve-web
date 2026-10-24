@@ -25,6 +25,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Dev Live Auto-Reload Ping Endpoint (ตรวจจับการรีสตาร์ตเพื่อสั่งเบราว์เซอร์รีเฟรชตัวเองทันที)
+const SERVER_BOOT_TIME = Date.now();
+app.get('/__dev_ping', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.json({ bootTime: SERVER_BOOT_TIME });
+});
+
 // Session Configuration (จัดเก็บลง PostgreSQL เพื่อไม่ให้เซสชันหลุดเมื่อรีสตาร์ตเซิร์ฟเวอร์)
 app.use(session({
   store: new pgSession({
