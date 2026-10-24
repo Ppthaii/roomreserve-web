@@ -137,7 +137,60 @@
     </div>
   </div>
 
+  <!-- Modal สำหรับระบุเหตุผลการปฏิเสธคำขอ (Approver Rejection Modal) -->
+  <div id="rejectModal" class="preview-modal-overlay" onclick="closeRejectModal(event)" style="display: none;">
+    <div class="casual-modal-box" onclick="event.stopPropagation()" style="max-width: 520px; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); border: 1px solid var(--border);">
+      <div class="casual-modal-header" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: start;">
+        <div>
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: #991b1b; margin: 0 0 0.25rem 0;">
+            ปฏิเสธคำขอจองห้อง (Reject Booking)
+          </h3>
+          <div id="rejectModalSubTitle" style="font-size: 0.8rem; color: #7f1d1d;"></div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeRejectModal()">ปิด</button>
+      </div>
 
+      <form id="rejectForm" method="POST" style="padding: 1.25rem 1.5rem;">
+        <input type="hidden" name="action" value="REJECT">
+        
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size: 0.8rem; font-weight: 700; display: block; margin-bottom: 0.4rem; color: var(--dark);">
+            เลือกเหตุผลมาตรฐานด่วน:
+          </label>
+          <div style="display: flex; flex-direction: column; gap: 0.4rem; background: #f8fafc; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border);">
+            <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="radio" name="preset_reason" value="ผู้บริหารมีความจำเป็นต้องใช้ห้องประชุมด่วนในช่วงเวลาดังกล่าว" checked onchange="applyPresetReason(this.value)">
+              <span>ผู้บริหารมีความจำเป็นต้องใช้ห้องประชุมด่วน</span>
+            </label>
+            <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="radio" name="preset_reason" value="กรุณาจัดประชุมในรูปแบบออนไลน์ (Online Meeting) แทนเพื่อประหยัดทรัพยากร" onchange="applyPresetReason(this.value)">
+              <span>กรุณาจัดประชุมในรูปแบบออนไลน์แทน</span>
+            </label>
+            <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="radio" name="preset_reason" value="จำนวนผู้เข้าร่วมไม่สอดคล้องกับขนาดห้องประชุม กรุณาเลือกห้องที่มีขนาดเหมาะสม" onchange="applyPresetReason(this.value)">
+              <span>จำนวนผู้เข้าร่วมไม่สอดคล้องกับขนาดห้องประชุม</span>
+            </label>
+            <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="radio" name="preset_reason" value="มีกิจกรรมสำคัญส่วนกลางของบริษัททับซ้อนในช่วงเวลาดังกล่าว" onchange="applyPresetReason(this.value)">
+              <span>มีกิจกรรมสำคัญส่วนกลางของบริษัททับซ้อน</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label for="reject_comment_input" style="font-size: 0.8rem; font-weight: 700; color: var(--dark);">
+            ข้อความเหตุผลที่จะแจ้งให้ผู้ยื่นจองทราบ *:
+          </label>
+          <textarea name="comment" id="reject_comment_input" class="form-control" rows="3" required>ผู้บริหารมีความจำเป็นต้องใช้ห้องประชุมด่วนในช่วงเวลาดังกล่าว</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeRejectModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-danger btn-sm">ยืนยันปฏิเสธคำขอ</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- แถบสลับ Role ทดสอบด่วน -->
   <div class="demo-role-switcher">
@@ -572,6 +625,16 @@
                 </div>
               </div>
 
+              <!-- ปุ่มเลือกช่วงเวลาด่วน (Quick Duration Buttons) -->
+              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.85rem; align-items: center;">
+                <span style="font-size: 0.72rem; color: var(--muted); font-weight: 600;">เลือกระยะเวลาด่วน:</span>
+                <button type="button" class="btn btn-outline btn-xs" onclick="setQuickDuration(1)" style="padding: 2px 7px; font-size: 0.72rem;">+1 ชม.</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="setQuickDuration(2)" style="padding: 2px 7px; font-size: 0.72rem;">+2 ชม.</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="setQuickDuration(3)" style="padding: 2px 7px; font-size: 0.72rem;">+3 ชม.</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="setQuickRange('09:00', '12:00')" style="padding: 2px 7px; font-size: 0.72rem;">ครึ่งวันเช้า (09-12)</button>
+                <button type="button" class="btn btn-outline btn-xs" onclick="setQuickRange('13:00', '17:00')" style="padding: 2px 7px; font-size: 0.72rem;">ครึ่งวันบ่าย (13-17)</button>
+              </div>
+
               <div class="form-group" style="margin-bottom: 0.75rem;">
                 <label for="form_title" style="font-size: 0.8rem; font-weight: 600;">หัวข้อการประชุม / กิจกรรม *</label>
                 <input type="text" name="title" id="form_title" class="form-control" placeholder="เช่น ประชุมวางแผนงานทีม, สรุปโปรเจกต์" required autofocus>
@@ -830,13 +893,13 @@
                         อนุมัติการจอง (Approve)
                       </button>
                     </form>
-                    <form action="/app/bookings/<%= p.booking_id %>/review" method="POST" style="flex: 1;">
-                      <input type="hidden" name="action" value="REJECT">
-                      <input type="hidden" name="comment" value="เวลาหรือขนาดห้องไม่เหมาะสม">
-                      <button class="btn btn-danger" style="width: 100%; font-size: 0.85rem;">
-                        ปฏิเสธ (Reject)
-                      </button>
-                    </form>
+                    <button type="button" class="btn btn-danger btn-open-reject" 
+                            style="flex: 1; font-size: 0.85rem;"
+                            data-booking-id="<%= p.booking_id %>"
+                            data-title="<%= p.title %>"
+                            data-requester="<%= p.requester_name %>">
+                      ปฏิเสธ (Reject)
+                    </button>
                   </div>
                 </div>
               <% }) %>
@@ -1404,9 +1467,62 @@
       document.getElementById('previewFrame').src = 'about:blank';
     }
 
+    // ปรับระยะเวลาจองด่วน (+1 ชม., +2 ชม., ครึ่งวัน)
+    function setQuickDuration(hours) {
+      const startSelect = document.getElementById('form_start_time');
+      const endSelect = document.getElementById('form_end_time');
+      if (!startSelect || !endSelect) return;
+      const startH = parseInt(startSelect.value.split(':')[0], 10);
+      const targetEndH = Math.min(18, startH + hours);
+      endSelect.value = `${String(targetEndH).padStart(2, '0')}:00`;
+      checkBookingConflict();
+    }
+
+    function setQuickRange(startStr, endStr) {
+      const startSelect = document.getElementById('form_start_time');
+      const endSelect = document.getElementById('form_end_time');
+      if (!startSelect || !endSelect) return;
+      startSelect.value = startStr;
+      onStartTimeChange(false);
+      endSelect.value = endStr;
+      checkBookingConflict();
+    }
+
+    // จัดการ Modal ปฏิเสธคำขอ (Approver Rejection)
+    function openRejectModal(bookingId, title, requesterName) {
+      const modal = document.getElementById('rejectModal');
+      const form = document.getElementById('rejectForm');
+      const sub = document.getElementById('rejectModalSubTitle');
+      const commentInput = document.getElementById('reject_comment_input');
+
+      if (form) form.action = `/app/bookings/${bookingId}/review`;
+      if (sub) sub.innerHTML = `คำขอ: <strong>${title}</strong> &bull; โดย ${requesterName}`;
+      if (commentInput) commentInput.value = 'ผู้บริหารมีความจำเป็นต้องใช้ห้องประชุมด่วนในช่วงเวลาดังกล่าว';
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeRejectModal(e) {
+      if (e && e.target !== e.currentTarget && e.currentTarget.id !== 'rejectModal') return;
+      const modal = document.getElementById('rejectModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function applyPresetReason(val) {
+      const input = document.getElementById('reject_comment_input');
+      if (input) input.value = val;
+    }
+
     // ตรวจสอบความว่างเริ่มต้นเมื่อโหลดหน้า
     document.addEventListener('DOMContentLoaded', () => {
       checkBookingConflict();
+      
+      // ดักจับคลิกปุ่มปฏิเสธ
+      document.querySelectorAll('.btn-open-reject').forEach(btn => {
+        btn.addEventListener('click', function() {
+          openRejectModal(this.dataset.bookingId, this.dataset.title, this.dataset.requester);
+        });
+      });
+
       const urlParams = new URLSearchParams(window.location.search);
       const bParam = urlParams.get('building');
       if (bParam && ['1', '2', '3'].includes(bParam)) {
