@@ -116,7 +116,7 @@
     }
   </style>
 </head>
-<body>
+<body class="<%= (user.roleName === 'requester' || user.roleName === 'user') ? 'role-requester' : 'role-staff' %>">
 
   <!-- Modal สำหรับดูไฟล์แนบ In-App Stream -->
   <div id="filePreviewModal" class="preview-modal-overlay" onclick="closePreviewModal(event)">

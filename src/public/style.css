@@ -1752,10 +1752,66 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* 1. On mobile for requesters, hide desktop demo bar & navbar to make it 100% native mobile app */
+  body.role-requester .demo-role-switcher {
+    display: none !important;
+  }
+  body.role-requester .navbar {
+    display: none !important;
+  }
+
+  /* 2. Container flush layout on mobile */
+  body.role-requester .container {
+    margin: 0 auto !important;
+    padding: 0 0.85rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Compact general layout for all roles on mobile */
+  .container {
+    padding: 0 0.85rem;
+    margin: 0.85rem auto;
+  }
+  .card {
+    padding: 1rem 0.85rem !important;
+    border-radius: 14px !important;
+    margin-bottom: 0.85rem !important;
+  }
+  .demo-role-switcher {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .demo-role-buttons {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .navbar {
+    padding: 0.65rem 0.85rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .nav-links {
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+}
+
+.hero-blue-header {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff;
+  border-radius: 24px;
+  padding: 2rem 2.25rem 3.75rem 2.25rem;
+  box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.25);
+  margin: 0 0 0 0;
+}
+
+@media (max-width: 768px) {
   .hero-blue-header {
-    border-radius: 0 0 24px 24px;
-    margin: -1.5rem -1rem 0 -1rem;
-    padding: 1.25rem 1.15rem 3.5rem 1.15rem;
+    border-radius: 0 0 24px 24px !important;
+    margin: 0 -0.85rem 0 -0.85rem !important;
+    padding: 1.15rem 1rem 2.75rem 1rem !important;
   }
 }
 
@@ -1766,6 +1822,13 @@ body {
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .hero-top-row {
+    margin-bottom: 0.85rem !important;
+    gap: 0.5rem !important;
+  }
 }
 
 .hero-brand-wrap {
@@ -1789,6 +1852,14 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+@media (max-width: 768px) {
+  .hero-brand-logo {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 1rem !important;
+  }
+}
+
 .hero-date-badge {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(8px);
@@ -1803,6 +1874,19 @@ body {
   gap: 0.5rem;
 }
 
+@media (max-width: 768px) {
+  .hero-date-badge {
+    padding: 0.25rem 0.55rem !important;
+    font-size: 0.72rem !important;
+    gap: 0.35rem !important;
+  }
+  .hero-date-badge input[type="date"] {
+    height: 24px !important;
+    padding: 1px 4px !important;
+    font-size: 0.7rem !important;
+  }
+}
+
 .hero-user-capsule {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
@@ -1812,6 +1896,14 @@ body {
   display: flex;
   align-items: center;
   gap: 1.15rem;
+}
+
+@media (max-width: 768px) {
+  .hero-user-capsule {
+    padding: 0.65rem 0.85rem !important;
+    border-radius: 16px !important;
+    gap: 0.75rem !important;
+  }
 }
 
 .hero-avatar {
@@ -1828,6 +1920,14 @@ body {
   font-weight: 700;
   flex-shrink: 0;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .hero-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 1.15rem !important;
+  }
 }
 
 /* 2. Floating Quick Booking Card */
@@ -1848,9 +1948,10 @@ body {
 
 @media (max-width: 768px) {
   .quick-booking-card {
-    margin: -2.75rem 1rem 1.5rem 1rem;
-    width: auto;
-    padding: 1.5rem;
+    margin: -1.85rem 0.25rem 1.15rem 0.25rem !important;
+    width: auto !important;
+    padding: 1.1rem 0.85rem !important;
+    border-radius: 18px !important;
   }
 }
 
@@ -1863,12 +1964,26 @@ body {
   margin-bottom: 0.4rem;
 }
 
+@media (max-width: 768px) {
+  .quick-booking-tag {
+    font-size: 0.72rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+}
+
 .quick-booking-title {
   font-size: 1.35rem;
   font-weight: 800;
   color: var(--dark);
   margin: 0 0 1.15rem 0;
   letter-spacing: -0.01em;
+}
+
+@media (max-width: 768px) {
+  .quick-booking-title {
+    font-size: 1.12rem !important;
+    margin: 0 0 0.6rem 0 !important;
+  }
 }
 
 .quick-booking-btn {
@@ -1890,6 +2005,14 @@ body {
   user-select: none;
 }
 
+@media (max-width: 768px) {
+  .quick-booking-btn {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 0.95rem !important;
+    border-radius: 12px !important;
+  }
+}
+
 .quick-booking-btn:hover {
   background: #1d4ed8;
   transform: translateY(-1px);
@@ -1907,6 +2030,13 @@ body {
   transition: color 0.2s;
 }
 
+@media (max-width: 768px) {
+  .quick-booking-link {
+    font-size: 0.78rem !important;
+    margin-top: 0.5rem !important;
+  }
+}
+
 .quick-booking-link:hover {
   color: #2563eb;
 }
@@ -1921,7 +2051,7 @@ body {
 
 @media (max-width: 768px) {
   .available-now-header {
-    margin: 0 1rem 0.85rem 1rem;
+    margin: 0 0.25rem 0.65rem 0.25rem !important;
   }
 }
 
@@ -1933,9 +2063,9 @@ body {
 
 @media (max-width: 768px) {
   .available-rooms-list {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-    margin: 0;
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+    margin: 0 !important;
   }
 }
 
@@ -1953,6 +2083,14 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
+@media (max-width: 768px) {
+  .available-room-card {
+    padding: 0.65rem 0.85rem !important;
+    gap: 0.75rem !important;
+    border-radius: 14px !important;
+  }
+}
+
 .available-room-card:hover {
   border-color: #2563eb;
   transform: translateY(-3px);
@@ -1967,6 +2105,14 @@ body {
   flex-shrink: 0;
 }
 
+@media (max-width: 768px) {
+  .available-room-img {
+    width: 80px !important;
+    height: 60px !important;
+    border-radius: 10px !important;
+  }
+}
+
 .available-room-details {
   flex: 1;
 }
@@ -1978,6 +2124,13 @@ body {
   margin-bottom: 0.25rem;
 }
 
+@media (max-width: 768px) {
+  .available-room-title {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+}
+
 .available-room-meta {
   font-size: 0.8rem;
   color: var(--muted);
@@ -1987,6 +2140,13 @@ body {
   flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+  .available-room-meta {
+    font-size: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+}
+
 .available-room-arrow {
   color: var(--muted);
   font-size: 1.4rem;
@@ -1994,7 +2154,14 @@ body {
   padding-left: 0.5rem;
 }
 
-/* 4. Building Cards Grid (Desktop 3 Columns, Mobile 1 Column) */
+@media (max-width: 768px) {
+  .available-room-arrow {
+    font-size: 1.2rem !important;
+    padding-left: 0.25rem !important;
+  }
+}
+
+/* 4. Building Cards Grid (Desktop 3 Columns, Mobile 3 Compact Columns) */
 .building-cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2004,8 +2171,9 @@ body {
 
 @media (max-width: 768px) {
   .building-cards-grid {
-    grid-template-columns: 1fr;
-    gap: 0.85rem;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.45rem !important;
+    margin-bottom: 0.85rem !important;
   }
 }
 
@@ -2020,6 +2188,13 @@ body {
   flex-direction: column;
   user-select: none;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .building-card {
+    border-width: 2px !important;
+    border-radius: 12px !important;
+  }
 }
 
 .building-card:hover {
@@ -2042,6 +2217,12 @@ body {
   position: relative;
 }
 
+@media (max-width: 768px) {
+  .building-card-img-wrap {
+    height: 65px !important;
+  }
+}
+
 .building-card-img {
   width: 100%;
   height: 100%;
@@ -2062,6 +2243,12 @@ body {
   transition: all 0.2s ease;
 }
 
+@media (max-width: 768px) {
+  .building-card-body {
+    padding: 0.45rem 0.2rem !important;
+  }
+}
+
 .building-card.active .building-card-body {
   background: var(--primary-light);
   border-top-color: rgba(37, 99, 235, 0.2);
@@ -2075,6 +2262,13 @@ body {
   letter-spacing: -0.01em;
 }
 
+@media (max-width: 768px) {
+  .building-card-title {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+}
+
 .building-card.active .building-card-title {
   color: #2563eb;
 }
@@ -2083,6 +2277,12 @@ body {
   font-size: 0.85rem;
   color: var(--muted);
   font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .building-card-rooms {
+    font-size: 0.68rem !important;
+  }
 }
 
 .building-card.active .building-card-rooms {
@@ -2104,9 +2304,10 @@ body {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .time-range-picker-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 0.35rem !important;
   }
 }
 
@@ -2122,6 +2323,14 @@ body {
   transition: all 0.18s ease;
   text-align: center;
   user-select: none;
+}
+
+@media (max-width: 768px) {
+  .time-slot-pill {
+    padding: 0.55rem 0.15rem !important;
+    font-size: 0.76rem !important;
+    border-radius: 8px !important;
+  }
 }
 
 .time-slot-pill:hover:not(.is-booked) {
@@ -2164,7 +2373,7 @@ body {
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-around;
-  padding: 0.5rem 0.25rem 0.65rem 0.25rem;
+  padding: 0.45rem 0.25rem calc(0.5rem + env(safe-area-inset-bottom, 0px)) 0.25rem;
   z-index: 1000;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(12px);
@@ -2185,6 +2394,19 @@ body {
   padding: 0.25rem 0.85rem;
   border-radius: 12px;
   transition: all 0.18s ease;
+}
+
+@media (max-width: 768px) {
+  .bottom-nav-item {
+    padding: 0.2rem 0.65rem !important;
+    font-size: 0.7rem !important;
+  }
+  .bottom-nav-item .nav-icon {
+    font-size: 1.25rem !important;
+  }
+  .requester-view-container {
+    padding-bottom: 5.5rem !important;
+  }
 }
 
 .bottom-nav-item .nav-icon {
