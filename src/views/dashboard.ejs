@@ -192,33 +192,6 @@
     </div>
   </div>
 
-  <!-- แถบสลับ Role ทดสอบด่วน -->
-  <div class="demo-role-switcher">
-    <div><strong>บัญชีปัจจุบัน:</strong> <%= user.fullName %> (<%= user.roleDisplay %>)</div>
-    <div class="demo-role-buttons">
-      <span style="font-size: 0.75rem; color: #a5b4fc; align-self: center;">สลับบทบาท:</span>
-      <form action="/login" method="POST" style="display:inline;">
-        <input type="hidden" name="username" value="somchai">
-        <input type="hidden" name="password" value="user123">
-        <button class="demo-role-btn">ผู้ขอใช้ห้อง (somchai)</button>
-      </form>
-      <form action="/login" method="POST" style="display:inline;">
-        <input type="hidden" name="username" value="manager">
-        <input type="hidden" name="password" value="approver123">
-        <button class="demo-role-btn">หัวหน้างาน (manager)</button>
-      </form>
-      <form action="/login" method="POST" style="display:inline;">
-        <input type="hidden" name="username" value="facility">
-        <input type="hidden" name="password" value="facility123">
-        <button class="demo-role-btn">เจ้าหน้าที่ (facility)</button>
-      </form>
-      <form action="/login" method="POST" style="display:inline;">
-        <input type="hidden" name="username" value="admin">
-        <input type="hidden" name="password" value="admin123">
-        <button class="demo-role-btn">แอดมิน (admin)</button>
-      </form>
-    </div>
-  </div>
 
   <!-- Navbar หลัก -->
   <nav class="navbar">
