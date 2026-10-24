@@ -1487,15 +1487,115 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.15rem;
+  padding: 0.65rem 1rem;
   background: var(--primary-light);
   border-left: 4px solid var(--primary);
-  border-radius: 12px;
+  border-radius: 10px;
   margin-bottom: 1rem;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--primary);
   animation: fadeIn 0.25s ease;
+}
+
+/* ========================================================
+   Modern Building Pill Selector Bar
+   ======================================================== */
+.building-selector-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.building-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.15rem;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.building-pill:hover {
+  border-color: var(--primary);
+  background: var(--bg);
+  transform: translateY(-1px);
+}
+
+.building-pill.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.building-pill-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.building-pill-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.building-pill-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--dark);
+  letter-spacing: -0.01em;
+}
+
+.building-pill.active .building-pill-title {
+  color: var(--primary);
+}
+
+.building-pill-rooms {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.building-pill.active .building-pill-rooms {
+  color: var(--primary);
+}
+
+@media (max-width: 640px) {
+  .building-selector-bar {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+/* Dark Mode Overrides for Building Pills */
+[data-theme="dark"] .building-pill {
+  background: #111827;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .building-pill:hover {
+  background: #1e293b;
+  border-color: #818cf8;
+}
+
+[data-theme="dark"] .building-pill.active {
+  background: #1e1b4b;
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.3);
+}
+
+[data-theme="dark"] .building-pill.active .building-pill-title {
+  color: #818cf8;
+}
+
+[data-theme="dark"] .building-pill.active .building-pill-rooms {
+  color: #a5b4fc;
 }
 
 [data-theme="dark"] .no-building-notice {

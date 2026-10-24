@@ -230,8 +230,6 @@
         <a href="/admin/logs" style="color: #4f46e5;">Audit Logs</a>
         <a href="/admin/users" style="color: #4f46e5;">ผู้ใช้งาน</a>
         <a href="/app/rooms" style="color: #4f46e5;">จัดการห้อง</a>
-      <% } else { %>
-        <a href="/admin/acl" style="color: #94a3b8; font-size: 0.8rem;" title="กดทดสอบว่าโดน 403 หรือไม่">ทดสอบ 403 Forbidden</a>
       <% } %>
       <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
       <div class="user-badge">
@@ -276,12 +274,12 @@
     %>
 
     <!-- Header สรุปวันและแถบนำทางแบบ 1-คลิก -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
       <div>
-        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 0.5rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
           ระบบจองห้องประชุม RoomReserve
         </h2>
-        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.15rem;">
+        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; margin-bottom: 0;">
           <strong><%= formattedThaiDate %></strong>
         </p>
       </div>
@@ -297,27 +295,29 @@
       </div>
     </div>
 
-    <!-- แถบสรุปสถานะแบบกระชับ (Stat Summary Bar) -->
-    <div class="stat-summary-bar">
-      <div class="stat-chip">
-        <span>ว่างตลอดทั้งวัน:</span>
-        <strong><%= fullyFreeRoomsCount %> / <%= activeRoomsCount %> ห้อง</strong>
-      </div>
-      <div class="stat-chip">
-        <span>มีคิวจองวันนี้:</span>
-        <strong><%= dayBookings.length %> รายการ</strong>
-      </div>
-      <div class="stat-chip">
-        <span>รายการของฉัน:</span>
-        <strong><%= myBookings.length %> รายการ</strong>
-      </div>
-      <% if (['approver', 'admin'].includes(user.roleName)) { %>
-        <div class="stat-chip" style="border-left: 3px solid var(--warning);">
-          <span>รอการอนุมัติ:</span>
-          <strong style="color: var(--warning);"><%= pendingApprovals.length %></strong>
+    <!-- แถบสรุปสถานะแบบกระชับ (Stat Summary Bar) - แสดงเฉพาะบทบาทบริหาร/จัดการ ไม่กวนสายตา Requester -->
+    <% if (['approver', 'facility', 'admin'].includes(user.roleName)) { %>
+      <div class="stat-summary-bar">
+        <div class="stat-chip">
+          <span>ว่างตลอดทั้งวัน:</span>
+          <strong><%= fullyFreeRoomsCount %> / <%= activeRoomsCount %> ห้อง</strong>
         </div>
-      <% } %>
-    </div>
+        <div class="stat-chip">
+          <span>มีคิวจองวันนี้:</span>
+          <strong><%= dayBookings.length %> รายการ</strong>
+        </div>
+        <div class="stat-chip">
+          <span>รายการของฉัน:</span>
+          <strong><%= myBookings.length %> รายการ</strong>
+        </div>
+        <% if (['approver', 'admin'].includes(user.roleName)) { %>
+          <div class="stat-chip" style="border-left: 3px solid var(--warning);">
+            <span>รอการอนุมัติ:</span>
+            <strong style="color: var(--warning);"><%= pendingApprovals.length %></strong>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
 
     <% 
       const perms = (locals.userPermissions && Array.isArray(locals.userPermissions)) ? locals.userPermissions : [];
@@ -367,64 +367,49 @@
       
       <!-- การ์ดห้องประชุมและตารางสล็อตเวลา Real-time (เลือกตึก 1, 2, 3) -->
       <div style="margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
-          <div style="font-size: 0.9rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.4rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.4rem;">
             <span>เลือกอาคาร:</span>
           </div>
-          <span style="font-size: 0.8rem; color: var(--muted);">คลิกเลือกตึก 1, 2, 3 แล้วคลิกช่องเวลาว่างสีเขียวเพื่อเปิดแบบฟอร์มจองห้อง</span>
+          <span style="font-size: 0.8rem; color: var(--muted);">คลิกเลือกอาคารเพื่อดูห้องและคลิกช่วงเวลาว่างสีเขียวเพื่อยื่นจอง</span>
         </div>
 
-        <!-- การ์ดเลือก 3 ตึก (ตึก 1, ตึก 2, ตึก 3) พร้อมพื้นที่รูปภาพตามภาพร่างต้นแบบ -->
-        <div class="building-cards-grid">
-          <div class="building-card" onclick="selectBuilding(1, this)" id="btn-building-1">
-            <div class="building-card-img-wrap">
-              <img src="/images/building1.jpg" alt="ตึก 1" class="building-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div class="building-card-placeholder" style="display: none;">
-                <span class="placeholder-hint">ใส่รูปที่ /images/building1.jpg</span>
-              </div>
+        <!-- แถบเลือกอาคารสไตล์โมเดิร์น (Modern Building Pill Selector) -->
+        <div class="building-selector-bar">
+          <button type="button" class="building-pill active" onclick="selectBuilding(1, this)" id="btn-building-1">
+            <span class="building-pill-icon">🏢</span>
+            <div class="building-pill-info">
+              <span class="building-pill-title">อาคาร 1</span>
+              <span class="building-pill-rooms">ห้อง 101, 102</span>
             </div>
-            <div class="building-card-body">
-              <div class="building-card-title">ตึก 1</div>
-              <div class="building-card-rooms">ห้อง 101 &bull; ห้อง 102</div>
-            </div>
-          </div>
+          </button>
 
-          <div class="building-card" onclick="selectBuilding(2, this)" id="btn-building-2">
-            <div class="building-card-img-wrap">
-              <img src="/images/building2.jpg" alt="ตึก 2" class="building-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div class="building-card-placeholder" style="display: none;">
-                <span class="placeholder-hint">ใส่รูปที่ /images/building2.jpg</span>
-              </div>
+          <button type="button" class="building-pill" onclick="selectBuilding(2, this)" id="btn-building-2">
+            <span class="building-pill-icon">🏢</span>
+            <div class="building-pill-info">
+              <span class="building-pill-title">อาคาร 2</span>
+              <span class="building-pill-rooms">ห้อง 201, 202</span>
             </div>
-            <div class="building-card-body">
-              <div class="building-card-title">ตึก 2</div>
-              <div class="building-card-rooms">ห้อง 201 &bull; ห้อง 202</div>
-            </div>
-          </div>
+          </button>
 
-          <div class="building-card" onclick="selectBuilding(3, this)" id="btn-building-3">
-            <div class="building-card-img-wrap">
-              <img src="/images/building3.jpg" alt="ตึก 3" class="building-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div class="building-card-placeholder" style="display: none;">
-                <span class="placeholder-hint">ใส่รูปที่ /images/building3.jpg</span>
-              </div>
+          <button type="button" class="building-pill" onclick="selectBuilding(3, this)" id="btn-building-3">
+            <span class="building-pill-icon">🏢</span>
+            <div class="building-pill-info">
+              <span class="building-pill-title">อาคาร 3</span>
+              <span class="building-pill-rooms">ห้อง 301, 302</span>
             </div>
-            <div class="building-card-body">
-              <div class="building-card-title">ตึก 3</div>
-              <div class="building-card-rooms">ห้อง 301 &bull; ห้อง 302</div>
-            </div>
-          </div>
+          </button>
         </div>
 
         <!-- กล่องแนะนำก่อนกดเลือกตึก (ซ่อน) -->
         <div id="noBuildingSelectedNotice" class="no-building-notice" style="display: none;">
           <div class="notice-title">กรุณาเลือกตึกที่ต้องการใช้งาน</div>
-          <div class="notice-sub">คลิกเลือกตึก 1, ตึก 2 หรือ ตึก 3 ด้านบน เพื่อแสดงห้องประชุมและเลือกช่วงเวลาจอง</div>
+          <div class="notice-sub">คลิกเลือกอาคาร 1, อาคาร 2 หรือ อาคาร 3 ด้านบน เพื่อแสดงห้องประชุมและเลือกช่วงเวลาจอง</div>
         </div>
 
-        <div id="roomsContainer" style="display: none;">
+        <div id="roomsContainer">
           <div id="activeBuildingHeader" class="active-building-header">
-            <span id="activeBuildingHeaderText">ข้อมูลห้องประชุม - ตึก 1 (ห้อง 101 และ ห้อง 102)</span>
+            <span id="activeBuildingHeaderText">ห้องประชุม - อาคาร 1 (ห้อง 101 และ ห้อง 102)</span>
             <span style="font-size: 0.8rem; font-weight: normal; color: var(--muted);">คลิกเลือกช่วงเวลาว่างสีเขียวเพื่อจองห้อง</span>
           </div>
           <% rooms.forEach(room => { 
@@ -442,10 +427,14 @@
             else if (room.room_name && (room.room_name.includes('301') || room.room_name.includes('302'))) bNum = '3';
           %>
             <div id="room-card-<%= room.room_id %>" class="casual-room-card" data-building="<%= bNum %>" data-capacity="<%= roomCategory %>" data-free="<%= isFullyFree ? 'true' : 'false' %>" style="display: none;">
-              <div class="casual-room-header">
+              <div class="casual-room-header" style="margin-bottom: 0.85rem;">
                 <div>
-                  <div class="casual-room-name"><%= room.room_name %></div>
-                  <div class="casual-room-desc"><%= room.location %> &bull; รองรับ <%= room.capacity %> ที่นั่ง</div>
+                  <div class="casual-room-name" style="font-size: 1.15rem; font-weight: 800; color: var(--dark);"><%= room.room_name %></div>
+                  <div class="casual-room-desc" style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-top: 0.25rem; font-size: 0.82rem;">
+                    <span>📍 <%= room.location %></span>
+                    <span>👥 รองรับ <strong><%= room.capacity %></strong> ที่นั่ง</span>
+                    <span style="color: var(--muted);">💻 <%= room.equipment_description || 'โปรเจกเตอร์, ไวท์บอร์ด, เครื่องปรับอากาศ' %></span>
+                  </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                   <% if (!room.is_active) { %>
@@ -463,33 +452,6 @@
                       </button>
                     </form>
                   <% } %>
-                </div>
-              </div>
-
-              <!-- กล่องข้อมูลห้องประชุม (Meeting Room Info Box) -->
-              <div class="room-info-box">
-                <div class="room-info-box-title">ข้อมูลห้องประชุม</div>
-                <div class="room-info-grid">
-                  <div class="room-info-item">
-                    <span class="room-info-label">ความจุสูงสุด:</span>
-                    <span class="room-info-value"><strong><%= room.capacity %></strong> ที่นั่ง</span>
-                  </div>
-                  <div class="room-info-item">
-                    <span class="room-info-label">สถานที่ตั้ง:</span>
-                    <span class="room-info-value"><%= room.location %></span>
-                  </div>
-                  <div class="room-info-item">
-                    <span class="room-info-label">สถานะการใช้งาน:</span>
-                    <span class="room-info-value"><%= room.is_active ? 'เปิดให้บริการปกติ' : 'ปิดปรับปรุง' %></span>
-                  </div>
-                  <div class="room-info-item">
-                    <span class="room-info-label">สถิติการใช้งาน:</span>
-                    <span class="room-info-value">เสร็จสิ้นแล้ว <%= room.total_completed_bookings || 0 %> ครั้ง</span>
-                  </div>
-                  <div class="room-info-item full-width">
-                    <span class="room-info-label">อุปกรณ์ประจำห้อง:</span>
-                    <span class="room-info-value"><%= room.equipment_description || 'โปรเจกเตอร์, ไวท์บอร์ด, เครื่องปรับอากาศ' %></span>
-                  </div>
                 </div>
               </div>
 
@@ -741,13 +703,10 @@
             <table class="clean-table">
               <thead>
                 <tr>
-                  <th>ห้องประชุม</th>
-                  <th>วันที่ & ช่วงเวลา</th>
-                  <th>หัวข้อการประชุม</th>
-                  <th>เอกสารแนบ</th>
-                  <th>สถานะ</th>
-                  <th>เหตุผล / หมายเหตุ</th>
-                  <th>จัดการ</th>
+                  <th style="width: 28%;">ห้องประชุม & วันที่/เวลา</th>
+                  <th style="width: 36%;">หัวข้อการประชุม</th>
+                  <th style="width: 22%;">สถานะ</th>
+                  <th style="width: 14%; text-align: center;">จัดการ</th>
                 </tr>
               </thead>
               <tbody>
@@ -765,71 +724,50 @@
                   else if (['REJECTED', 'CANCELLED'].includes(b.status)) { groupCategory = 'REJECT'; isFinished = true; }
                 %>
                   <tr class="my-booking-row" data-category="<%= groupCategory %>" data-finished="<%= isFinished ? 'true' : 'false' %>">
-                    <td><strong><%= b.room_name || ('ห้อง ' + b.room_id) %></strong></td>
                     <td>
-                      <%= bDate %><br>
-                      <small style="color: var(--muted);"><%= bStartTime %> - <%= bEndTime %> น.</small>
+                      <div style="font-weight: 700; color: var(--dark); font-size: 0.95rem;">
+                        <%= b.room_name || ('ห้อง ' + b.room_id) %>
+                      </div>
+                      <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem;">
+                        📅 <%= bDate %> &bull; ⏰ <%= bStartTime %> - <%= bEndTime %> น.
+                      </div>
                     </td>
                     <td>
-                      <strong><%= b.title %></strong>
+                      <div style="font-weight: 700; color: var(--dark); font-size: 0.92rem;"><%= b.title %></div>
                       <% if (b.purpose) { %>
-                        <br><small style="color: var(--muted);"><%= b.purpose %></small>
+                        <div style="font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem;"><%= b.purpose %></div>
                       <% } %>
-                    </td>
-                    <td>
                       <% if (b.attachment_id) { %>
-                        <button type="button" class="btn btn-outline btn-xs" onclick="openFilePreview('<%= b.attachment_id %>', '<%= b.file_name %>')">
-                          ดูเอกสาร
+                        <button type="button" class="btn btn-outline btn-xs" onclick="openFilePreview('<%= b.attachment_id %>', '<%= b.file_name %>')" style="margin-top: 0.35rem; font-size: 0.72rem; padding: 2px 7px; display: inline-flex; align-items: center; gap: 0.25rem;">
+                          📎 ดูเอกสารแนบ
                         </button>
-                      <% } else { %>
-                        <span style="color: var(--muted); font-size: 0.8rem;">-</span>
                       <% } %>
                     </td>
                     <td>
                       <span class="status-badge status-<%= b.status %>"><%= b.status %></span>
-                    </td>
-                    <td>
                       <% if (b.status === 'REJECTED') { %>
-                        <span style="color: var(--danger); font-size: 0.8rem; font-weight: 600;">
+                        <div style="color: var(--danger); font-size: 0.78rem; margin-top: 0.25rem; font-weight: 500;">
                           ไม่อนุมัติ: <%= b.approver_comment || 'ไม่มีการระบุเหตุผล' %>
-                        </span>
+                        </div>
                       <% } else if (b.status === 'CANCELLED') { %>
-                        <span style="color: var(--muted); font-size: 0.8rem;">
-                          ผู้ขอยกเลิกคำขอแล้ว
-                        </span>
+                        <div style="color: var(--muted); font-size: 0.78rem; margin-top: 0.2rem;">
+                          ยกเลิกแล้ว
+                        </div>
                       <% } else if (b.status === 'IN_USE') { %>
-                        <span style="color: var(--primary); font-size: 0.8rem; font-weight: 600;">
-                          เจ้าหน้าที่ส่งมอบห้องแล้ว (กำลังใช้งาน)
-                        </span>
-                      <% } else if (b.status === 'COMPLETED') { %>
-                        <span style="color: var(--success); font-size: 0.8rem;">
-                          ใช้งานเสร็จสิ้นแล้ว<%= b.facility_comment ? `: ${b.facility_comment}` : '' %>
-                        </span>
-                      <% } else if (b.approver_comment) { %>
-                        <span style="color: var(--slate); font-size: 0.8rem;">
-                          <%= b.approver_comment %>
-                        </span>
-                      <% } else if (b.facility_comment) { %>
-                        <span style="color: var(--muted); font-size: 0.8rem;">
+                        <div style="color: var(--primary); font-size: 0.78rem; margin-top: 0.2rem; font-weight: 600;">
+                          เจ้าหน้าที่ส่งมอบห้องแล้ว
+                        </div>
+                      <% } else if (b.status === 'COMPLETED' && b.facility_comment) { %>
+                        <div style="color: var(--muted); font-size: 0.78rem; margin-top: 0.2rem;">
                           <%= b.facility_comment %>
-                        </span>
-                      <% } else { %>
-                        <span style="color: var(--muted); font-size: 0.8rem;">-</span>
+                        </div>
                       <% } %>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                       <% if (['PENDING_APPROVAL', 'APPROVED'].includes(b.status)) { %>
                         <form action="/app/bookings/<%= b.booking_id %>/cancel" method="POST" onsubmit="return confirm('ยืนยันยกเลิกคำขอจองห้องนี้?');" style="display:inline;">
-                          <button class="btn btn-danger btn-xs">ยกเลิก</button>
+                          <button class="btn btn-danger btn-xs" style="padding: 0.25rem 0.6rem;">ยกเลิก</button>
                         </form>
-                      <% } else if (b.status === 'IN_USE') { %>
-                        <span class="badge" style="background: rgba(239, 68, 68, 0.08); color: var(--danger); font-size: 0.72rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.2);" title="เจ้าหน้าที่ส่งมอบห้องเรียบร้อยแล้ว ไม่สามารถยกเลิกได้">ส่งมอบแล้ว (ยกเลิกไม่ได้)</span>
-                      <% } else if (b.status === 'COMPLETED') { %>
-                        <span class="badge" style="background: rgba(16, 185, 129, 0.08); color: var(--success); font-size: 0.72rem; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.2);">เสร็จสิ้น</span>
-                      <% } else if (b.status === 'CANCELLED') { %>
-                        <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--muted); font-size: 0.72rem; padding: 0.25rem 0.5rem; border-radius: 6px;">ยกเลิกแล้ว</span>
-                      <% } else if (b.status === 'REJECTED') { %>
-                        <span class="badge" style="background: rgba(239, 68, 68, 0.08); color: var(--danger); font-size: 0.72rem; padding: 0.25rem 0.5rem; border-radius: 6px;">ไม่อนุมัติ</span>
                       <% } else { %>
                         <span style="color: var(--muted); font-size: 0.8rem;">-</span>
                       <% } %>
@@ -837,7 +775,7 @@
                   </tr>
                 <% }) %>
                 <tr id="myBookingsEmptyFilterRow" style="display: none;">
-                  <td colspan="7" style="text-align: center; padding: 3rem 1.5rem; color: var(--muted);">
+                  <td colspan="4" style="text-align: center; padding: 3rem 1.5rem; color: var(--muted);">
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;">
                       <span style="font-size: 1.75rem; opacity: 0.5;">📋</span>
                       <div style="font-weight: 600; color: var(--slate); font-size: 0.92rem;">ไม่มีรายการคำขอในหมวดหมู่นี้</div>
@@ -1223,9 +1161,9 @@
       }
     }
 
-    // ฟังก์ชันเลือกตึก (1, 2, 3) จากการ์ด 3 ตึก (แต่ละตึกมี 2 ห้อง: X01, X02)
+    // ฟังก์ชันเลือกอาคาร (1, 2, 3)
     function selectBuilding(buildingNumber, btn) {
-      document.querySelectorAll('.building-card, .building-box').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.building-card, .building-pill, .building-box').forEach(b => b.classList.remove('active'));
       if (btn) {
         btn.classList.add('active');
       } else {
@@ -1583,6 +1521,8 @@
       const bParam = urlParams.get('building');
       if (bParam && ['1', '2', '3'].includes(bParam)) {
         selectBuilding(Number(bParam));
+      } else {
+        selectBuilding(1);
       }
     });
   </script>
