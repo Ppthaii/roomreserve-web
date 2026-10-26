@@ -109,8 +109,39 @@ app.use(async (req, res, next) => {
 // ================= Authentication Routes =================
 
 // หน้า Login
-app.get('/login', (req, res) => {
-  if (req.session.userId) return res.redirect('/app');
+app.get('/login', async (req, res) => {
+  // หากมีคำขอ force หรือ logout ให้ล้างเซสชันและเปิดหน้า login ทันที
+  if (req.query.force || req.query.logout) {
+    return req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.render('login', {
+        title: 'เข้าสู่ระบบ | RoomReserve',
+        error: '',
+        success: 'ออกจากระบบเรียบร้อยแล้ว กรุณาเข้าสู่ระบบใหม่'
+      });
+    });
+  }
+
+  // หากมีเซสชันค้างอยู่ ให้ตรวจสอบว่าบัญชีนี้ยังมีอยู่จริงในฐานข้อมูลและยังเปิดใช้งาน
+  if (req.session.userId) {
+    try {
+      const uRes = await pool.query('SELECT user_id, is_active FROM users WHERE user_id = $1', [req.session.userId]);
+      if (uRes.rowCount === 0 || !uRes.rows[0].is_active) {
+        return req.session.destroy(() => {
+          res.clearCookie('connect.sid');
+          res.render('login', {
+            title: 'เข้าสู่ระบบ | RoomReserve',
+            error: 'บัญชีนี้ถูกระงับหรือไม่อยู่ในระบบแล้ว กรุณาเข้าสู่ระบบใหม่',
+            success: ''
+          });
+        });
+      }
+      return res.redirect('/app');
+    } catch (e) {
+      // หากเกิดข้อผิดพลาดในการ query ให้แสดงหน้า login ตามปกติ
+    }
+  }
+
   let errorMsg = req.query.error || '';
   // ซ่อนการแจ้งเตือนเซสชันหมดอายุ/ไม่ได้รับอนุญาต ตอนเซิร์ฟเวอร์รีสตาร์ตจากการอัปเดตโค้ด
   if (errorMsg === 'unauthorized' || errorMsg === 'expired') {
@@ -190,7 +221,33 @@ app.post('/login', async (req, res, next) => {
   }
 });
 
-// ออกจากระบบ (Logout)
+// ออกจากระบบผ่าน GET (สะดวกสำหรับลิงก์และหน้า Error)
+app.get('/logout', (req, res, next) => {
+  const uId = req.session?.userId;
+  const uName = req.session?.username;
+  const rName = req.session?.roleName;
+
+  req.session?.destroy(() => {
+    res.clearCookie('connect.sid');
+    if (uId) {
+      logAudit({
+        userId: uId,
+        username: uName,
+        roleName: rName,
+        action: 'LOGOUT',
+        resource: 'AUTH',
+        resourceId: String(uId),
+        status: 'SUCCESS',
+        details: 'ออกจากระบบสำเร็จ',
+        ip: req.ip,
+        ua: req.get('user-agent')
+      }).catch(() => {});
+    }
+    res.redirect('/login');
+  });
+});
+
+// ออกจากระบบ (Logout POST)
 app.post('/logout', (req, res, next) => {
   const uId = req.session.userId;
   const uName = req.session.username;
