@@ -108,6 +108,15 @@ async function createBooking(req, res, next) {
   const client = await pool.connect();
   try {
     const { room_id, title, purpose, attendees_count, booking_date, start_time_str, end_time_str } = req.body;
+    const roomIdNum = parseInt(room_id, 10);
+    
+    if (isNaN(roomIdNum) || !booking_date || !start_time_str || !end_time_str) {
+      return res.redirect(`/app?error=${encodeURIComponent('ข้อมูลการจองไม่ถูกต้องหรือไม่ครบถ้วน')}`);
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(booking_date) || isNaN(Date.parse(booking_date))) {
+      return res.redirect(`/app?error=${encodeURIComponent('รูปแบบวันที่จองไม่ถูกต้อง')}`);
+    }
     
     const start_time = `${booking_date} ${start_time_str}:00`;
     const end_time = `${booking_date} ${end_time_str}:00`;
@@ -130,7 +139,7 @@ async function createBooking(req, res, next) {
       FROM rooms 
       WHERE room_id = $1 AND is_active = TRUE 
       FOR UPDATE
-    `, [room_id]);
+    `, [roomIdNum]);
 
     if (roomCheck.rowCount === 0) {
       await client.query('ROLLBACK');
@@ -151,7 +160,7 @@ async function createBooking(req, res, next) {
         AND status IN ('PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED')
         AND (start_time < $3 AND end_time > $2)
       LIMIT 1
-    `, [room_id, start_time, end_time]);
+    `, [roomIdNum, start_time, end_time]);
 
     if (overlapCheck.rowCount > 0) {
       await client.query('ROLLBACK');
@@ -174,7 +183,7 @@ async function createBooking(req, res, next) {
         room_id, user_id, title, purpose, attendees_count, start_time, end_time, status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDING_APPROVAL')
       RETURNING booking_id
-    `, [room_id, req.session.userId, title, finalPurpose, Number(attendees_count || 1), start_time, end_time]);
+    `, [roomIdNum, req.session.userId, title, finalPurpose, Number(attendees_count || 1), start_time, end_time]);
 
     const newBookingId = insertRes.rows[0].booking_id;
 
@@ -229,11 +238,14 @@ async function createBooking(req, res, next) {
 // 3. ยกเลิกคำขอจองของตนเอง (Cancel Own)
 async function cancelBooking(req, res, next) {
   try {
-    const { id } = req.params;
+    const bookingId = parseInt(req.params.id, 10);
+    if (isNaN(bookingId)) {
+      return res.redirect(`/app?error=${encodeURIComponent('ไม่พบรายการคำขอนี้')}`);
+    }
     
     // ตรวจสอบความเป็นเจ้าของและสถานะ
     const check = await pool.query(
-      'SELECT * FROM room_bookings WHERE booking_id = $1', [id]
+      'SELECT * FROM room_bookings WHERE booking_id = $1', [bookingId]
     );
     if (check.rowCount === 0) {
       return res.redirect(`/app?error=${encodeURIComponent('ไม่พบรายการคำขอนี้')}`);
@@ -258,7 +270,7 @@ async function cancelBooking(req, res, next) {
 
     await pool.query(
       'UPDATE room_bookings SET status = $1 WHERE booking_id = $2',
-      ['CANCELLED', id]
+      ['CANCELLED', bookingId]
     );
 
     await logAudit({
@@ -267,7 +279,7 @@ async function cancelBooking(req, res, next) {
       roleName: req.session.roleName,
       action: 'BOOKING_CANCEL',
       resource: 'BOOKING',
-      resourceId: id,
+      resourceId: String(bookingId),
       status: 'SUCCESS',
       details: `ผู้ใช้ยกเลิกการจอง "${booking.title}"`,
       ip: req.ip,
@@ -283,7 +295,10 @@ async function cancelBooking(req, res, next) {
 // 4. พิจารณาอนุมัติ / ปฏิเสธ (Approver Action)
 async function reviewBooking(req, res, next) {
   try {
-    const { id } = req.params;
+    const bookingId = parseInt(req.params.id, 10);
+    if (isNaN(bookingId)) {
+      return res.redirect(`/app?error=${encodeURIComponent('ไม่พบรายการคำขอนี้')}`);
+    }
     const { action, comment } = req.body; // action: 'APPROVE' or 'REJECT'
 
     const targetStatus = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
@@ -293,7 +308,7 @@ async function reviewBooking(req, res, next) {
       SET status = $1, approver_id = $2, approver_comment = $3, approved_at = NOW()
       WHERE booking_id = $4 AND status = 'PENDING_APPROVAL'
       RETURNING *
-    `, [targetStatus, req.session.userId, comment || null, id]);
+    `, [targetStatus, req.session.userId, comment || null, bookingId]);
 
     if (result.rowCount === 0) {
       return res.redirect(`/app?error=${encodeURIComponent('คำขอนี้ถูกดำเนินการไปแล้วหรือไม่อยู่ในสถานะรออนุมัติ')}`);
@@ -305,7 +320,7 @@ async function reviewBooking(req, res, next) {
       roleName: req.session.roleName,
       action: `BOOKING_${action}`,
       resource: 'BOOKING',
-      resourceId: id,
+      resourceId: String(bookingId),
       status: 'SUCCESS',
       details: `${action === 'APPROVE' ? 'อนุมัติ' : 'ปฏิเสธ'} คำขอ: ${comment || 'ไม่มีความเห็น'}`,
       ip: req.ip,
@@ -322,7 +337,10 @@ async function reviewBooking(req, res, next) {
 // 5. ยกเลิกการอนุมัติ (Safety Rollback: ดึงสถานะจาก APPROVED กลับมาเป็น PENDING_APPROVAL)
 async function revokeApproval(req, res, next) {
   try {
-    const { id } = req.params;
+    const bookingId = parseInt(req.params.id, 10);
+    if (isNaN(bookingId)) {
+      return res.redirect(`/app?error=${encodeURIComponent('ไม่พบรายการคำขอนี้')}`);
+    }
     const { reason } = req.body;
 
     const result = await pool.query(`
@@ -331,7 +349,7 @@ async function revokeApproval(req, res, next) {
           approver_comment = COALESCE(approver_comment, '') || ' [ดึงกลับโดยหัวหน้า: ' || COALESCE($1, 'เปลี่ยนแปลงการตัดสินใจ') || ']'
       WHERE booking_id = $2 AND status = 'APPROVED'
       RETURNING *
-    `, [reason || 'ยกเลิกการอนุมัติเพื่อพิจารณาใหม่', id]);
+    `, [reason || 'ยกเลิกการอนุมัติเพื่อพิจารณาใหม่', bookingId]);
 
     if (result.rowCount === 0) {
       return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถดึงสถานะกลับได้ (รายการอาจเริ่มใช้งานแล้วหรือไม่อยู่ในสถานะ APPROVED)')}`);
@@ -343,7 +361,7 @@ async function revokeApproval(req, res, next) {
       roleName: req.session.roleName,
       action: 'BOOKING_REVOKE_APPROVAL',
       resource: 'BOOKING',
-      resourceId: id,
+      resourceId: String(bookingId),
       status: 'SUCCESS',
       details: `หัวหน้างานดึงสถานะคำขอกลับเป็น PENDING_APPROVAL: ${reason || 'เปลี่ยนแปลงการตัดสินใจ'}`,
       ip: req.ip,
@@ -390,11 +408,14 @@ async function clearBookingHistory(req, res, next) {
 // 7. ลบประวัติคำขอรายการเดียวเฉพาะที่สิ้นสุดแล้ว (COMPLETED, CANCELLED, REJECTED)
 async function deleteBookingHistory(req, res, next) {
   try {
-    const { id } = req.params;
+    const bookingId = parseInt(req.params.id, 10);
+    if (isNaN(bookingId)) {
+      return res.redirect(`/app?error=${encodeURIComponent('ไม่พบรายการคำขอนี้')}`);
+    }
     const result = await pool.query(`
       DELETE FROM room_bookings
       WHERE booking_id = $1 AND user_id = $2 AND status IN ('COMPLETED', 'CANCELLED', 'REJECTED')
-    `, [id, req.session.userId]);
+    `, [bookingId, req.session.userId]);
 
     if (result.rowCount > 0) {
       await logAudit({
@@ -403,9 +424,9 @@ async function deleteBookingHistory(req, res, next) {
         roleName: req.session.roleName,
         action: 'BOOKING_DELETE_HISTORY',
         resource: 'BOOKING',
-        resourceId: id,
+        resourceId: String(bookingId),
         status: 'SUCCESS',
-        details: `ลบประวัติคำขอ ID ${id}`,
+        details: `ลบประวัติคำขอ ID ${bookingId}`,
         ip: req.ip,
         ua: req.get('user-agent')
       });

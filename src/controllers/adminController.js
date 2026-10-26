@@ -670,12 +670,16 @@ async function getUsers(req, res, next) {
 // 5. สลับสถานะเปิดใช้งาน / ปิดใช้งานผู้ใช้
 async function toggleUserStatus(req, res, next) {
   try {
-    const { id } = req.params;
-    if (Number(id) === req.session.userId) {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('รหัสผู้ใช้งานไม่ถูกต้อง')}`);
+    }
+
+    if (userId === req.session.userId) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่สามารถปิดการใช้งานบัญชีตนเองได้')}`);
     }
 
-    const targetUserRes = await pool.query('SELECT * FROM users WHERE user_id = $1', [id]);
+    const targetUserRes = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
     if (targetUserRes.rowCount === 0) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่พบผู้ใช้งานนี้')}`);
     }
@@ -699,7 +703,7 @@ async function toggleUserStatus(req, res, next) {
       SET is_active = NOT is_active 
       WHERE user_id = $1 
       RETURNING *
-    `, [id]);
+    `, [userId]);
 
     await logAudit({
       userId: req.session.userId,
@@ -707,7 +711,7 @@ async function toggleUserStatus(req, res, next) {
       roleName: req.session.roleName,
       action: 'USER_TOGGLE_STATUS',
       resource: 'USER',
-      resourceId: id,
+      resourceId: String(userId),
       status: 'SUCCESS',
       details: `เปลี่ยนสถานะบัญชี ${result.rows[0].username} เป็น ${result.rows[0].is_active ? 'เปิดใช้งาน' : 'ระงับการใช้งาน'}`,
       ip: req.ip,
@@ -723,11 +727,15 @@ async function toggleUserStatus(req, res, next) {
 // 6. เปลี่ยนบทบาท (Role) ของผู้ใช้งาน (Live Demo ข้อ 5 - ผูก Role กับบัญชีทดสอบ)
 async function updateUserRole(req, res, next) {
   try {
-    const { id } = req.params;
-    const { role_id } = req.body;
+    const userId = parseInt(req.params.id, 10);
+    const roleIdNum = parseInt(req.body.role_id, 10);
+
+    if (isNaN(userId) || isNaN(roleIdNum)) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('รหัสผู้ใช้หรือรหัสบทบาทไม่ถูกต้อง')}`);
+    }
 
     // ตรวจสอบว่าป้องกันไม่ให้เปลี่ยน Role ของ Admin คนสุดท้าย
-    const targetUser = await pool.query('SELECT * FROM users WHERE user_id = $1', [id]);
+    const targetUser = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
     if (targetUser.rowCount === 0) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่พบผู้ใช้งานนี้')}`);
     }
@@ -735,7 +743,7 @@ async function updateUserRole(req, res, next) {
     const adminRoleRes = await pool.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
     const adminRoleId = adminRoleRes.rows[0]?.role_id;
 
-    if (targetUser.rows[0].role_id === adminRoleId && Number(role_id) !== adminRoleId) {
+    if (targetUser.rows[0].role_id === adminRoleId && roleIdNum !== adminRoleId) {
       const activeAdminsCount = await pool.query(
         'SELECT COUNT(*) FROM users WHERE role_id = $1 AND is_active = TRUE', [adminRoleId]
       );
@@ -749,9 +757,9 @@ async function updateUserRole(req, res, next) {
       SET role_id = $1
       WHERE user_id = $2
       RETURNING *
-    `, [role_id, id]);
+    `, [roleIdNum, userId]);
 
-    const newRoleInfo = await pool.query('SELECT display_name FROM roles WHERE role_id = $1', [role_id]);
+    const newRoleInfo = await pool.query('SELECT display_name FROM roles WHERE role_id = $1', [roleIdNum]);
 
     await logAudit({
       userId: req.session.userId,
@@ -759,7 +767,7 @@ async function updateUserRole(req, res, next) {
       roleName: req.session.roleName,
       action: 'USER_ROLE_CHANGE',
       resource: 'USER',
-      resourceId: id,
+      resourceId: String(userId),
       status: 'SUCCESS',
       details: `เปลี่ยนบทบาทของ ${updateRes.rows[0].username} เป็น "${newRoleInfo.rows[0]?.display_name}"`,
       ip: req.ip,
@@ -777,9 +785,10 @@ async function createUser(req, res, next) {
   try {
     const { username, password, full_name, department, role_id } = req.body;
     const cleanUsername = String(username || '').trim().toLowerCase();
+    const roleIdNum = parseInt(role_id, 10);
 
-    if (!cleanUsername || !password || !full_name || !role_id) {
-      return res.redirect(`/admin/users?error=${encodeURIComponent('กรุณากรอกข้อมูล Username, Password, ชื่อ-นามสกุล และบทบาทให้ครบถ้วน')}`);
+    if (!cleanUsername || !password || !full_name || isNaN(roleIdNum)) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('กรุณากรอกข้อมูล Username, Password, ชื่อ-นามสกุล และเลือกบทบาทให้ถูกต้อง')}`);
     }
 
     // ตรวจสอบว่า Username มีอยู่ในระบบแล้วหรือไม่
@@ -793,7 +802,7 @@ async function createUser(req, res, next) {
       INSERT INTO users (username, password_hash, full_name, department, role_id, is_active)
       VALUES ($1, $2, $3, $4, $5, TRUE)
       RETURNING *
-    `, [cleanUsername, passwordHash, full_name.trim(), department ? department.trim() : null, role_id]);
+    `, [cleanUsername, passwordHash, full_name.trim(), department ? department.trim() : null, roleIdNum]);
 
     const newUser = insertRes.rows[0];
 
@@ -820,13 +829,16 @@ async function createUser(req, res, next) {
 async function deleteUser(req, res, next) {
   const client = await pool.connect();
   try {
-    const { id } = req.params;
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('รหัสผู้ใช้งานไม่ถูกต้อง')}`);
+    }
 
-    if (Number(id) === req.session.userId) {
+    if (userId === req.session.userId) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่สามารถลบบัญชีที่กำลังล็อกอินใช้งานอยู่ได้')}`);
     }
 
-    const targetUserRes = await pool.query('SELECT * FROM users WHERE user_id = $1', [id]);
+    const targetUserRes = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
     if (targetUserRes.rowCount === 0) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่พบผู้ใช้งานนี้')}`);
     }
@@ -851,20 +863,20 @@ async function deleteUser(req, res, next) {
     await client.query(`
       DELETE FROM booking_attachments
       WHERE booking_id IN (SELECT booking_id FROM room_bookings WHERE user_id = $1)
-    `, [id]);
+    `, [userId]);
 
     // 2. ปลดความสัมพันธ์ใน room_bookings ที่ user นี้เป็น approver หรือ facility officer
-    await client.query('UPDATE room_bookings SET approver_id = NULL WHERE approver_id = $1', [id]);
-    await client.query('UPDATE room_bookings SET facility_officer_id = NULL WHERE facility_officer_id = $1', [id]);
+    await client.query('UPDATE room_bookings SET approver_id = NULL WHERE approver_id = $1', [userId]);
+    await client.query('UPDATE room_bookings SET facility_officer_id = NULL WHERE facility_officer_id = $1', [userId]);
 
     // 3. ลบ bookings ที่ user นี้เป็นผู้ขอ
-    const delBookings = await client.query('DELETE FROM room_bookings WHERE user_id = $1', [id]);
+    const delBookings = await client.query('DELETE FROM room_bookings WHERE user_id = $1', [userId]);
 
     // 4. ลบ attachments ที่ user นี้อัปโหลด (ถ้ามีหลงเหลือ)
-    await client.query('DELETE FROM booking_attachments WHERE uploaded_by = $1', [id]);
+    await client.query('DELETE FROM booking_attachments WHERE uploaded_by = $1', [userId]);
 
     // 5. ลบ user
-    await client.query('DELETE FROM users WHERE user_id = $1', [id]);
+    await client.query('DELETE FROM users WHERE user_id = $1', [userId]);
 
     await client.query('COMMIT');
 
@@ -874,7 +886,7 @@ async function deleteUser(req, res, next) {
       roleName: req.session.roleName,
       action: 'USER_DELETE',
       resource: 'USER',
-      resourceId: id,
+      resourceId: String(userId),
       status: 'SUCCESS',
       details: `ลบผู้ใช้งาน "${targetUser.username}" (${targetUser.full_name}) พร้อมล้างรายการจองที่เกี่ยวข้อง ${delBookings.rowCount} รายการ`,
       ip: req.ip,
