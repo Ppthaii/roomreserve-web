@@ -5,7 +5,6 @@ if (fs.existsSync('.env') && typeof process.loadEnvFile === 'function') {
 
 const express = require('express');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const pool = require('./config/db');
@@ -32,19 +31,15 @@ app.get('/__dev_ping', (req, res) => {
   res.json({ bootTime: SERVER_BOOT_TIME });
 });
 
-// Session Configuration (จัดเก็บลง PostgreSQL เพื่อไม่ให้เซสชันหลุดเมื่อรีสตาร์ตเซิร์ฟเวอร์)
+// Session Configuration (Session-based Auth ตามที่อาจารย์สอน)
 app.use(session({
-  store: new pgSession({
-    pool: pool,
-    tableName: 'session'
-  }),
   secret: process.env.SESSION_SECRET || 'roomreserve_secret_2026',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // เก็บคุกกี้ 7 วัน ไม่หลุดบ่อย
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 วัน
   }
 }));
 
