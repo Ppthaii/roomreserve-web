@@ -7,6 +7,14 @@ const { logAudit } = require('../middlewares/auth');
 async function getFile(req, res, next) {
   try {
     const { id } = req.params;
+    const attachmentId = parseInt(id, 10);
+    if (isNaN(attachmentId)) {
+      return res.status(404).render('error', {
+        title: '404 File Not Found',
+        code: 404,
+        message: 'ไม่พบไฟล์เอกสารที่ร้องขอ'
+      });
+    }
 
     // ดึงข้อมูลไฟล์จากตาราง booking_attachments
     const fileRes = await pool.query(`
@@ -14,7 +22,7 @@ async function getFile(req, res, next) {
       FROM booking_attachments ba
       JOIN room_bookings rb ON ba.booking_id = rb.booking_id
       WHERE ba.attachment_id = $1
-    `, [id]);
+    `, [attachmentId]);
 
     if (fileRes.rowCount === 0) {
       return res.status(404).render('error', {

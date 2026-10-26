@@ -70,13 +70,16 @@ async function blockSchedule(req, res, next) {
 // 2. ส่งมอบห้อง / Check-in
 async function checkinRoom(req, res, next) {
   try {
-    const { id } = req.params;
+    const bookingId = parseInt(req.params.id, 10);
+    if (isNaN(bookingId)) {
+      return res.redirect(`/app?error=${encodeURIComponent('รหัสรายการไม่ถูกต้อง')}`);
+    }
     const result = await pool.query(`
       UPDATE room_bookings
       SET status = 'IN_USE', facility_officer_id = $1, checked_in_at = NOW()
       WHERE booking_id = $2 AND status = 'APPROVED'
       RETURNING *
-    `, [req.session.userId, id]);
+    `, [req.session.userId, bookingId]);
 
     if (result.rowCount === 0) {
       return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถ Check-in ได้ (รายการต้องผ่านการอนุมัติก่อน)')}`);
@@ -88,7 +91,7 @@ async function checkinRoom(req, res, next) {
       roleName: req.session.roleName,
       action: 'FACILITY_CHECKIN',
       resource: 'BOOKING',
-      resourceId: id,
+      resourceId: String(bookingId),
       status: 'SUCCESS',
       details: `เจ้าหน้าที่สถานที่ส่งมอบห้อง (Check-in) สำหรับ "${result.rows[0].title}"`,
       ip: req.ip,
@@ -104,7 +107,10 @@ async function checkinRoom(req, res, next) {
 // 3. ตรวจสอบห้องหลังใช้งานและปิดงาน / Check-out พร้อมแนบรูปถ่าย
 async function checkoutRoom(req, res, next) {
   try {
-    const { id } = req.params;
+    const bookingId = parseInt(req.params.id, 10);
+    if (isNaN(bookingId)) {
+      return res.redirect(`/app?error=${encodeURIComponent('รหัสรายการไม่ถูกต้อง')}`);
+    }
     const { comment } = req.body;
 
     const result = await pool.query(`
@@ -112,7 +118,7 @@ async function checkoutRoom(req, res, next) {
       SET status = 'COMPLETED', facility_comment = $1, checked_out_at = NOW()
       WHERE booking_id = $2 AND status = 'IN_USE'
       RETURNING *
-    `, [comment || 'ตรวจรับสภาพห้องเรียบร้อย', id]);
+    `, [comment || 'ตรวจรับสภาพห้องเรียบร้อย', bookingId]);
 
     if (result.rowCount === 0) {
       return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถ Check-out ได้ (รายการต้องอยู่ในสถานะกำลังใช้งาน)')}`);
@@ -126,7 +132,7 @@ async function checkoutRoom(req, res, next) {
           storage_name, file_path, mime_type, file_size
         ) VALUES ($1, $2, 'INSPECTION', $3, $4, $5, $6, $7)
       `, [
-        id,
+        bookingId,
         req.session.userId,
         req.file.originalname,
         req.file.filename,

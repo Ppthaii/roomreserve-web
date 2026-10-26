@@ -194,8 +194,12 @@ async function updateAclMatrix(req, res, next) {
 async function togglePermission(req, res, next) {
   try {
     const { role_id, permission_id, granted } = req.body;
-    const rId = Number(role_id);
-    const pId = Number(permission_id);
+    const rId = parseInt(role_id, 10);
+    const pId = parseInt(permission_id, 10);
+
+    if (isNaN(rId) || isNaN(pId)) {
+      return res.status(400).json({ error: 'รหัสบทบาทหรือรหัสสิทธิ์ไม่ถูกต้อง (Invalid Role ID or Permission ID)' });
+    }
 
     // ป้องกันการปลดสิทธิ์ acl.manage ของ Admin
     const adminRoleIdRes = await pool.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
@@ -337,14 +341,17 @@ async function createPermission(req, res, next) {
 // 2.4 แก้ไขข้อมูลบทบาท (Role Update)
 async function updateRole(req, res, next) {
   try {
-    const { id } = req.params;
+    const roleId = parseInt(req.params.id, 10);
+    if (isNaN(roleId)) {
+      return res.redirect(`/admin/acl?error=${encodeURIComponent('รหัสบทบาทไม่ถูกต้อง')}`);
+    }
     const { display_name, description } = req.body;
 
     if (!display_name || !display_name.trim()) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('กรุณาระบุชื่อบทบาทที่ต้องการแก้ไข')}`);
     }
 
-    const targetRole = await pool.query('SELECT * FROM roles WHERE role_id = $1', [id]);
+    const targetRole = await pool.query('SELECT * FROM roles WHERE role_id = $1', [roleId]);
     if (targetRole.rowCount === 0) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('ไม่พบบทบาทที่ระบุ')}`);
     }
@@ -353,7 +360,7 @@ async function updateRole(req, res, next) {
       UPDATE roles
       SET display_name = $1, description = $2
       WHERE role_id = $3
-    `, [display_name.trim(), description ? description.trim() : null, id]);
+    `, [display_name.trim(), description ? description.trim() : null, roleId]);
 
     await logAudit({
       userId: req.session.userId,
@@ -361,7 +368,7 @@ async function updateRole(req, res, next) {
       roleName: req.session.roleName,
       action: 'ROLE_UPDATE',
       resource: 'ROLE',
-      resourceId: id,
+      resourceId: String(roleId),
       status: 'SUCCESS',
       details: `แก้ไขชื่อบทบาท "${targetRole.rows[0].role_name}" เป็น "${display_name.trim()}"`,
       ip: req.ip,
@@ -377,8 +384,11 @@ async function updateRole(req, res, next) {
 // 2.5 ลบบทบาท (Role Delete - พร้อม Guard ป้องกัน Admin สูญหาย และ Guard ป้องกันลบ Role ที่มีผู้ใช้ผูกอยู่)
 async function deleteRole(req, res, next) {
   try {
-    const { id } = req.params;
-    const targetRole = await pool.query('SELECT * FROM roles WHERE role_id = $1', [id]);
+    const roleId = parseInt(req.params.id, 10);
+    if (isNaN(roleId)) {
+      return res.redirect(`/admin/acl?error=${encodeURIComponent('รหัสบทบาทไม่ถูกต้อง')}`);
+    }
+    const targetRole = await pool.query('SELECT * FROM roles WHERE role_id = $1', [roleId]);
     if (targetRole.rowCount === 0) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('ไม่พบบทบาทที่ระบุ')}`);
     }
@@ -391,14 +401,14 @@ async function deleteRole(req, res, next) {
     }
 
     // 2. ป้องกันการลบ Role ที่ยังมีผู้ใช้งานผูกอยู่ (ตามข้อกำหนดอาจารย์ Spec 3.2)
-    const usersCount = await pool.query('SELECT COUNT(*) FROM users WHERE role_id = $1', [id]);
+    const usersCount = await pool.query('SELECT COUNT(*) FROM users WHERE role_id = $1', [roleId]);
     const count = Number(usersCount.rows[0].count);
     if (count > 0) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent(`ไม่สามารถลบบทบาท "${role.display_name}" ได้ เนื่องจากยังมีผู้ใช้งานผูกอยู่ ${count} คน`)}`);
     }
 
     // 3. ลบบทบาท (role_permissions จะถูก CASCADE ลบตาม)
-    await pool.query('DELETE FROM roles WHERE role_id = $1', [id]);
+    await pool.query('DELETE FROM roles WHERE role_id = $1', [roleId]);
 
     await logAudit({
       userId: req.session.userId,
@@ -406,7 +416,7 @@ async function deleteRole(req, res, next) {
       roleName: req.session.roleName,
       action: 'ROLE_DELETE',
       resource: 'ROLE',
-      resourceId: id,
+      resourceId: String(roleId),
       status: 'SUCCESS',
       details: `ลบบทบาท "${role.display_name}" (${role.role_name}) ออกจากระบบ`,
       ip: req.ip,
@@ -504,6 +514,13 @@ async function getAuditLogs(req, res, next) {
   try {
     let { action, status, search, from, to, limit = 50 } = req.query;
 
+    if (from && (!/^\d{4}-\d{2}-\d{2}$/.test(from) || isNaN(Date.parse(from)))) {
+      from = null;
+    }
+    if (to && (!/^\d{4}-\d{2}-\d{2}$/.test(to) || isNaN(Date.parse(to)))) {
+      to = null;
+    }
+
     // ตรวจสอบและสลับช่วงเวลาหาก from > to เพื่อป้องกันการค้นหาที่ขัดแย้งกัน
     if (from && to && from > to) {
       const temp = from;
@@ -565,6 +582,13 @@ async function getAuditLogs(req, res, next) {
 async function exportAuditLogs(req, res, next) {
   try {
     let { action, status, search, from, to } = req.query;
+
+    if (from && (!/^\d{4}-\d{2}-\d{2}$/.test(from) || isNaN(Date.parse(from)))) {
+      from = null;
+    }
+    if (to && (!/^\d{4}-\d{2}-\d{2}$/.test(to) || isNaN(Date.parse(to)))) {
+      to = null;
+    }
 
     // ตรวจสอบและสลับช่วงเวลาหาก from > to เพื่อป้องกันการค้นหาที่ขัดแย้งกัน
     if (from && to && from > to) {

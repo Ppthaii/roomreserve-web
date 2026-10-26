@@ -5,7 +5,10 @@ const { logAudit } = require('../middlewares/auth');
 // 1. หน้าหลัก Dashboard & แสดงตารางปฏิทินห้องว่าง (High-Performance Concurrent Query)
 async function getDashboard(req, res, next) {
   try {
-    const selectedDate = req.query.date || new Date().toISOString().split('T')[0];
+    let selectedDate = String(req.query.date || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate) || isNaN(Date.parse(selectedDate))) {
+      selectedDate = new Date().toISOString().split('T')[0];
+    }
 
     // รันทุก Query แบบ Concurrent / Parallel ผ่าน Promise.all เพื่อลด Latency รวม
     const [
