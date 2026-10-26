@@ -46,7 +46,7 @@ async function getFile(req, res, next) {
         roleName: req.session.roleName,
         action: 'ACCESS_DENIED',
         resource: 'FILE_PROTECTED',
-        resourceId: id,
+        resourceId: String(attachmentId),
         status: 'DENIED',
         details: `ผู้ใช้ ${req.session.username} พยายามเข้าถึงไฟล์เอกสารที่ไม่ได้รับอนุญาต (Anti-IDOR Guard)`,
         ip: req.ip,

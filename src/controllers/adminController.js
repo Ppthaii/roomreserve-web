@@ -433,14 +433,17 @@ async function deleteRole(req, res, next) {
 // 2.6 แก้ไขข้อมูลสิทธิ์ (Permission Update)
 async function updatePermission(req, res, next) {
   try {
-    const { id } = req.params;
+    const permId = parseInt(req.params.id, 10);
+    if (isNaN(permId)) {
+      return res.redirect(`/admin/acl?error=${encodeURIComponent('รหัสสิทธิ์ไม่ถูกต้อง')}`);
+    }
     const { description, category } = req.body;
 
     if (!description || !description.trim()) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('กรุณาระบุคำอธิบายสิทธิ์')}`);
     }
 
-    const targetPerm = await pool.query('SELECT * FROM permissions WHERE permission_id = $1', [id]);
+    const targetPerm = await pool.query('SELECT * FROM permissions WHERE permission_id = $1', [permId]);
     if (targetPerm.rowCount === 0) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('ไม่พบสิทธิ์ที่ระบุ')}`);
     }
@@ -450,7 +453,7 @@ async function updatePermission(req, res, next) {
       UPDATE permissions
       SET description = $1, category = $2
       WHERE permission_id = $3
-    `, [description.trim(), category ? category.trim() : perm.category, id]);
+    `, [description.trim(), category ? category.trim() : perm.category, permId]);
 
     await logAudit({
       userId: req.session.userId,
@@ -458,7 +461,7 @@ async function updatePermission(req, res, next) {
       roleName: req.session.roleName,
       action: 'PERMISSION_UPDATE',
       resource: 'PERMISSION',
-      resourceId: id,
+      resourceId: String(permId),
       status: 'SUCCESS',
       details: `แก้ไขคำอธิบายสิทธิ์ "${perm.permission_code}"`,
       ip: req.ip,
@@ -474,8 +477,11 @@ async function updatePermission(req, res, next) {
 // 2.7 ลบสิทธิ์ (Permission Delete - ป้องกันการลบ Core Permissions)
 async function deletePermission(req, res, next) {
   try {
-    const { id } = req.params;
-    const targetPerm = await pool.query('SELECT * FROM permissions WHERE permission_id = $1', [id]);
+    const permId = parseInt(req.params.id, 10);
+    if (isNaN(permId)) {
+      return res.redirect(`/admin/acl?error=${encodeURIComponent('รหัสสิทธิ์ไม่ถูกต้อง')}`);
+    }
+    const targetPerm = await pool.query('SELECT * FROM permissions WHERE permission_id = $1', [permId]);
     if (targetPerm.rowCount === 0) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('ไม่พบสิทธิ์ที่ระบุ')}`);
     }
@@ -487,7 +493,7 @@ async function deletePermission(req, res, next) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent(`ไม่สามารถลบสิทธิ์หลัก "${perm.permission_code}" ได้ เนื่องจากจำเป็นต่อการทำงานของระบบ`)}`);
     }
 
-    await pool.query('DELETE FROM permissions WHERE permission_id = $1', [id]);
+    await pool.query('DELETE FROM permissions WHERE permission_id = $1', [permId]);
 
     await logAudit({
       userId: req.session.userId,
@@ -495,7 +501,7 @@ async function deletePermission(req, res, next) {
       roleName: req.session.roleName,
       action: 'PERMISSION_DELETE',
       resource: 'PERMISSION',
-      resourceId: id,
+      resourceId: String(permId),
       status: 'SUCCESS',
       details: `ลบรหัสสิทธิ์ "${perm.permission_code}" (${perm.description}) ออกจากระบบ`,
       ip: req.ip,
