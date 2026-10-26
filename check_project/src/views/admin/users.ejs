@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+ <%- include('../partials/head') %>
+ <script src="/session-guard.js"></script>
+</head>
+<body>
+ <%- include('../partials/navbar', { active: 'users' }) %>
+
+ <div class="container">
+ <!-- Floating Toast Notification (แบบลอย ไม่กินพื้นที่ Layout) -->
+ <%- include('../partials/flash_toast', { success: (typeof success !== 'undefined' ? success : ''), error: (typeof error !== 'undefined' ? error : '') }) %>
+
+ <div class="card">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+ <div>
+ <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.25rem;">จัดการบัญชีผู้ใช้งาน (User Management)</h2>
+ <p style="color: var(--muted); font-size: 0.85rem; margin: 0;">
+ ระบบแสดงรายชื่อผู้ใช้ และสามารถเพิ่มผู้ใช้ใหม่, เปลี่ยน Role, สลับสถานะเปิดใช้งาน หรือลบผู้ใช้ได้ทันที
+ </p>
+ </div>
+ <div>
+ <button type="button" class="btn btn-primary btn-sm" onclick="toggleModal('modal-add-user')">
+ + เพิ่มผู้ใช้งานใหม่
+ </button>
+ </div>
+ </div>
+
+ <!-- ฟอร์มเพิ่มผู้ใช้งานใหม่ (Toggleable) -->
+ <div id="modal-add-user" style="display: none; background: #f8fafc; border: 1px solid var(--border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
+ <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark);">เพิ่มบัญชีผู้ใช้งานใหม่ (User Creation)</h3>
+ <form action="/admin/users/create" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1.5fr 1fr 1.2fr auto; gap: 0.75rem; align-items: end;">
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem; font-weight: 700;">ชื่อผู้ใช้ (Username) *</label>
+ <input type="text" name="username" class="form-control" placeholder="เช่น johndoe" required>
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem; font-weight: 700;">รหัสผ่าน (Password) *</label>
+ <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem; font-weight: 700;">ชื่อ-นามสกุล *</label>
+ <input type="text" name="full_name" class="form-control" placeholder="เช่น นายสมศักดิ์ รักดี" required>
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem; font-weight: 700;">แผนก / สังกัด</label>
+ <input type="text" name="department" class="form-control" placeholder="เช่น ฝ่ายบุคคล">
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem; font-weight: 700;">บทบาท (Role) *</label>
+ <select name="role_id" class="form-control" required style="font-weight: 600;">
+ <% roles.forEach(r => { %>
+ <option value="<%= r.role_id %>"><%= r.display_name %></option>
+ <% }) %>
+ </select>
+ </div>
+ <div style="display: flex; gap: 0.4rem;">
+ <button type="submit" class="btn btn-primary btn-sm">บันทึก</button>
+ <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-user')">ยกเลิก</button>
+ </div>
+ </form>
+ </div>
+
+ <div class="table-responsive">
+ <table class="table">
+ <thead>
+ <tr>
+ <th>ID</th>
+ <th>Username</th>
+ <th>ชื่อ-นามสกุล</th>
+ <th>แผนก / สังกัด</th>
+ <th>บทบาท (Role)</th>
+ <th>สถานะบัญชี</th>
+ <th>จัดการ</th>
+ </tr>
+ </thead>
+ <tbody>
+ <% users.forEach(u => { %>
+ <tr>
+ <td><%= u.user_id %></td>
+ <td><strong><%= u.username %></strong></td>
+ <td><%= u.full_name %></td>
+ <td><%= u.department || '-' %></td>
+ <td>
+ <form action="/admin/users/<%= u.user_id %>/role" method="POST" style="display:inline-flex; align-items:center; gap:0.35rem; margin: 0;">
+ <select name="role_id" class="form-control" style="padding:0.25rem 0.5rem; font-size:0.8rem; width:auto;" onchange="this.form.submit()">
+ <% roles.forEach(r => { %>
+ <option value="<%= r.role_id %>" <%= r.role_id === u.role_id ? 'selected' : '' %>>
+ <%= r.display_name %>
+ </option>
+ <% }) %>
+ </select>
+ </form>
+ </td>
+ <td>
+ <% if (u.is_active) { %>
+ <span class="status-badge status-COMPLETED">เปิดใช้งาน (Active)</span>
+ <% } else { %>
+ <span class="status-badge status-REJECTED">ระงับชั่วคราว (Suspended)</span>
+ <% } %>
+ </td>
+ <td>
+ <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+ <% if (u.user_id === user.id) { %>
+ <span style="color: var(--muted); font-size: 0.8rem;">(บัญชีปัจจุบัน)</span>
+ <% } else { %>
+ <form action="/admin/users/<%= u.user_id %>/toggle" method="POST" style="display:inline; margin: 0;">
+ <button class="btn <%= u.is_active ? 'btn-danger' : 'btn-success' %> btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;">
+ <%= u.is_active ? 'ระงับการใช้งาน' : 'เปิดใช้งาน' %>
+ </button>
+ </form>
+ <form action="/admin/users/<%= u.user_id %>/delete" method="POST" style="display:inline; margin: 0;" onsubmit="return confirm('ยืนยันการลบบัญชีผู้ใช้ &quot;<%= u.username %>&quot; (<%= u.full_name %>) ออกจากระบบ?');">
+ <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #dc2626; border-color: #fca5a5; background: #fff5f5;" title="ลบผู้ใช้งานนี้">
+ ลบ
+ </button>
+ </form>
+ <% } %>
+ </div>
+ </td>
+ </tr>
+ <% }) %>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <script>
+ function toggleModal(id) {
+ const el = document.getElementById(id);
+ if (el) {
+ el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+ if (el.style.display === 'block') {
+ const firstInput = el.querySelector('input');
+ if (firstInput) firstInput.focus();
+ }
+ }
+ }
+ </script>
+</body>
+</html>

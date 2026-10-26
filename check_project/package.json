@@ -1,0 +1,22 @@
+{
+  "name": "room-reserve",
+  "version": "1.0.0",
+  "description": "RoomReserve (SmartSpace) - ระบบบริหารจัดการจองห้องประชุมและทรัพยากรส่วนกลาง",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch-path=src src/app.js",
+    "seed": "node -e \"const {Pool}=require('pg');const fs=require('fs');if(fs.existsSync('.env')&&typeof process.loadEnvFile==='function'){process.loadEnvFile('.env');}const p=new Pool({database:process.env.DB_NAME||process.env.PGDATABASE||'roomreserve_db',user:process.env.DB_USER||process.env.PGUSER||'postgres',password:process.env.DB_PASSWORD||process.env.PGPASSWORD||'postgres',host:process.env.DB_HOST||'localhost',port:Number(process.env.DB_PORT||5432)});p.query(fs.readFileSync('database/seed.sql','utf8')).then(()=>{console.log('Seed data inserted successfully from database/seed.sql');p.end();}).catch(e=>{console.error(e);process.exit(1);});\"",
+    "test": "node test/smoke.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "flatpickr": "^4.6.13",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.16.0"
+  }
+}

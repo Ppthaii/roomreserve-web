@@ -1,0 +1,239 @@
+<div id="req-view-home" class="req-subview">
+          
+          <!-- 1. Deep Blue Gradient Header -->
+          <div class="hero-blue-header">
+            <div class="hero-inner">
+              <div class="hero-user-capsule">
+                <div class="hero-avatar">
+                  <%= user.fullName ? user.fullName.charAt(0) : 'U' %>
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-size: 1.25rem; font-weight: 800; line-height: 1.25;"><%= user.fullName %></div>
+                  <div style="font-size: 0.82rem; opacity: 0.85; margin-top: 0.25rem;">
+                    <span>สังกัด: <%= user.department || 'สำนักงานใหญ่' %></span>
+                    <% if (user.roleName !== 'requester') { %>
+                      &bull; <span class="role-pill" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.7rem; padding: 2px 7px;"><%= user.roleDisplay %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Floating Quick Action Card (Role-Adaptive) -->
+        <% if (isAdminUser) { %>
+          <div class="quick-booking-card">
+            <div class="quick-booking-tag" style="color: #6366f1;">ADMIN CONSOLE</div>
+            <h3 class="quick-booking-title">ศูนย์จัดการและบริหารระบบส่วนกลาง</h3>
+            <p style="font-size: 0.85rem; color: var(--muted); margin: -0.65rem 0 1.25rem 0;">
+              ภาพรวมงานรออนุมัติ งานหน้างาน และผังช่วงเวลาความว่างของห้องประชุม
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem;">
+              <button type="button" class="quick-booking-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 0.82rem; padding: 0.7rem 0.5rem;" onclick="switchRequesterView('approvals')">
+                รออนุมัติ (<%= pendingApprovals.length %>)
+              </button>
+              <button type="button" class="quick-booking-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-size: 0.82rem; padding: 0.7rem 0.5rem;" onclick="switchRequesterView('facility')">
+                หน้างาน (<%= facilityTasks.length %>)
+              </button>
+              <button type="button" class="quick-booking-btn" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); font-size: 0.82rem; padding: 0.7rem 0.5rem;" onclick="switchRequesterView('timeline')">
+                ผังไทม์ไลน์
+              </button>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem; font-size: 0.82rem;">
+              <a href="/admin/acl" class="quick-booking-link" style="font-weight: 700; color: #4f46e5;">
+                ตารางสิทธิ์ ACL Matrix &rarr;
+              </a>
+              <a href="/admin/users" class="quick-booking-link">
+                จัดการผู้ใช้งาน &rarr;
+              </a>
+              <a href="/admin/logs" class="quick-booking-link">
+                Audit Logs &rarr;
+              </a>
+              <a href="/app/rooms" class="quick-booking-link">
+                จัดการห้อง &rarr;
+              </a>
+            </div>
+          </div>
+        <% } else if (canApprove) { %>
+          <div class="quick-booking-card">
+            <div class="quick-booking-tag" style="color: #f59e0b;">APPROVAL WORKFLOW</div>
+            <h3 class="quick-booking-title">
+              <% if (pendingApprovals.length > 0) { %>
+                มีคำขอรอการพิจารณา <%= pendingApprovals.length %> รายการ
+              <% } else { %>
+                ไม่มีคำขอรออนุมัติในขณะนี้
+              <% } %>
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--muted); margin: -0.65rem 0 1.25rem 0;">
+              ตรวจสอบรายละเอียดคำขอ อุปกรณ์ที่ต้องการ และเอกสารแนบเพื่อพิจารณาอนุมัติ
+            </p>
+            <button type="button" class="quick-booking-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);" onclick="switchRequesterView('approvals')">
+              ตรวจสอบคำขอรออนุมัติ (<%= pendingApprovals.length %>)
+            </button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+              <% if (canBook) { %>
+                <a href="javascript:void(0)" class="quick-booking-link" onclick="switchRequesterView('booking')">
+                  ต้องการจองห้องประชุมใหม่ &rarr;
+                </a>
+              <% } %>
+              <% if (canViewOwnBookings) { %>
+                <a href="javascript:void(0)" class="quick-booking-link" onclick="switchRequesterView('mybookings')">
+                  รายการของฉัน (<%= myBookings.length %>) &rarr;
+                </a>
+              <% } %>
+            </div>
+          </div>
+        <% } else if (canFacility) { %>
+          <div class="quick-booking-card">
+            <div class="quick-booking-tag" style="color: #10b981;">FACILITY OPERATIONS</div>
+            <h3 class="quick-booking-title">
+              <% if (facilityTasks.length > 0) { %>
+                คิวงานส่งมอบห้อง & ตรวจสภาพ (<%= facilityTasks.length %> รายการ)
+              <% } else { %>
+                ไม่มีคิวงานส่งมอบห้องค้างในขณะนี้
+              <% } %>
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--muted); margin: -0.65rem 0 1.25rem 0;">
+              จัดการ Check-in ส่งมอบห้อง และ Check-out ตรวจสภาพห้องหลังใช้งาน
+            </p>
+            <button type="button" class="quick-booking-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);" onclick="switchRequesterView('facility')">
+              จัดการงานหน้างาน & ปิดซ่อม (<%= facilityTasks.length %>)
+            </button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+              <a href="javascript:void(0)" class="quick-booking-link" onclick="switchRequesterView('facility')">
+                ฟอร์มบล็อกปิดซ่อมห้อง &rarr;
+              </a>
+              <% if (canBook) { %>
+                <a href="javascript:void(0)" class="quick-booking-link" onclick="switchRequesterView('booking')">
+                  จองห้องประชุม &rarr;
+                </a>
+              <% } %>
+            </div>
+          </div>
+        <% } else if (canBook) { %>
+          <div class="quick-booking-card">
+            <div class="quick-booking-tag">QUICK BOOKING</div>
+            <h3 class="quick-booking-title">วันนี้ต้องการใช้ห้องประชุมไหม</h3>
+            <p style="font-size: 0.85rem; color: var(--muted); margin: -0.65rem 0 1.25rem 0;">
+              จองสะดวกรวดเร็ว ตรวจสอบความว่างแบบ Real-time พร้อมอุปกรณ์ครบครัน
+            </p>
+            <button type="button" class="quick-booking-btn" onclick="startBookingFlow()">
+              เริ่มจองห้อง
+            </button>
+            <div>
+              <a href="javascript:void(0)" class="quick-booking-link" onclick="switchRequesterView('mybookings')">
+                ตรวจสอบประวัติคำขอของฉัน (<%= myBookings.length %> รายการ) &rarr;
+              </a>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="quick-booking-card" style="border-left: 4px solid var(--muted);">
+            <div class="quick-booking-tag" style="color: var(--muted);">SCHEDULE VIEWER</div>
+            <h3 class="quick-booking-title">ตารางสถานะห้องประชุมวันนี้</h3>
+            <p style="font-size: 0.85rem; color: var(--muted); margin: -0.65rem 0 1.25rem 0;">
+              คุณสามารถตรวจสอบความว่างของห้องประชุมและคิวการใช้งานได้แบบ Real-time
+            </p>
+            <% if (canViewOwnBookings) { %>
+              <div>
+                <a href="javascript:void(0)" class="quick-booking-link" onclick="switchRequesterView('mybookings')">
+                  รายการคำขอของฉัน (<%= myBookings.length %> รายการ) &rarr;
+                </a>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+
+        <!-- แถบสรุปสถานะแบบกระชับ (Stat Summary Bar) สำหรับบทบาทบริหาร/จัดการ -->
+        <% if (['approver', 'facility', 'admin'].includes(user.roleName)) { %>
+          <div class="stat-summary-bar" style="margin: 0 0.5rem 1.25rem 0.5rem;">
+            <div class="stat-chip">
+              <span>ว่างตลอดวัน:</span>
+              <strong><%= fullyFreeRoomsCount %> / <%= activeRoomsCount %> ห้อง</strong>
+            </div>
+            <div class="stat-chip">
+              <span>มีคิววันนี้:</span>
+              <strong><%= dayBookings.length %> รายการ</strong>
+            </div>
+            <% if (['approver', 'admin'].includes(user.roleName)) { %>
+              <div class="stat-chip" style="border-left: 3px solid var(--warning); cursor: pointer;" onclick="switchRequesterView('approvals')">
+                <span>รออนุมัติ:</span>
+                <strong style="color: var(--warning);"><%= pendingApprovals.length %></strong>
+              </div>
+            <% } %>
+            <% if (['facility', 'admin'].includes(user.roleName)) { %>
+              <div class="stat-chip" style="border-left: 3px solid #10b981; cursor: pointer;" onclick="switchRequesterView('facility')">
+                <span>งานหน้างาน:</span>
+                <strong style="color: #10b981;"><%= facilityTasks.length %></strong>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+
+          <!-- 3. Section อาคารประชุม (Building Cards) -->
+          <div class="available-now-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 9px; height: 9px; border-radius: 50%; background: #2563eb; display: inline-block; box-shadow: 0 0 8px #2563eb;"></span>
+              <span style="font-size: 1.05rem; font-weight: 800; color: var(--dark);">อาคารประชุม</span>
+            </div>
+            <span style="font-size: 0.78rem; color: var(--muted);"><%= canBook ? 'เลือกอาคารเพื่อเริ่มจอง' : 'ภาพรวมอาคารประชุม' %></span>
+          </div>
+
+          <%
+            function getBuildingNumHelper(r) {
+              if (!r) return '1';
+              const loc = String(r.location || '');
+              const name = String(r.room_name || '');
+              const locMatch = loc.match(/(?:ตึก|อาคาร|building)\s*([1-9])/i);
+              if (locMatch) return locMatch[1];
+              const nameMatch = name.match(/(?:ห้อง\s*)?([1-9])\d{2}/i);
+              if (nameMatch) return nameMatch[1];
+              if (loc.includes('1')) return '1';
+              if (loc.includes('2')) return '2';
+              if (loc.includes('3')) return '3';
+              return '1';
+            }
+            function getBuildingRoomsText(bNum) {
+              const bRooms = rooms.filter(r => getBuildingNumHelper(r) === String(bNum));
+              if (bRooms.length === 0) return 'ไม่มีห้องประชุม';
+              const activeRooms = bRooms.filter(r => r.is_active);
+              if (activeRooms.length === 0) return 'ระงับการใช้งานทุกห้อง';
+              return bRooms.map(r => r.room_name + (!r.is_active ? ' (ปิด)' : '')).join(' • ');
+            }
+            const b1Names = getBuildingRoomsText('1');
+            const b2Names = getBuildingRoomsText('2');
+            const b3Names = getBuildingRoomsText('3');
+          %>
+
+          <div class="building-cards-grid" style="margin-bottom: 1.5rem;">
+            <div class="building-card" <%- canBook ? 'onclick="startBookingFlow(null, 1)"' : 'style="cursor: default;"' %>>
+              <div class="building-card-img-wrap">
+                <img src="/images/building1.jpg" alt="ตึก 1" class="building-card-img" onerror="this.src=\'/images/building1.jpg\'">
+              </div>
+              <div class="building-card-body">
+                <div class="building-card-title">ตึก 1</div>
+                <div class="building-card-rooms"><%= b1Names || 'ไม่มีห้องประชุม' %></div>
+              </div>
+            </div>
+
+            <div class="building-card" <%- canBook ? 'onclick="startBookingFlow(null, 2)"' : 'style="cursor: default;"' %>>
+              <div class="building-card-img-wrap">
+                <img src="/images/building2.jpg" alt="ตึก 2" class="building-card-img" onerror="this.src=\'/images/building2.jpg\'">
+              </div>
+              <div class="building-card-body">
+                <div class="building-card-title">ตึก 2</div>
+                <div class="building-card-rooms"><%= b2Names || 'ไม่มีห้องประชุม' %></div>
+              </div>
+            </div>
+
+            <div class="building-card" <%- canBook ? 'onclick="startBookingFlow(null, 3)"' : 'style="cursor: default;"' %>>
+              <div class="building-card-img-wrap">
+                <img src="/images/building3.jpg" alt="ตึก 3" class="building-card-img" onerror="this.src=\'/images/building3.jpg\'">
+              </div>
+              <div class="building-card-body">
+                <div class="building-card-title">ตึก 3</div>
+                <div class="building-card-rooms"><%= b3Names || 'ไม่มีห้องประชุม' %></div>
+              </div>
+            </div>
+          </div>
+
+        </div>

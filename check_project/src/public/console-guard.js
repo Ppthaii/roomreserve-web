@@ -1,0 +1,66 @@
+(function() {
+ 'use strict';
+
+ function showSecurityBanner() {
+ if (typeof console !== 'undefined' && console.clear) {
+ try {
+ console.clear();
+ console.log(
+ "%c หยุด! (STOP!) ไม่อนุญาตให้เข้าถึง (ACCESS RESTRICTED)\n%cระบบรักษาความปลอดภัยและป้องกันการดัดแปลง (Anti-Tamper Guard) กำลังทำงาน\n%cไม่อนุญาตให้ตรวจสอบ หรือคัดลอก Source Code ใดๆ ทั้งสิ้น",
+ "color: #ef4444; font-size: 26px; font-weight: 900; padding: 4px 0;",
+ "color: #f59e0b; font-size: 14px; font-weight: bold; margin-top: 4px;",
+ "color: #ffffff; background: #dc2626; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 6px;"
+ );
+ } catch (err) {}
+ }
+ }
+
+ showSecurityBanner();
+
+ setInterval(showSecurityBanner, 2500);
+
+ if (typeof window !== 'undefined' && window.console) {
+ const noop = function() {};
+ window.console.log = noop;
+ window.console.info = noop;
+ window.console.warn = noop;
+ window.console.debug = noop;
+ window.console.table = noop;
+ }
+
+ document.addEventListener('keydown', function(e) {
+
+ if (e.key === 'F12' || e.keyCode === 123) {
+ e.preventDefault();
+ e.stopPropagation();
+ showSecurityBanner();
+ return false;
+ }
+
+ const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+ if (isCtrlOrCmd && e.shiftKey) {
+ const keyUpper = (e.key || '').toUpperCase();
+ if (keyUpper === 'I' || keyUpper === 'J' || keyUpper === 'C' ||
+ e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67) {
+ e.preventDefault();
+ e.stopPropagation();
+ showSecurityBanner();
+ return false;
+ }
+ }
+
+ if (isCtrlOrCmd && ((e.key || '').toUpperCase() === 'U' || e.keyCode === 85)) {
+ e.preventDefault();
+ e.stopPropagation();
+ return false;
+ }
+
+ if (isCtrlOrCmd && ((e.key || '').toUpperCase() === 'S' || e.keyCode === 83)) {
+ e.preventDefault();
+ e.stopPropagation();
+ return false;
+ }
+ }, { capture: true });
+
+})();

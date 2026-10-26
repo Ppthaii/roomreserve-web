@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+ <%- include('../partials/head') %>
+ <script src="/session-guard.js"></script>
+ <link rel="stylesheet" href="/acl.css">
+</head>
+<body>
+ <!-- Toast Container -->
+ <div id="toast-container"></div>
+
+ <%- include('../partials/navbar', { active: 'acl' }) %>
+
+ <div class="container">
+ <!-- Floating Toast Notification (แบบลอย ไม่กินพื้นที่ Layout) -->
+ <%- include('../partials/flash_toast', { success: (typeof success !== 'undefined' ? success : ''), error: (typeof error !== 'undefined' ? error : '') }) %>
+
+ <div class="card">
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+ <div>
+ <h2 style="font-size: 1.35rem; font-weight: 800; display: flex; align-items: center;">
+ <span class="switch-indicator"></span> ตารางกำหนดสิทธิ์ Real-time (Dynamic ACL Matrix)
+ </h2>
+ <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem;">
+ <strong>Instant Apply:</strong> ติ๊กเลือกหรือยกเลิกสิทธิ์แล้วระบบ <strong>บันทึกทันทีในระดับ Database</strong> โดยไม่ต้องกดปุ่มยืนยันและไม่ต้อง Restart Server!
+ </p>
+ </div>
+ <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+ <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-role')">
+ เพิ่ม Role ใหม่
+ </button>
+ <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-perm')">
+ เพิ่ม Permission ใหม่
+ </button>
+ </div>
+ </div>
+
+ <!-- Modal เพิ่ม Role ใหม่ -->
+ <div id="modal-add-role" style="display: none; background: #f8fafc; border: 1px solid var(--border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
+ <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;">เพิ่มบทบาทใหม่ (Role Creation)</h3>
+ <form action="/admin/roles/create" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 0.75rem; align-items: end;">
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem;">รหัสบทบาท (Code เช่น auditor, guest)</label>
+ <input type="text" name="role_name" class="form-control" placeholder="auditor" required>
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem;">ชื่อแสดง (Display Name)</label>
+ <input type="text" name="display_name" class="form-control" placeholder="ผู้ตรวจประเมิน (Auditor)" required>
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem;">คำอธิบาย</label>
+ <input type="text" name="description" class="form-control" placeholder="ทำหน้าที่ตรวจสอบและสอบทานรายงาน">
+ </div>
+ <div style="display: flex; gap: 0.4rem;">
+ <button type="submit" class="btn btn-primary btn-sm">สร้าง Role ทันที</button>
+ <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-role')">ยกเลิก</button>
+ </div>
+ </form>
+ </div>
+
+ <!-- Modal เพิ่ม Permission ใหม่ -->
+ <div id="modal-add-perm" style="display: none; background: #f8fafc; border: 1px solid var(--border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
+ <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;">เพิ่มสิทธิ์ใหม่ (Permission Creation)</h3>
+ <form action="/admin/permissions/create" method="POST" style="display: grid; grid-template-columns: 1.5fr 2fr 1fr auto; gap: 0.75rem; align-items: end;">
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem;">รหัสสิทธิ์ (Namespace code เช่น room.export_pdf)</label>
+ <input type="text" name="permission_code" class="form-control" placeholder="room.export_pdf" required>
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem;">คำอธิบายสิทธิ์</label>
+ <input type="text" name="description" class="form-control" placeholder="ส่งออกรายงานการใช้ห้องเป็น PDF" required>
+ </div>
+ <div class="form-group" style="margin: 0;">
+ <label style="font-size: 0.75rem;">หมวดหมู่</label>
+ <select name="category" class="form-control">
+ <option value="admin"> การจัดการระบบและผู้ดูแล (admin)</option>
+ <option value="room"> ห้องประชุมและทรัพยากร (room)</option>
+ <option value="booking"> การจองและการอนุมัติ (booking)</option>
+ <option value="facility"> การดูแลสถานที่และปฏิบัติการ (facility)</option>
+ <option value="file"> เอกสารและไฟล์แนบ (file)</option>
+ <option value="general"> สิทธิ์ทั่วไป / สิทธิ์เพิ่มเติม (general)</option>
+ </select>
+ </div>
+ <div style="display: flex; gap: 0.4rem;">
+ <button type="submit" class="btn btn-primary btn-sm">สร้าง สิทธิ์ ทันที</button>
+ <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-perm')">ยกเลิก</button>
+ </div>
+ </form>
+ </div>
+
+ <!-- แถบเครื่องมือกรองหมวดหมู่และค้นหาสิทธิ์ (Category Filter & Search Toolbar) -->
+ <div class="category-filter-toolbar">
+ <div class="category-filter-bar" id="aclCategoryFilterBar">
+ <button type="button" class="cat-filter-btn active" data-filter="all">
+ 
+ <span>ทั้งหมด</span>
+ <span class="cat-filter-count"><%= permissions.length %></span>
+ </button>
+ <% if (typeof groupedPermissions !== 'undefined') { %>
+ <% groupedPermissions.forEach(group => { %>
+ <button type="button" class="cat-filter-btn" data-filter="<%= group.categoryKey %>">
+ <span class="cat-filter-icon"><%= group.meta.icon %></span>
+ <span><%= group.meta.name.split(' ')[0] %></span>
+ <span class="cat-filter-count"><%= group.permissions.length %></span>
+ </button>
+ <% }) %>
+ <% } %>
+ </div>
+ <div class="acl-search-wrap">
+ 
+ <input type="text" id="aclSearchInput" class="acl-search-input" placeholder="ค้นหารหัสสิทธิ์ เช่น booking, user...">
+ </div>
+ </div>
+
+ <div class="table-responsive">
+ <table class="table" style="text-align: center;">
+ <thead>
+ <tr>
+ <th style="text-align: left; vertical-align: middle;">รหัสสิทธิ์ (Permission Code)</th>
+ <th style="text-align: left; vertical-align: middle;">คำอธิบายสิทธิ์</th>
+ <% roles.forEach(r => { %>
+ <th style="text-align: center; vertical-align: middle; min-width: 130px;">
+ <div><%= r.display_name %></div>
+ <div style="font-size: 0.72rem; color: var(--muted); font-weight: normal; margin-top: 2px;">
+ (<%= r.role_name %>)
+ </div>
+ <% if (typeof coreRoles !== 'undefined' && !coreRoles.includes(r.role_name)) { %>
+ <form action="/admin/roles/<%= r.role_id %>/delete" method="POST" style="margin-top: 6px;" onsubmit="return confirm('ยืนยันการลบบทบาท &quot;<%= r.display_name %>&quot; ออกจากระบบ?');">
+ <button type="submit" class="btn-delete-acl" title="ลบบทบาทที่เพิ่มมานี้">
+ ลบ Role
+ </button>
+ </form>
+ <% } %>
+ </th>
+ <% }) %>
+ </tr>
+ </thead>
+ <tbody>
+ <% if (typeof groupedPermissions !== 'undefined' && groupedPermissions.length > 0) { %>
+ <% groupedPermissions.forEach(group => { %>
+ <!-- แถวหัวข้อคั่นหมวดหมู่ (Category Header Row) -->
+ <tr class="acl-category-header-row" data-category="<%= group.categoryKey %>">
+ <td colspan="<%= 2 + roles.length %>">
+ <div class="acl-category-header-content">
+ <div class="acl-category-title-wrap">
+ <span class="acl-category-icon"><%= group.meta.icon %></span>
+ <span class="acl-category-title"><%= group.meta.name %></span>
+ <span class="acl-category-en">(<%= group.meta.enName %>)</span>
+ </div>
+ <div class="acl-category-badge-wrap">
+ <span class="acl-category-count-badge"><%= group.permissions.length %> สิทธิ์</span>
+ </div>
+ </div>
+ </td>
+ </tr>
+
+ <!-- รายการสิทธิ์ในหมวดหมู่นี้ -->
+ <% group.permissions.forEach(p => { %>
+ <% const isCustomPerm = (typeof corePermissions !== 'undefined' && !corePermissions.includes(p.permission_code)); %>
+ <tr class="acl-perm-row" data-category="<%= group.categoryKey %>" data-code="<%= p.permission_code.toLowerCase() %>" data-desc="<%= p.description.toLowerCase() %>">
+ <td style="text-align: left; vertical-align: middle;">
+ <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+ <code><%= p.permission_code %></code>
+ <span class="cat-pill <%= group.meta.badgeClass %>"><%= group.meta.icon %> <%= group.meta.name.split(' ')[0] %></span>
+ <% if (isCustomPerm) { %>
+ <span class="badge-custom-acl">เพิ่มใหม่</span>
+ <% } %>
+ </div>
+ </td>
+ <td style="text-align: left; font-size: 0.85rem; color: var(--slate); vertical-align: middle;">
+ <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+ <span><%= p.description %></span>
+ <% if (isCustomPerm) { %>
+ <form action="/admin/permissions/<%= p.permission_id %>/delete" method="POST" style="margin: 0;" onsubmit="return confirm('ยืนยันการลบสิทธิ์ &quot;<%= p.permission_code %>&quot; ออกจากระบบ?');">
+ <button type="submit" class="btn-delete-acl" title="ลบสิทธิ์ที่เพิ่มมานี้">
+ ลบ
+ </button>
+ </form>
+ <% } %>
+ </div>
+ </td>
+ <% roles.forEach(r => { %>
+ <% const isChecked = grantSet.has(`${r.role_id}_${p.permission_id}`); %>
+ <% const isDisabled = (r.role_name === 'admin' && p.permission_code === 'acl.manage'); %>
+ <td style="text-align: center; vertical-align: middle; min-width: 130px;">
+ <input 
+ type="checkbox" 
+ class="acl-checkbox"
+ data-role-id="<%= r.role_id %>"
+ data-permission-id="<%= p.permission_id %>"
+ data-perm-code="<%= p.permission_code %>"
+ data-role-name="<%= r.display_name %>"
+ <%= isChecked ? 'checked' : '' %>
+ <%= isDisabled ? 'checked disabled title="ต้องคงสิทธิ์ Admin ไว้เสมอเพื่อป้องกันระบบล็อกตัวเอง"' : '' %>
+ style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; margin: 0 auto; display: block;"
+ >
+ </td>
+ <% }) %>
+ </tr>
+ <% }) %>
+ <% }) %>
+ <% } else { %>
+ <% permissions.forEach(p => { %>
+ <% const isCustomPerm = (typeof corePermissions !== 'undefined' && !corePermissions.includes(p.permission_code)); %>
+ <tr class="acl-perm-row" data-code="<%= p.permission_code.toLowerCase() %>" data-desc="<%= p.description.toLowerCase() %>">
+ <td style="text-align: left; vertical-align: middle;">
+ <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+ <code><%= p.permission_code %></code>
+ <% if (isCustomPerm) { %>
+ <span class="badge-custom-acl">เพิ่มใหม่</span>
+ <% } %>
+ </div>
+ </td>
+ <td style="text-align: left; font-size: 0.85rem; color: var(--slate); vertical-align: middle;">
+ <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+ <span><%= p.description %></span>
+ <% if (isCustomPerm) { %>
+ <form action="/admin/permissions/<%= p.permission_id %>/delete" method="POST" style="margin: 0;" onsubmit="return confirm('ยืนยันการลบสิทธิ์ &quot;<%= p.permission_code %>&quot; ออกจากระบบ?');">
+ <button type="submit" class="btn-delete-acl" title="ลบสิทธิ์ที่เพิ่มมานี้">
+ ลบ
+ </button>
+ </form>
+ <% } %>
+ </div>
+ </td>
+ <% roles.forEach(r => { %>
+ <% const isChecked = grantSet.has(`${r.role_id}_${p.permission_id}`); %>
+ <% const isDisabled = (r.role_name === 'admin' && p.permission_code === 'acl.manage'); %>
+ <td style="text-align: center; vertical-align: middle; min-width: 130px;">
+ <input 
+ type="checkbox" 
+ class="acl-checkbox"
+ data-role-id="<%= r.role_id %>"
+ data-permission-id="<%= p.permission_id %>"
+ data-perm-code="<%= p.permission_code %>"
+ data-role-name="<%= r.display_name %>"
+ <%= isChecked ? 'checked' : '' %>
+ <%= isDisabled ? 'checked disabled title="ต้องคงสิทธิ์ Admin ไว้เสมอเพื่อป้องกันระบบล็อกตัวเอง"' : '' %>
+ style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; margin: 0 auto; display: block;"
+ >
+ </td>
+ <% }) %>
+ </tr>
+ <% }) %>
+ <% } %>
+
+ <!-- แถวแจ้งเตือนกรณีค้นหาไม่พบข้อมูล -->
+ <tr id="aclEmptyRow" style="display: none;">
+ <td colspan="<%= 2 + roles.length %>" style="text-align: center; padding: 2.5rem 1rem; color: var(--muted);">
+ 
+ <div>ไม่พบรหัสสิทธิ์หรือคำอธิบายที่ตรงกับคำค้นหา</div>
+ </td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+
+ <script src="/acl.js"></script>
+</body>
+</html>

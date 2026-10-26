@@ -1,0 +1,76 @@
+<div id="req-view-profile" class="req-subview" style="display: none;">
+          <div class="card" style="margin-top: 0.5rem; text-align: center; padding: 2rem 1.5rem;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 1rem auto; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+              <%= user.fullName ? user.fullName.charAt(0) : 'U' %>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark); margin: 0 0 0.25rem 0;"><%= user.fullName %></h3>
+            <p style="color: var(--muted); font-size: 0.85rem; margin: 0 0 0.75rem 0;">ชื่อผู้ใช้: <strong><%= user.username %></strong> &bull; สังกัด: <%= user.department || 'สำนักงานใหญ่' %></p>
+            <span class="role-pill" style="font-size: 0.8rem; padding: 0.25rem 0.85rem;"><%= user.roleDisplay %></span>
+
+            <hr style="border: none; border-top: 1px solid var(--border); margin: 1.75rem 0;">
+
+            <div style="text-align: left; margin-bottom: 1.5rem;">
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--dark); margin-bottom: 0.75rem;">ตั้งค่าทั่วไป</h4>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px dashed var(--border);">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">ธีมการแสดงผล</div>
+                  <div style="font-size: 0.75rem; color: var(--muted);">สลับระหว่างโหมดมืด (Dark Mode) และโหมดสว่าง</div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" onclick="toggleTheme()">สลับธีม</button>
+              </div>
+            </div>
+
+            <!-- สลับบทบาททดสอบด่วน -->
+            <div style="text-align: left; margin-bottom: 1.5rem;">
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--dark); margin-bottom: 0.75rem;">สลับบทบาททดสอบ (Demo Switcher)</h4>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                <form action="/login" method="POST" style="margin: 0;">
+                  <input type="hidden" name="username" value="somchai">
+                  <input type="hidden" name="password" value="user123">
+                  <button type="submit" class="btn btn-outline btn-sm" style="width: 100%;">ผู้ใช้งานทั่วไป (somchai)</button>
+                </form>
+                <form action="/login" method="POST" style="margin: 0;">
+                  <input type="hidden" name="username" value="manager">
+                  <input type="hidden" name="password" value="approver123">
+                  <button type="submit" class="btn btn-outline btn-sm" style="width: 100%;">หัวหน้างาน (manager)</button>
+                </form>
+                <form action="/login" method="POST" style="margin: 0;">
+                  <input type="hidden" name="username" value="facility">
+                  <input type="hidden" name="password" value="facility123">
+                  <button type="submit" class="btn btn-outline btn-sm" style="width: 100%;">เจ้าหน้าที่ (facility)</button>
+                </form>
+                <form action="/login" method="POST" style="margin: 0;">
+                  <input type="hidden" name="username" value="admin">
+                  <input type="hidden" name="password" value="admin123">
+                  <button type="submit" class="btn btn-outline btn-sm" style="width: 100%;">แอดมิน (admin)</button>
+                </form>
+              </div>
+            </div>
+
+            <% if (user.roleName === 'admin' || isAdmin) { %>
+              <div style="text-align: left; margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--dark); margin-bottom: 0.75rem;">เมนูผู้ดูแลระบบ (Admin Shortcuts)</h4>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                  <a href="/admin/acl" class="btn btn-outline btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; color: #4f46e5; font-weight: 700; text-decoration: none;">
+                    จัดการสิทธิ์ ACL
+                  </a>
+                  <a href="/admin/logs" class="btn btn-outline btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; text-decoration: none;">
+                    Audit Logs
+                  </a>
+                  <a href="/admin/users" class="btn btn-outline btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; text-decoration: none;">
+                    จัดการผู้ใช้งาน
+                  </a>
+                  <a href="/app/rooms" class="btn btn-outline btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; text-decoration: none;">
+                    จัดการห้องประชุม
+                  </a>
+                </div>
+              </div>
+            <% } %>
+
+            <form action="/logout" method="POST" style="margin: 0;">
+              <button type="submit" class="btn btn-danger" style="width: 100%; padding: 0.75rem; font-weight: 700;">
+                ออกจากระบบ
+              </button>
+            </form>
+          </div>
+        </div>

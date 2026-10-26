@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <%- include('partials/head') %>
+  <script src="/session-guard.js"></script>
+  <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body class="role-requester">
+
+  <% 
+    const perms = (locals.userPermissions && Array.isArray(locals.userPermissions)) ? locals.userPermissions : [];
+    const isAdminUser = user.roleName === 'admin';
+    const canApprove = perms.includes('booking.approve') || isAdminUser;
+    const canFacility = perms.includes('facility.checkin') || perms.includes('facility.checkout') || isAdminUser;
+    const canBlockSchedule = perms.includes('room.block_schedule') || isAdminUser;
+    const canBook = perms.includes('booking.create') || isAdminUser;
+    const canViewOwnBookings = perms.includes('booking.read_own') || perms.includes('booking.read_all') || isAdminUser;
+    const canManageRooms = perms.includes('room.manage') || isAdminUser;
+    const canManageAcl = perms.includes('acl.manage') || isAdminUser;
+    const canManageUsers = perms.includes('user.manage') || isAdminUser;
+    const canViewLogs = perms.includes('log.read') || isAdminUser;
+
+    // คำนวณเฉพาะคำขอที่ยังดำเนินอยู่ (ไม่นับรายการที่เสร็จสิ้น/ยกเลิก/ปฏิเสธ ขึ้นเตือนบน Navbar)
+    const activeMyBookingsCount = (Array.isArray(myBookings) ? myBookings : []).filter(b => 
+      ['PENDING_APPROVAL', 'APPROVED', 'IN_USE'].includes(b.status)
+    ).length;
+
+    // คำนวณวันถัดไป และวันนี้ สำหรับปุ่ม 1-คลิก
+    const curDate = new Date(selectedDate);
+    const nextDate = new Date(curDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    const nextDateStr = nextDate.toISOString().split('T')[0];
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isToday = selectedDate === todayStr;
+    
+    const formattedThaiDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString('th-TH', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric',
+      calendar: 'gregory'
+    });
+
+    // คำนวณวันสำหรับปฏิทินจิ๋ว (Mini Calendar Strip)
+    const miniCalDays = [];
+    const baseCalDate = new Date(selectedDate + 'T00:00:00');
+    const todayCalDate = new Date(todayStr + 'T00:00:00');
+    
+    let startCal = new Date(todayCalDate);
+    const dayDiff = Math.round((baseCalDate.getTime() - todayCalDate.getTime()) / (1000 * 3600 * 24));
+    
+    if (dayDiff > 4) {
+      startCal = new Date(baseCalDate);
+      startCal.setDate(startCal.getDate() - 3);
+      if (startCal < todayCalDate) startCal = new Date(todayCalDate);
+    }
+    
+    const thaiDayNames = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+    const thaiMonthShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+    for (let i = 0; i < 10; i++) {
+      const d = new Date(startCal);
+      d.setDate(d.getDate() + i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const dStr = `${yyyy}-${mm}-${dd}`;
+      const dayOfWeek = d.getDay();
+      
+      miniCalDays.push({
+        dateStr: dStr,
+        dayNum: d.getDate(),
+        dayName: thaiDayNames[dayOfWeek],
+        monthName: thaiMonthShort[d.getMonth()],
+        isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+        isToday: dStr === todayStr,
+        isSelected: dStr === selectedDate
+      });
+    }
+
+    // คำนวณสรุปสถิติวันนี้
+    const activeRoomsCount = rooms.filter(r => r.is_active).length;
+    const bookedRoomIds = new Set(dayBookings.map(b => b.room_id));
+    const fullyFreeRoomsCount = rooms.filter(r => r.is_active && !bookedRoomIds.has(r.room_id)).length;
+
+    function getBuildingNumHelper(r) {
+      if (!r) return '1';
+      const loc = String(r.location || '');
+      const name = String(r.room_name || '');
+      const locMatch = loc.match(/(?:ตึก|อาคาร|building)\s*([1-9])/i);
+      if (locMatch) return locMatch[1];
+      const nameMatch = name.match(/(?:ห้อง\s*)?([1-9])\d{2}/i);
+      if (nameMatch) return nameMatch[1];
+      if (loc.includes('1')) return '1';
+      if (loc.includes('2')) return '2';
+      if (loc.includes('3')) return '3';
+      return '1';
+    }
+    function getBuildingRoomsText(bNum) {
+      const bRooms = rooms.filter(r => getBuildingNumHelper(r) === String(bNum));
+      if (bRooms.length === 0) return 'ไม่มีห้องประชุม';
+      const activeRooms = bRooms.filter(r => r.is_active);
+      if (activeRooms.length === 0) return 'ระงับการใช้งานทุกห้อง';
+      return bRooms.map(r => r.room_name + (!r.is_active ? ' (ปิด)' : '')).join(' • ');
+    }
+    const b1Names = getBuildingRoomsText('1');
+    const b2Names = getBuildingRoomsText('2');
+    const b3Names = getBuildingRoomsText('3');
+
+    // Pack view context object for all subview partials
+    const v = {
+      ...locals,
+      perms,
+      isAdminUser,
+      canApprove,
+      canFacility,
+      canBlockSchedule,
+      canBook,
+      canViewOwnBookings,
+      canManageRooms,
+      canManageAcl,
+      canManageUsers,
+      canViewLogs,
+      activeMyBookingsCount,
+      curDate,
+      nextDate,
+      nextDateStr,
+      todayStr,
+      isToday,
+      formattedThaiDate,
+      miniCalDays,
+      activeRoomsCount,
+      bookedRoomIds,
+      fullyFreeRoomsCount,
+      getBuildingNumHelper,
+      b1Names,
+      b2Names,
+      b3Names
+    };
+  %>
+
+  <%- include('partials/dashboard/modals', v) %>
+
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="/app" class="nav-brand" onclick="switchRequesterView('home'); return false;">
+        <div class="nav-brand-logo">RR</div>
+        <div class="nav-brand-text">
+          <div class="nav-brand-title">RoomReserve</div>
+          <div class="nav-brand-subtitle">Smart Meeting Space</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="nav-menu">
+      <button type="button" class="desktop-nav-item active" data-view="home" onclick="switchRequesterView('home', this)">
+        หน้าแรก
+      </button>
+
+      <% if (canApprove) { %>
+        <button type="button" class="desktop-nav-item" data-view="approvals" onclick="switchRequesterView('approvals', this)">
+          รออนุมัติ
+          <% if (pendingApprovals.length > 0) { %>
+            <span class="desktop-nav-badge" style="background: #f59e0b;"><%= pendingApprovals.length %></span>
+          <% } %>
+        </button>
+      <% } %>
+
+      <% if (canFacility) { %>
+        <button type="button" class="desktop-nav-item" data-view="facility" onclick="switchRequesterView('facility', this)">
+          งานส่งมอบห้อง
+          <% if (facilityTasks.length > 0) { %>
+            <span class="desktop-nav-badge" style="background: #10b981;"><%= facilityTasks.length %></span>
+          <% } %>
+        </button>
+      <% } %>
+
+      <% if (canBlockSchedule) { %>
+        <button type="button" class="desktop-nav-item" data-view="facility-block" onclick="switchRequesterView('facility-block', this)">
+          ปิดซ่อมบำรุง
+        </button>
+      <% } %>
+
+      <% if (canManageRooms) { %>
+        <a href="/app/rooms" class="desktop-nav-item" style="text-decoration:none;">จัดการห้อง</a>
+      <% } %>
+
+      <% if (canManageAcl) { %>
+        <a href="/admin/acl" class="desktop-nav-item" style="text-decoration:none;">ตารางสิทธิ์ (ACL)</a>
+      <% } %>
+
+      <% if (canManageUsers) { %>
+        <a href="/admin/users" class="desktop-nav-item" style="text-decoration:none;">ผู้ใช้งาน</a>
+      <% } %>
+
+      <% if (canViewLogs) { %>
+        <a href="/admin/logs" class="desktop-nav-item" style="text-decoration:none;">Audit Logs</a>
+      <% } %>
+
+      <% if (isAdminUser) { %>
+        <button type="button" class="desktop-nav-item" data-view="timeline" onclick="switchRequesterView('timeline', this)">
+          ผังช่วงเวลา
+        </button>
+      <% } %>
+
+      <% if (canBook) { %>
+        <button type="button" class="desktop-nav-item" data-view="booking" onclick="switchRequesterView('booking', this)">
+          จองห้อง
+        </button>
+      <% } %>
+
+      <% if (canViewOwnBookings) { %>
+        <button type="button" class="desktop-nav-item" data-view="mybookings" onclick="switchRequesterView('mybookings', this)">
+          การจองของฉัน
+          <% if (activeMyBookingsCount > 0) { %>
+            <span class="desktop-nav-badge"><%= activeMyBookingsCount %></span>
+          <% } %>
+        </button>
+      <% } %>
+    </div>
+
+    <div class="nav-right">
+      <div class="user-badge desktop-nav-item" data-view="profile" onclick="switchRequesterView('profile', this)" role="button" tabindex="0" title="คลิกเพื่อเปิดโปรไฟล์">
+        <span><%= user.username %></span>
+        <span class="role-pill"><%= user.roleName %></span>
+      </div>
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Floating Toast Notification (แบบลอย ไม่กินพื้นที่ Layout) -->
+    <%- include('partials/flash_toast', { success: (typeof success !== 'undefined' ? success : ''), error: (typeof error !== 'undefined' ? error : '') }) %>
+
+    <!-- Toast แจ้งเตือนเมื่อคลิกช่วงเวลาที่จองไม่ได้ -->
+    <div id="slotNoticeToast" class="slot-notice-toast">
+      <span id="slotNoticeText">ช่วงเวลานี้ถูกจอง/ปิดซ่อมแล้ว ไม่สามารถเลือกได้</span>
+    </div>
+
+    <!-- ================= UNIFIED MODERN APP CONTAINER (ทุก Role ใช้ Shell แบบเดียวกัน) ================= -->
+    <div class="requester-view-container">
+
+      <!-- ================= SUBVIEW 1: หน้าแรก ================= -->
+      <%- include('partials/dashboard/home', v) %>
+
+      <!-- ================= SUBVIEW 2: การจองห้อง ================= -->
+      <% if (canBook) { %>
+        <%- include('partials/dashboard/booking', v) %>
+      <% } %>
+
+      <!-- ================= SUBVIEW 3: ส่วนตารางคำขอของฉัน ================= -->
+      <% if (canViewOwnBookings) { %>
+        <%- include('partials/dashboard/my_bookings', v) %>
+      <% } %>
+
+      <!-- ================= SUBVIEW 4: โปรไฟล์ผู้ใช้ ================= -->
+      <%- include('partials/dashboard/profile', v) %>
+
+      <!-- ================= SUBVIEWS 5-7 (Approvals, Facility, Maintenance, Timeline) ================= -->
+      <% if (canApprove || isAdminUser) { %>
+        <%- include('partials/dashboard/approvals', v) %>
+      <% } %>
+
+      <% if (canFacility) { %>
+        <%- include('partials/dashboard/facility_tasks', v) %>
+      <% } %>
+
+      <% if (canBlockSchedule) { %>
+        <%- include('partials/dashboard/maintenance', v) %>
+      <% } %>
+
+      <% if (isAdminUser) { %>
+        <%- include('partials/dashboard/timeline', v) %>
+      <% } %>
+
+    </div> <!-- ปิด .requester-view-container -->
+  </div> <!-- ปิด .container -->
+
+  <script>
+    // Data Bridge จาก Server สู่ Client Script
+    const DAY_BOOKINGS = <%- JSON.stringify(dayBookings) %>;
+    const ROOMS = <%- JSON.stringify(rooms) %>;
+    const SELECTED_DATE = '<%= selectedDate %>';
+    const TODAY_STR = '<%= todayStr %>';
+    const CAN_BOOK = <%= canBook ? 'true' : 'false' %>;
+    const CAN_VIEW_OWN = <%= canViewOwnBookings ? 'true' : 'false' %>;
+  </script>
+  <script src="/dashboard.js"></script>
+
+  <!-- Mobile Bottom Navigation Bar (Dynamic per Permission & Role) -->
+  <%- include('partials/dashboard/bottom_nav', v) %>
+
+</body>
+</html>

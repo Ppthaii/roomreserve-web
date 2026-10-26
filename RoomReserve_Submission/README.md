@@ -66,7 +66,7 @@ npm run dev
 | :--- | :--- | :--- | :--- |
 | **Admin** | `admin` | `admin123` | จัดการ Dynamic ACL Matrix สด, จัดการบัญชีผู้ใช้, ระงับบัญชี, และดู Security Audit Logs ทั้งหมด |
 | **Approver** | `manager` | `approver123` | ตรวจสอบคำขอจองห้อง, พิจารณาอนุมัติ/ปฏิเสธ (ระบบ Auto-Reject คิวที่เวลาชนกันอัตโนมัติ) |
-| **Facility Officer** | `facility` | `staff123` | บล็อกปิดห้องซ่อมบำรุงล่วงหน้า, ส่งมอบห้อง (Check-in), ตรวจรับห้องพร้อมแนบรูปถ่าย (Check-out) |
+| **Facility Officer** | `facility` | `facility123` | บล็อกปิดห้องซ่อมบำรุงล่วงหน้า, ส่งมอบห้อง (Check-in), ตรวจรับห้องพร้อมแนบรูปถ่าย (Check-out) |
 | **Requester** | `somchai` | `user123` | ยื่นจองห้องประชุม, แนบไฟล์วาระการประชุม PDF, ดูเฉพาะรายการตนเอง, ยกเลิกคำขอของตนเอง |
 
 ---
