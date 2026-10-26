@@ -256,34 +256,51 @@
  }
 
  /* Print Style: Formats perfectly to 16:9 PDF per slide */
- @media print {
- body {
- background: #fff !important;
- color: #000 !important;
- padding: 0 !important;
- }
- .controls-bar, .print-tip {
- display: none !important;
- }
- .slide-viewport {
- page-break-after: always;
- break-after: page;
- box-shadow: none !important;
- border: none !important;
- width: 100vw !important;
- height: 100vh !important;
- max-width: none !important;
- aspect-ratio: auto !important;
- border-radius: 0 !important;
- background: #0c1220 !important;
- color: #fff !important;
- -webkit-print-color-adjust: exact;
- print-color-adjust: exact;
- }
- .slide-viewport:not(.active-slide) {
- display: none !important;
- }
- }
+  @media print {
+    @page {
+      size: 16in 9in;
+      margin: 0;
+    }
+    html, body {
+      background: #0c1220 !important;
+      color: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      overflow: visible !important;
+    }
+    .controls-bar, .print-tip {
+      display: none !important;
+    }
+    .slide-viewport {
+      display: block !important;
+      width: 100% !important;
+      max-width: none !important;
+      aspect-ratio: auto !important;
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      background: transparent !important;
+      overflow: visible !important;
+    }
+    .slide-page {
+      display: flex !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      box-sizing: border-box !important;
+      padding: 2.5rem 3rem !important;
+      background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 45%),
+                  radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.1), transparent 50%),
+                  #0c1220 !important;
+      color: #fff !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
 
  /* Dynamic Slide Visibility */
  .slide-page {
