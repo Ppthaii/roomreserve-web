@@ -230,12 +230,8 @@
   </nav>
 
   <div class="container">
-    <% if (success) { %>
-      <div class="alert alert-success" id="flashSuccessAlert" style="display: flex; justify-content: space-between; align-items: center;"><span><%= success %></span><button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;font-size:1.25rem;cursor:pointer;line-height:1;padding:0 4px;">&times;</button></div>
-    <% } %>
-    <% if (error) { %>
-      <div class="alert alert-danger"><%= error %></div>
-    <% } %>
+    <!-- Floating Toast Notification (แบบลอย ไม่กินพื้นที่ Layout) -->
+    <%- include('partials/flash_toast', { success: (typeof success !== 'undefined' ? success : ''), error: (typeof error !== 'undefined' ? error : '') }) %>
 
     <!-- Toast แจ้งเตือนเมื่อคลิกช่วงเวลาที่จองไม่ได้ -->
     <div id="slotNoticeToast" class="slot-notice-toast">

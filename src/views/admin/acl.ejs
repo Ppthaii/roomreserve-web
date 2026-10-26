@@ -12,12 +12,8 @@
   <%- include('../partials/navbar', { active: 'acl' }) %>
 
   <div class="container">
-    <% if (typeof success !== 'undefined' && success) { %>
-      <div class="alert alert-success" style="margin-bottom: 1rem;"><%= success %></div>
-    <% } %>
-    <% if (typeof error !== 'undefined' && error) { %>
-      <div class="alert alert-danger" style="margin-bottom: 1rem;"><%= error %></div>
-    <% } %>
+    <!-- Floating Toast Notification (แบบลอย ไม่กินพื้นที่ Layout) -->
+    <%- include('../partials/flash_toast', { success: (typeof success !== 'undefined' ? success : ''), error: (typeof error !== 'undefined' ? error : '') }) %>
 
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
