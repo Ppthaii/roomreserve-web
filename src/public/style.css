@@ -2439,6 +2439,149 @@ body {
   color: #f8fafc;
 }
 
+/* 1. Visual Room Selection Box */
+.visual-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.visual-room-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+}
+
+.visual-room-card:hover {
+  border-color: #93c5fd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.visual-room-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme="dark"] .visual-room-card.selected {
+  background: #1e293b;
+  border-color: #3b82f6;
+}
+
+.visual-room-img {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.visual-room-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.visual-room-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--dark);
+}
+
+.visual-room-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+.visual-room-radio {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: transparent;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.visual-room-card.selected .visual-room-radio {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+/* 2. Unified Navbar & Clickable User Badge */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+.user-badge:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.user-badge.active {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.user-badge.active .role-pill {
+  background: #ffffff !important;
+  color: #2563eb !important;
+}
+
+[data-theme="dark"] .user-badge {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .user-badge:hover {
+  background: #334155;
+}
+
+[data-theme="dark"] .user-badge.active {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
 [data-theme="dark"] .quick-booking-card {
   box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.4);
 }

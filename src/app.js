@@ -36,8 +36,7 @@ app.get('/__dev_ping', (req, res) => {
 app.use(session({
   store: new pgSession({
     pool: pool,
-    tableName: 'user_sessions',
-    createTableIfMissing: true
+    tableName: 'session'
   }),
   secret: process.env.SESSION_SECRET || 'roomreserve_secret_2026',
   resave: false,

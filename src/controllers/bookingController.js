@@ -247,8 +247,8 @@ async function cancelBooking(req, res, next) {
       return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถยกเลิกได้ เนื่องจากเจ้าหน้าที่ได้ส่งมอบห้องเรียบร้อยแล้ว (สถานะ: กำลังใช้งาน)')}`);
     }
 
-    if (!['PENDING_APPROVAL', 'APPROVED'].includes(booking.status)) {
-      return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถยกเลิกคำขอที่สิ้นสุดแล้วได้')}`);
+    if (booking.status !== 'PENDING_APPROVAL' && req.session.roleName !== 'admin') {
+      return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถยกเลิกได้ เนื่องจากคำขอได้รับการอนุมัติแล้ว (สามารถยกเลิกได้เฉพาะคำขอที่รออนุมัติเท่านั้น)')}`);
     }
 
     await pool.query(
