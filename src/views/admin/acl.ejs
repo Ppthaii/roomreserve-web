@@ -12,6 +12,13 @@
   <%- include('../partials/navbar', { active: 'acl' }) %>
 
   <div class="container">
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success" style="margin-bottom: 1rem;"><%= success %></div>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger" style="margin-bottom: 1rem;"><%= error %></div>
+    <% } %>
+
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
         <div>
@@ -88,26 +95,48 @@
         <table class="table" style="text-align: center;">
           <thead>
             <tr>
-              <th style="text-align: left;">รหัสสิทธิ์ (Permission Code)</th>
-              <th style="text-align: left;">คำอธิบายสิทธิ์</th>
+              <th style="text-align: left; vertical-align: middle;">รหัสสิทธิ์ (Permission Code)</th>
+              <th style="text-align: left; vertical-align: middle;">คำอธิบายสิทธิ์</th>
               <% roles.forEach(r => { %>
                 <th style="text-align: center; vertical-align: middle; min-width: 130px;">
                   <div><%= r.display_name %></div>
                   <div style="font-size: 0.72rem; color: var(--muted); font-weight: normal; margin-top: 2px;">
                     (<%= r.role_name %>)
                   </div>
+                  <% if (typeof coreRoles !== 'undefined' && !coreRoles.includes(r.role_name)) { %>
+                    <form action="/admin/roles/<%= r.role_id %>/delete" method="POST" style="margin-top: 6px;" onsubmit="return confirm('ยืนยันการลบบทบาท &quot;<%= r.display_name %>&quot; ออกจากระบบ?');">
+                      <button type="submit" class="btn-delete-acl" title="ลบบทบาทที่เพิ่มมานี้">
+                        🗑️ ลบ Role
+                      </button>
+                    </form>
+                  <% } %>
                 </th>
               <% }) %>
             </tr>
           </thead>
           <tbody>
             <% permissions.forEach(p => { %>
+              <% const isCustomPerm = (typeof corePermissions !== 'undefined' && !corePermissions.includes(p.permission_code)); %>
               <tr>
-                <td style="text-align: left;">
-                  <code><%= p.permission_code %></code>
+                <td style="text-align: left; vertical-align: middle;">
+                  <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <code><%= p.permission_code %></code>
+                    <% if (isCustomPerm) { %>
+                      <span class="badge-custom-acl">เพิ่มใหม่</span>
+                    <% } %>
+                  </div>
                 </td>
-                <td style="text-align: left; font-size: 0.85rem; color: var(--slate);">
-                  <%= p.description %>
+                <td style="text-align: left; font-size: 0.85rem; color: var(--slate); vertical-align: middle;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                    <span><%= p.description %></span>
+                    <% if (isCustomPerm) { %>
+                      <form action="/admin/permissions/<%= p.permission_id %>/delete" method="POST" style="margin: 0;" onsubmit="return confirm('ยืนยันการลบสิทธิ์ &quot;<%= p.permission_code %>&quot; ออกจากระบบ?');">
+                        <button type="submit" class="btn-delete-acl" title="ลบสิทธิ์ที่เพิ่มมานี้">
+                          🗑️ ลบ
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
                 </td>
                 <% roles.forEach(r => { %>
                   <% const isChecked = grantSet.has(`${r.role_id}_${p.permission_id}`); %>

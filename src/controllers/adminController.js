@@ -28,6 +28,8 @@ async function getAclMatrix(req, res, next) {
       roles: rolesRes.rows,
       permissions: permissionsRes.rows,
       grantSet,
+      corePermissions: CORE_PERMISSIONS,
+      coreRoles: ['admin', 'requester', 'approver', 'facility'],
       success: req.query.success || '',
       error: req.query.error || ''
     });
@@ -319,6 +321,7 @@ async function deleteRole(req, res, next) {
       ua: req.get('user-agent')
     });
 
+    global.ACL_VERSION = Date.now();
     res.redirect(`/admin/acl?success=${encodeURIComponent(`ลบบทบาท "${role.display_name}" สำเร็จ`)}`);
   } catch (err) {
     next(err);
@@ -397,6 +400,7 @@ async function deletePermission(req, res, next) {
       ua: req.get('user-agent')
     });
 
+    global.ACL_VERSION = Date.now();
     res.redirect(`/admin/acl?success=${encodeURIComponent(`ลบสิทธิ์ "${perm.permission_code}" สำเร็จ`)}`);
   } catch (err) {
     next(err);
