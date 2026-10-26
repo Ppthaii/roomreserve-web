@@ -13,8 +13,8 @@
   function redirectToLogin(reason = 'expired') {
     if (isRedirecting) return;
     isRedirecting = true;
-    console.warn('[SessionGuard] เซสชันหมดอายุ กำลังนำทางกลับไปยังหน้า Login...');
-    window.location.href = `/login?error=${encodeURIComponent(reason)}`;
+    console.warn('[SessionGuard] กำลังนำทางกลับไปยังหน้า Login...');
+    window.location.href = '/login';
   }
 
   // รีเซ็ตเวลากิจกรรมล่าสุดเมื่อผู้ใช้ขยับเมาส์หรือกดปุ่ม

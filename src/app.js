@@ -44,7 +44,7 @@ app.get('/api/session-status', (req, res) => {
     return res.status(401).json({
       authenticated: false,
       error: 'SESSION_EXPIRED',
-      redirect: '/login?error=expired'
+      redirect: '/login'
     });
   }
   res.json({
@@ -55,9 +55,15 @@ app.get('/api/session-status', (req, res) => {
   });
 });
 
-// Session Configuration (Session-based Auth with Inactivity Expiration)
+// Session Configuration (Persistent Session via PostgreSQL to survive dev reloads + Inactivity Expiration)
+const pgSession = require('connect-pg-simple')(session);
 const SESSION_TIMEOUT_MS = parseInt(process.env.SESSION_TIMEOUT_MS, 10) || (30 * 60 * 1000); // ค่าเริ่มต้น 30 นาที
 app.use(session({
+  store: new pgSession({
+    pool: pool,
+    tableName: 'user_sessions',
+    createTableIfMissing: false
+  }),
   secret: process.env.SESSION_SECRET || 'roomreserve_secret_2026',
   resave: false,
   saveUninitialized: false,
@@ -106,15 +112,14 @@ app.use(async (req, res, next) => {
 app.get('/login', (req, res) => {
   if (req.session.userId) return res.redirect('/app');
   let errorMsg = req.query.error || '';
-  if (errorMsg === 'unauthorized') {
-    errorMsg = 'กรุณาเข้าสู่ระบบก่อนทำรายการ';
-  } else if (errorMsg === 'expired') {
-    errorMsg = '⚠️ เซสชันการใช้งานของคุณหมดอายุ เพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง';
+  // ซ่อนการแจ้งเตือนเซสชันหมดอายุ/ไม่ได้รับอนุญาต ตอนเซิร์ฟเวอร์รีสตาร์ตจากการอัปเดตโค้ด
+  if (errorMsg === 'unauthorized' || errorMsg === 'expired') {
+    errorMsg = '';
   }
   res.render('login', {
     title: 'เข้าสู่ระบบ | RoomReserve',
     error: errorMsg,
-    success: req.query.success || ''
+    success: ''
   });
 });
 
@@ -208,7 +213,7 @@ app.post('/logout', (req, res, next) => {
       ua: req.get('user-agent')
     });
 
-    res.redirect('/login?success=' + encodeURIComponent('ออกจากระบบเรียบร้อยแล้ว'));
+    res.redirect('/login');
   });
 });
 

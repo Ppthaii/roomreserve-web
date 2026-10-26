@@ -6,10 +6,10 @@ function requireAuth(req, res, next) {
     if (req.xhr || req.headers.accept?.includes('json') || req.originalUrl.startsWith('/api/')) {
       return res.status(401).json({
         error: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',
-        redirect: '/login?error=expired'
+        redirect: '/login'
       });
     }
-    return res.redirect('/login?error=expired');
+    return res.redirect('/login');
   }
   next();
 }
@@ -22,7 +22,7 @@ async function requireAdmin(req, res, next) {
       if (req.originalUrl.startsWith('/api/') || req.xhr || req.headers.accept?.includes('json')) {
         return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบก่อนทำรายการ' });
       }
-      return res.redirect('/login?error=unauthorized');
+      return res.redirect('/login');
     }
 
     // ดึง Role สดจาก Database และเช็คว่าบัญชียังเปิดใช้งาน (is_active) หรือไม่
@@ -76,7 +76,7 @@ function requirePermission(permissionCode) {
         if (req.originalUrl.startsWith('/api/') || req.xhr || req.headers.accept?.includes('json')) {
           return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบก่อนทำรายการ' });
         }
-        return res.status(401).redirect('/login?error=unauthorized');
+        return res.status(401).redirect('/login');
       }
 
       // ดึงสิทธิ์สดๆ ของผู้ใช้จากฐานข้อมูลแบบ Real-time โดยตรง (ไม่พึ่งพา Session เก่า)
