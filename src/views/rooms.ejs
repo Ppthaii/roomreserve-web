@@ -20,15 +20,28 @@
   <script src="/session-guard.js"></script>
 </head>
 <body>
+  <%
+    const perms = (locals.userPermissions && Array.isArray(locals.userPermissions)) ? locals.userPermissions : [];
+    const isAdminUser = user.roleName === 'admin';
+    const canManageRooms = perms.includes('room.manage') || isAdminUser;
+    const canManageAcl = perms.includes('acl.manage') || isAdminUser;
+    const canManageUsers = perms.includes('user.manage') || isAdminUser;
+    const canViewLogs = perms.includes('log.read') || isAdminUser;
+  %>
+
   <!-- Navbar หลัก -->
   <nav class="navbar">
     <a href="/app" class="nav-brand">RoomReserve</a>
     <div class="nav-links">
       <a href="/app">ตารางปฏิทิน & คิวงาน</a>
       <a href="/app/rooms" class="active">จัดการห้องประชุม</a>
-      <% if (user.roleName === 'admin') { %>
+      <% if (canManageAcl) { %>
         <a href="/admin/acl" style="color: #4f46e5; font-weight: 700;">ตารางสิทธิ์ (Dynamic ACL)</a>
+      <% } %>
+      <% if (canViewLogs) { %>
         <a href="/admin/logs" style="color: #4f46e5;">Audit Logs</a>
+      <% } %>
+      <% if (canManageUsers) { %>
         <a href="/admin/users" style="color: #4f46e5;">ผู้ใช้งาน</a>
       <% } %>
       <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
@@ -58,7 +71,7 @@
             จัดการข้อมูลห้อง ความจุ อุปกรณ์โสตทัศนูปกรณ์ และสถานะเปิดใช้งาน/ปิดปรับปรุง
           </p>
         </div>
-        <% if (['facility', 'admin'].includes(user.roleName)) { %>
+        <% if (canManageRooms) { %>
           <button type="button" class="btn btn-primary btn-sm" onclick="toggleModal('modal-add-room')">
             เพิ่มห้องประชุมใหม่
           </button>
@@ -103,7 +116,7 @@
               <th>สถานที่ตั้ง</th>
               <th>อุปกรณ์ประจำห้อง</th>
               <th>สถานะห้อง</th>
-              <% if (['facility', 'admin'].includes(user.roleName)) { %>
+              <% if (canManageRooms) { %>
                 <th>จัดการ</th>
               <% } %>
             </tr>
@@ -129,7 +142,7 @@
                     <span class="status-badge status-BLOCKED">ปิดปรับปรุง (Maintenance)</span>
                   <% } %>
                 </td>
-                <% if (['facility', 'admin'].includes(user.roleName)) { %>
+                <% if (canManageRooms) { %>
                   <td>
                     <form action="/app/rooms/<%= r.room_id %>/toggle" method="POST" style="display:inline;">
                       <button class="btn <%= r.is_active ? 'btn-danger' : 'btn-success' %> btn-sm">

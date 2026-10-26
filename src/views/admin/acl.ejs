@@ -67,15 +67,33 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
+  <%
+    const perms = (locals.userPermissions && Array.isArray(locals.userPermissions)) ? locals.userPermissions : [];
+    const isAdminUser = user.roleName === 'admin';
+    const canManageRooms = perms.includes('room.manage') || isAdminUser;
+    const canManageAcl = perms.includes('acl.manage') || isAdminUser;
+    const canManageUsers = perms.includes('user.manage') || isAdminUser;
+    const canViewLogs = perms.includes('log.read') || isAdminUser;
+  %>
+
   <!-- Navbar หลัก -->
   <nav class="navbar">
     <a href="/app" class="nav-brand">RoomReserve</a>
     <div class="nav-links">
       <a href="/app" style="font-weight: 700; color: #1d4ed8;">&larr; กลับหน้าแรก</a>
       <a href="/app">ตารางปฏิทิน & คิวงาน</a>
-      <a href="/admin/acl" class="active" style="color: #4f46e5; font-weight: 700;">ตารางสิทธิ์ (Dynamic ACL)</a>
-      <a href="/admin/logs">Audit Logs</a>
-      <a href="/admin/users">ผู้ใช้งาน</a>
+      <% if (canManageRooms) { %>
+        <a href="/app/rooms">จัดการห้อง</a>
+      <% } %>
+      <% if (canManageAcl) { %>
+        <a href="/admin/acl" class="active" style="color: #4f46e5; font-weight: 700;">ตารางสิทธิ์ (Dynamic ACL)</a>
+      <% } %>
+      <% if (canViewLogs) { %>
+        <a href="/admin/logs">Audit Logs</a>
+      <% } %>
+      <% if (canManageUsers) { %>
+        <a href="/admin/users">ผู้ใช้งาน</a>
+      <% } %>
       <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
       <div class="user-badge">
         <span><%= user.username %></span>

@@ -70,17 +70,34 @@ app.use(session({
 }));
 
 // Global Template Variables
-app.use((req, res, next) => {
-  res.locals.currentUser = req.session.userId ? {
-    id: req.session.userId,
-    username: req.session.username,
-    fullName: req.session.fullName,
-    roleName: req.session.roleName,
-    roleDisplay: req.session.roleDisplay,
-    department: req.session.department
-  } : null;
-  res.locals.isAdmin = req.session.roleName === 'admin';
-  next();
+app.use(async (req, res, next) => {
+  try {
+    let userPermissions = [];
+    if (req.session.userId) {
+      const permsRes = await pool.query(`
+        SELECT p.permission_code
+        FROM users u
+        JOIN role_permissions rp ON rp.role_id = u.role_id
+        JOIN permissions p ON rp.permission_id = p.permission_id
+        WHERE u.user_id = $1 AND u.is_active = TRUE
+      `, [req.session.userId]);
+      userPermissions = permsRes.rows.map(r => r.permission_code);
+    }
+
+    res.locals.currentUser = req.session.userId ? {
+      id: req.session.userId,
+      username: req.session.username,
+      fullName: req.session.fullName,
+      roleName: req.session.roleName,
+      roleDisplay: req.session.roleDisplay,
+      department: req.session.department
+    } : null;
+    res.locals.userPermissions = userPermissions;
+    res.locals.isAdmin = req.session.roleName === 'admin';
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ================= Authentication Routes =================

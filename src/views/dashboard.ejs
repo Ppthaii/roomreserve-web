@@ -236,12 +236,16 @@
 
   <% 
     const perms = (locals.userPermissions && Array.isArray(locals.userPermissions)) ? locals.userPermissions : [];
-    const isAdminUser = user.roleName === 'admin' || perms.includes('acl.manage');
+    const isAdminUser = user.roleName === 'admin';
     const canApprove = perms.includes('booking.approve') || isAdminUser;
     const canFacility = perms.includes('facility.checkin') || perms.includes('facility.checkout') || isAdminUser;
     const canBlockSchedule = perms.includes('room.block_schedule') || isAdminUser;
     const canBook = perms.includes('booking.create') || isAdminUser;
     const canViewOwnBookings = perms.includes('booking.read_own') || perms.includes('booking.read_all') || isAdminUser;
+    const canManageRooms = perms.includes('room.manage') || isAdminUser;
+    const canManageAcl = perms.includes('acl.manage') || isAdminUser;
+    const canManageUsers = perms.includes('user.manage') || isAdminUser;
+    const canViewLogs = perms.includes('log.read') || isAdminUser;
 
     // คำนวณเฉพาะคำขอที่ยังดำเนินอยู่ (ไม่นับรายการที่เสร็จสิ้น/ยกเลิก/ปฏิเสธ ขึ้นเตือนบน Navbar)
     const activeMyBookingsCount = (Array.isArray(myBookings) ? myBookings : []).filter(b => 
@@ -289,10 +293,23 @@
         </button>
       <% } %>
 
-      <% if (isAdminUser) { %>
+      <% if (canManageRooms) { %>
+        <a href="/app/rooms" class="desktop-nav-item" style="text-decoration:none;">จัดการห้อง</a>
+      <% } %>
+
+      <% if (canManageAcl) { %>
         <a href="/admin/acl" class="desktop-nav-item" style="text-decoration:none;">ตารางสิทธิ์ (ACL)</a>
+      <% } %>
+
+      <% if (canManageUsers) { %>
         <a href="/admin/users" class="desktop-nav-item" style="text-decoration:none;">ผู้ใช้งาน</a>
+      <% } %>
+
+      <% if (canViewLogs) { %>
         <a href="/admin/logs" class="desktop-nav-item" style="text-decoration:none;">Audit Logs</a>
+      <% } %>
+
+      <% if (isAdminUser) { %>
         <button type="button" class="desktop-nav-item" data-view="timeline" onclick="switchRequesterView('timeline', this)">
           ผังช่วงเวลา
         </button>
