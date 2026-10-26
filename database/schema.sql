@@ -7,16 +7,7 @@
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- 2. ตารางบทบาทผู้ใช้ (Roles)
-DROP TABLE IF EXISTS audit_logs CASCADE;
-DROP TABLE IF EXISTS booking_attachments CASCADE;
-DROP TABLE IF EXISTS room_bookings CASCADE;
-DROP TABLE IF EXISTS rooms CASCADE;
-DROP TABLE IF EXISTS role_permissions CASCADE;
-DROP TABLE IF EXISTS permissions CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS roles CASCADE;
-
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
   role_id SERIAL PRIMARY KEY,
   role_name VARCHAR(50) UNIQUE NOT NULL,
   display_name VARCHAR(100) NOT NULL,
@@ -25,7 +16,7 @@ CREATE TABLE roles (
 );
 
 -- 3. ตารางสิทธิ์การใช้งาน (Permissions)
-CREATE TABLE permissions (
+CREATE TABLE IF NOT EXISTS permissions (
   permission_id SERIAL PRIMARY KEY,
   permission_code VARCHAR(100) UNIQUE NOT NULL,
   description TEXT NOT NULL,
@@ -33,7 +24,7 @@ CREATE TABLE permissions (
 );
 
 -- 4. ตารางความสัมพันธ์สิทธิ์ตามบทบาท (Role_Permissions - Dynamic ACL Matrix)
-CREATE TABLE role_permissions (
+CREATE TABLE IF NOT EXISTS role_permissions (
   role_id INT NOT NULL REFERENCES roles(role_id) ON DELETE CASCADE,
   permission_id INT NOT NULL REFERENCES permissions(permission_id) ON DELETE CASCADE,
   granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -41,7 +32,7 @@ CREATE TABLE role_permissions (
 );
 
 -- 5. ตารางผู้ใช้งาน (Users)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   user_id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
@@ -53,7 +44,7 @@ CREATE TABLE users (
 );
 
 -- 6. ตารางห้องประชุมและทรัพยากร (Rooms)
-CREATE TABLE rooms (
+CREATE TABLE IF NOT EXISTS rooms (
   room_id SERIAL PRIMARY KEY,
   room_name VARCHAR(100) UNIQUE NOT NULL,
   capacity INT NOT NULL,
@@ -65,7 +56,7 @@ CREATE TABLE rooms (
 
 -- 7. ตารางการจองห้อง (Room Bookings)
 -- มี Exclusion Constraint ป้องกันช่วงเวลาทับซ้อน (Double-Booking / Race Condition Guard)
-CREATE TABLE room_bookings (
+CREATE TABLE IF NOT EXISTS room_bookings (
   booking_id SERIAL PRIMARY KEY,
   room_id INT NOT NULL REFERENCES rooms(room_id) ON DELETE RESTRICT,
   user_id INT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
@@ -103,7 +94,7 @@ CREATE TABLE room_bookings (
 );
 
 -- 8. ตารางไฟล์แนบ (Booking Attachments - Protected Storage)
-CREATE TABLE booking_attachments (
+CREATE TABLE IF NOT EXISTS booking_attachments (
   attachment_id SERIAL PRIMARY KEY,
   booking_id INT NOT NULL REFERENCES room_bookings(booking_id) ON DELETE CASCADE,
   uploaded_by INT NOT NULL REFERENCES users(user_id),
@@ -117,7 +108,7 @@ CREATE TABLE booking_attachments (
 );
 
 -- 9. ตารางบันทึกประวัติความปลอดภัยและการทำงาน (Audit Logs)
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
   log_id SERIAL PRIMARY KEY,
   user_id INT REFERENCES users(user_id) ON DELETE SET NULL,
   username VARCHAR(50),
@@ -133,10 +124,10 @@ CREATE TABLE audit_logs (
 );
 
 -- Index สำหรับค้นหา Log ย้อนหลังได้อย่างรวดเร็ว
-CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at DESC);
-CREATE INDEX idx_audit_logs_action ON audit_logs(action);
-CREATE INDEX idx_audit_logs_username ON audit_logs(username);
-CREATE INDEX idx_room_bookings_room_time ON room_bookings(room_id, start_time, end_time);
-CREATE INDEX idx_room_bookings_user_created ON room_bookings(user_id, created_at DESC);
-CREATE INDEX idx_room_bookings_status_time ON room_bookings(status, start_time ASC);
-CREATE INDEX idx_room_bookings_start_time ON room_bookings(start_time ASC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_username ON audit_logs(username);
+CREATE INDEX IF NOT EXISTS idx_room_bookings_room_time ON room_bookings(room_id, start_time, end_time);
+CREATE INDEX IF NOT EXISTS idx_room_bookings_user_created ON room_bookings(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_room_bookings_status_time ON room_bookings(status, start_time ASC);
+CREATE INDEX IF NOT EXISTS idx_room_bookings_start_time ON room_bookings(start_time ASC);

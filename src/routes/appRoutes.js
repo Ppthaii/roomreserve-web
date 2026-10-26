@@ -91,4 +91,10 @@ router.get('/files/:id',
   fileController.getFile
 );
 
+// อัปเดตข้อมูลส่วนตัว (เข้าถึงได้ทุกบทบาทที่ล็อกอินแล้ว)
+router.post('/profile/update', 
+  requireAuth, 
+  bookingController.updateProfile
+);
+
 module.exports = router;

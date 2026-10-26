@@ -71,6 +71,7 @@
   <nav class="navbar">
     <a href="/app" class="nav-brand">RoomReserve</a>
     <div class="nav-links">
+      <a href="/app" style="font-weight: 700; color: #1d4ed8;">&larr; กลับหน้าแรก</a>
       <a href="/app">ตารางปฏิทิน & คิวงาน</a>
       <a href="/admin/acl" class="active" style="color: #4f46e5; font-weight: 700;">ตารางสิทธิ์ (Dynamic ACL)</a>
       <a href="/admin/logs">Audit Logs</a>
@@ -90,6 +91,11 @@
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
         <div>
+          <div style="margin-bottom: 0.5rem;">
+            <a href="/app" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+              &larr; กลับหน้าแรก
+            </a>
+          </div>
           <h2 style="font-size: 1.35rem; font-weight: 800; display: flex; align-items: center;">
             <span class="switch-indicator"></span> ตารางกำหนดสิทธิ์ Real-time (Dynamic ACL Matrix)
           </h2>
@@ -99,14 +105,11 @@
         </div>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
           <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-role')">
-            เพิ่ม Role ใหม่ (Live Demo 5)
+            เพิ่ม Role ใหม่
           </button>
           <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-perm')">
-            เพิ่ม Permission ใหม่ (Live Demo 6)
+            เพิ่ม Permission ใหม่
           </button>
-          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; color: #065f46; font-weight: 600; display: flex; align-items: center;">
-            Instant Auto-Save
-          </div>
         </div>
       </div>
 
@@ -162,51 +165,6 @@
         </form>
       </div>
 
-      <!-- Modal แก้ไข Role -->
-      <div id="modal-edit-role" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: #1e40af;">แก้ไขข้อมูลบทบาท (Role Update)</h3>
-        <form id="form-edit-role" method="POST" style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 0.75rem; align-items: end;">
-          <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.75rem;">ชื่อแสดง (Display Name)</label>
-            <input type="text" id="edit-role-display" name="display_name" class="form-control" required>
-          </div>
-          <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.75rem;">คำอธิบาย</label>
-            <input type="text" id="edit-role-desc" name="description" class="form-control">
-          </div>
-          <div style="display: flex; gap: 0.4rem;">
-            <button type="submit" class="btn btn-primary btn-sm">บันทึก</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-edit-role')">ยกเลิก</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Modal แก้ไข Permission -->
-      <div id="modal-edit-perm" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: #1e40af;">แก้ไขข้อมูลสิทธิ์ (<span id="edit-perm-code-label"></span>)</h3>
-        <form id="form-edit-perm" method="POST" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 0.75rem; align-items: end;">
-          <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.75rem;">คำอธิบายสิทธิ์</label>
-            <input type="text" id="edit-perm-desc" name="description" class="form-control" required>
-          </div>
-          <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.75rem;">หมวดหมู่</label>
-            <select id="edit-perm-cat" name="category" class="form-control">
-              <option value="room">ห้องประชุม (room)</option>
-              <option value="booking">การจอง (booking)</option>
-              <option value="facility">สถานที่ (facility)</option>
-              <option value="file">เอกสาร (file)</option>
-              <option value="admin">ผู้ดูแลระบบ (admin)</option>
-              <option value="general">ทั่วไป (general)</option>
-            </select>
-          </div>
-          <div style="display: flex; gap: 0.4rem;">
-            <button type="submit" class="btn btn-primary btn-sm">บันทึก</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-edit-perm')">ยกเลิก</button>
-          </div>
-        </form>
-      </div>
-
       <div class="table-responsive">
         <table class="table" style="text-align: center;">
           <thead>
@@ -214,23 +172,10 @@
               <th style="text-align: left;">รหัสสิทธิ์ (Permission Code)</th>
               <th style="text-align: left;">คำอธิบายสิทธิ์</th>
               <% roles.forEach(r => { %>
-                <th style="text-align: center; vertical-align: top;">
+                <th style="text-align: center; vertical-align: middle; min-width: 130px;">
                   <div><%= r.display_name %></div>
                   <div style="font-size: 0.72rem; color: var(--muted); font-weight: normal; margin-top: 2px;">
                     (<%= r.role_name %>)
-                  </div>
-                  <div style="display: flex; gap: 4px; justify-content: center; margin-top: 6px;">
-                    <button type="button" class="btn btn-outline btn-xs btn-edit-role" 
-                            style="padding: 2px 6px; font-size: 0.7rem;" 
-                            data-role-id="<%= r.role_id %>"
-                            data-display-name="<%= r.display_name %>"
-                            data-description="<%= r.description || '' %>"
-                            title="แก้ไขชื่อ">✏️</button>
-                    <% if (r.role_name !== 'admin') { %>
-                      <form action="/admin/roles/<%= r.role_id %>/delete" method="POST" style="margin: 0;" onsubmit="return confirm('ยืนยันลบบทบาท <%= r.display_name %> ? (จะลบได้เมื่อไม่มีผู้ใช้ผูกอยู่เท่านั้น)')">
-                        <button type="submit" class="btn btn-outline btn-xs" style="padding: 2px 6px; font-size: 0.7rem; color: #ef4444; border-color: #fca5a5;" title="ลบบทบาท">🗑️</button>
-                      </form>
-                    <% } %>
                   </div>
                 </th>
               <% }) %>
@@ -238,26 +183,9 @@
           </thead>
           <tbody>
             <% permissions.forEach(p => { %>
-              <% const isCore = ['room.view_schedule', 'room.manage', 'room.block_schedule', 'booking.create', 'booking.read_own', 'booking.read_all', 'booking.cancel_own', 'booking.approve', 'facility.checkin', 'facility.checkout', 'file.upload_agenda', 'file.upload_inspect', 'file.view', 'acl.manage', 'user.manage', 'log.read'].includes(p.permission_code); %>
               <tr>
                 <td style="text-align: left;">
-                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                    <code><%= p.permission_code %></code>
-                    <div style="display: flex; gap: 4px;">
-                      <button type="button" class="btn btn-outline btn-xs btn-edit-perm" 
-                              style="padding: 2px 5px; font-size: 0.7rem;" 
-                              data-perm-id="<%= p.permission_id %>"
-                              data-perm-code="<%= p.permission_code %>"
-                              data-description="<%= p.description %>"
-                              data-category="<%= p.category || 'general' %>"
-                              title="แก้ไขคำอธิบาย">✏️</button>
-                      <% if (!isCore) { %>
-                        <form action="/admin/permissions/<%= p.permission_id %>/delete" method="POST" style="margin: 0;" onsubmit="return confirm('ยืนยันลบรหัสสิทธิ์ <%= p.permission_code %> ?')">
-                          <button type="submit" class="btn btn-outline btn-xs" style="padding: 2px 5px; font-size: 0.7rem; color: #ef4444; border-color: #fca5a5;" title="ลบสิทธิ์">🗑️</button>
-                        </form>
-                      <% } %>
-                    </div>
-                  </div>
+                  <code><%= p.permission_code %></code>
                 </td>
                 <td style="text-align: left; font-size: 0.85rem; color: var(--slate);">
                   <%= p.description %>
@@ -265,7 +193,7 @@
                 <% roles.forEach(r => { %>
                   <% const isChecked = grantSet.has(`${r.role_id}_${p.permission_id}`); %>
                   <% const isDisabled = (r.role_name === 'admin' && p.permission_code === 'acl.manage'); %>
-                  <td>
+                  <td style="text-align: center; vertical-align: middle; min-width: 130px;">
                     <input 
                       type="checkbox" 
                       class="acl-checkbox"
@@ -275,7 +203,7 @@
                       data-role-name="<%= r.display_name %>"
                       <%= isChecked ? 'checked' : '' %>
                       <%= isDisabled ? 'checked disabled title="ต้องคงสิทธิ์ Admin ไว้เสมอเพื่อป้องกันระบบล็อกตัวเอง"' : '' %>
-                      style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer;"
+                      style="width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; margin: 0 auto; display: block;"
                     >
                   </td>
                 <% }) %>
@@ -284,17 +212,6 @@
           </tbody>
         </table>
       </div>
-    </div>
-
-    <!-- กล่องแนะนำวิธีสาธิตให้อาจารย์ดูสด -->
-    <div class="card" style="background: #fdf4ff; border-color: #f5d0fe;">
-      <div class="card-title" style="color: #86198f;">วิธีสาธิตให้อาจารย์ดูสดใน 10 วินาที (Instant Real-time Demo)</div>
-      <ol style="font-size: 0.85rem; color: #581c87; padding-left: 1.25rem; line-height: 1.6;">
-        <li>เปิดหน้าเว็บนี้ไว้ แล้วเปิดอีกแท็บหนึ่งล็อกอินเป็น <strong>somchai (Requester)</strong></li>
-        <li>ที่แท็บนี้ ให้ <strong>คลิกติ๊กเอาเครื่องหมายถูกออก</strong> ตรงช่อง <code>booking.create</code> ของ Requester (ระบบจะเซฟและขึ้นแจ้งเตือนทันทีโดยไม่ต้องกดปุ่ม Save)</li>
-        <li>สลับไปที่แท็บของ <strong>somchai</strong> แล้วลองกดยื่นจองห้อง จะถูกดีด <strong>403 Forbidden ทันทีในเสี้ยววินาที</strong>!</li>
-        <li>เมื่อต้องการคืนสิทธิ์ แค่คลิกติ๊กเครื่องหมายถูกกลับมาที่เดิม สิทธิ์จะกลับมาใช้งานได้ทันที</li>
-      </ol>
     </div>
   </div>
 
@@ -344,39 +261,9 @@
       });
     });
 
-    // ดักจับ Event สำหรับปุ่มแก้ไข Role และ Permission
-    document.querySelectorAll('.btn-edit-role').forEach(btn => {
-      btn.addEventListener('click', function() {
-        openEditRole(this.dataset.roleId, this.dataset.displayName, this.dataset.description || '');
-      });
-    });
-
-    document.querySelectorAll('.btn-edit-perm').forEach(btn => {
-      btn.addEventListener('click', function() {
-        openEditPerm(this.dataset.permId, this.dataset.permCode, this.dataset.description, this.dataset.category || 'general');
-      });
-    });
-
     function toggleModal(id) {
       const el = document.getElementById(id);
       el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
-    }
-
-    function openEditRole(roleId, displayName, description) {
-      document.getElementById('form-edit-role').action = `/admin/roles/${roleId}/update`;
-      document.getElementById('edit-role-display').value = displayName;
-      document.getElementById('edit-role-desc').value = description;
-      document.getElementById('modal-edit-role').style.display = 'block';
-      document.getElementById('modal-edit-role').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function openEditPerm(permId, permCode, description, category) {
-      document.getElementById('form-edit-perm').action = `/admin/permissions/${permId}/update`;
-      document.getElementById('edit-perm-code-label').innerText = permCode;
-      document.getElementById('edit-perm-desc').value = description;
-      document.getElementById('edit-perm-cat').value = category || 'general';
-      document.getElementById('modal-edit-perm').style.display = 'block';
-      document.getElementById('modal-edit-perm').scrollIntoView({ behavior: 'smooth' });
     }
 
     function showToast(msg, isError = false) {
