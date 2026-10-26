@@ -200,21 +200,38 @@
       }
 
       // 2. ตรวจสอบการทับซ้อนช่วงเวลากับรายการจองในระบบ Real-time
-      const conflict = DAY_BOOKINGS.find(b => {
+      // รายการที่ APPROVED, IN_USE, BLOCKED จะถือเป็นข้อขัดแย้งเด็ดขาด (ห้ามจอง)
+      const hardConflict = DAY_BOOKINGS.find(b => {
         if (Number(b.room_id) !== roomId) return false;
-        if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+        if (!['APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
         const bStart = new Date(b.start_time);
         const bEnd = new Date(b.end_time);
         return bStart < end && bEnd > start;
       });
 
-      if (conflict) {
+      // ตรวจสอบว่ามีรายการ PENDING_APPROVAL รอพิจารณาอยู่หรือไม่
+      const pendingConflict = DAY_BOOKINGS.find(b => {
+        if (Number(b.room_id) !== roomId) return false;
+        if (b.status !== 'PENDING_APPROVAL') return false;
+        const bStart = new Date(b.start_time);
+        const bEnd = new Date(b.end_time);
+        return bStart < end && bEnd > start;
+      });
+
+      if (hardConflict) {
         banner.className = 'conflict-status-banner is-conflict';
-        const statusLabel = conflict.status === 'BLOCKED' ? 'ปิดซ่อมบำรุง' : (conflict.status === 'PENDING_APPROVAL' ? 'มีคำขอรออนุมัติ' : 'มีผู้จองแล้ว');
-        banner.innerHTML = `<span>ไม่สามารถเลือกได้: ชนกับ "${conflict.title}" (${statusLabel})</span>`;
+        const statusLabel = hardConflict.status === 'BLOCKED' ? 'ปิดซ่อมบำรุง' : 'มีผู้จองแล้ว';
+        banner.innerHTML = `<span>ไม่สามารถเลือกได้: ชนกับ "${hardConflict.title}" (${statusLabel})</span>`;
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.5';
         submitBtn.style.cursor = 'not-allowed';
+      } else if (pendingConflict) {
+        const durationHours = Math.round((end - start) / (1000 * 60 * 60));
+        banner.className = 'conflict-status-banner is-warning';
+        banner.innerHTML = `<span>⚠️ ช่วงเวลานี้ (${durationHours} ชม.) มีคำขอ "${pendingConflict.title}" รอพิจารณาอยู่ (สามารถยื่นจองชนได้ หัวหน้าจะพิจารณาอนุมัติให้รายการที่เหมาะสม)</span>`;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
       } else {
         const durationHours = Math.round((end - start) / (1000 * 60 * 60));
         banner.className = 'conflict-status-banner is-free';
@@ -232,9 +249,12 @@
         rangeEndHour = eH;
         const guidePill = document.getElementById('slotGuidePill');
         if (guidePill) {
-          if (conflict) {
+          if (hardConflict) {
             guidePill.className = 'conflict-status-banner is-conflict';
-            guidePill.innerText = `ช่วงเวลา ${String(sH).padStart(2,'0')}:00 - ${String(eH).padStart(2,'0')}:00 น. ชนกับรายการอื่น`;
+            guidePill.innerText = `ช่วงเวลา ${String(sH).padStart(2,'0')}:00 - ${String(eH).padStart(2,'0')}:00 น. ชนกับรายการที่อนุมัติแล้ว`;
+          } else if (pendingConflict) {
+            guidePill.className = 'conflict-status-banner is-warning';
+            guidePill.innerText = `ช่วงเวลา ${String(sH).padStart(2,'0')}:00 - ${String(eH).padStart(2,'0')}:00 น. มีคิวรออนุมัติ (ยื่นจองชนได้)`;
           } else {
             guidePill.className = 'conflict-status-banner is-free';
             guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(sH).padStart(2,'0')}:00 - ${String(eH).padStart(2,'0')}:00 น. (${eH - sH} ชม.)`;
@@ -673,7 +693,7 @@
           // สล็อต 18:00 เป็นจุดสิ้นสุดการให้บริการ (ติดจองถ้าช่วง 17:00-18:00 ติดจอง)
           const check17 = DAY_BOOKINGS.find(b => {
             if (Number(b.room_id) !== roomId) return false;
-            if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+            if (!['APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
             const bStart = new Date(b.start_time);
             const bEnd = new Date(b.end_time);
             const slotStart = new Date(`${SELECTED_DATE}T17:00:00`);
@@ -682,7 +702,21 @@
           });
           if (check17) {
             pill.classList.add('is-booked');
-            pill.title = 'ช่วงเวลา 17:00-18:00 ติดคิวจอง';
+            pill.title = 'ช่วงเวลา 17:00-18:00 อนุมัติ/ติดจองแล้ว';
+          } else {
+            const check17Pending = DAY_BOOKINGS.find(b => {
+              if (Number(b.room_id) !== roomId) return false;
+              if (b.status !== 'PENDING_APPROVAL') return false;
+              const bStart = new Date(b.start_time);
+              const bEnd = new Date(b.end_time);
+              const slotStart = new Date(`${SELECTED_DATE}T17:00:00`);
+              const slotEnd = new Date(`${SELECTED_DATE}T18:00:00`);
+              return bStart < slotEnd && bEnd > slotStart;
+            });
+            if (check17Pending) {
+              pill.classList.add('has-pending');
+              pill.title = `มีคำขอรออนุมัติ: ${check17Pending.title} (คลิกเพื่อจองชนได้)`;
+            }
           }
         } else {
           const hStartStr = `${String(h).padStart(2,'0')}:00`;
@@ -692,7 +726,7 @@
 
           const overlap = DAY_BOOKINGS.find(b => {
             if (Number(b.room_id) !== roomId) return false;
-            if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+            if (!['APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
             const bStart = new Date(b.start_time);
             const bEnd = new Date(b.end_time);
             return bStart < slotEnd && bEnd > slotStart;
@@ -700,7 +734,19 @@
 
           if (overlap) {
             pill.classList.add('is-booked');
-            pill.title = overlap.title || 'ติดคิว';
+            pill.title = overlap.title || 'ติดจอง';
+          } else {
+            const pendingOverlap = DAY_BOOKINGS.find(b => {
+              if (Number(b.room_id) !== roomId) return false;
+              if (b.status !== 'PENDING_APPROVAL') return false;
+              const bStart = new Date(b.start_time);
+              const bEnd = new Date(b.end_time);
+              return bStart < slotEnd && bEnd > slotStart;
+            });
+            if (pendingOverlap) {
+              pill.classList.add('has-pending');
+              pill.title = `มีคำขอรออนุมัติ: ${pendingOverlap.title} (คลิกเพื่อจองชนได้)`;
+            }
           }
         }
 

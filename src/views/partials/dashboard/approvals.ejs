@@ -36,6 +36,22 @@
                           <strong>รายละเอียด/อุปกรณ์เสริม:</strong> <%= p.purpose %>
                         </div>
                       <% } %>
+
+                      <% 
+                        const pStart = new Date(p.start_time);
+                        const pEnd = new Date(p.end_time);
+                        const collidingPending = pendingApprovals.filter(other => 
+                          other.booking_id !== p.booking_id && 
+                          other.room_id === p.room_id && 
+                          new Date(other.start_time) < pEnd && 
+                          new Date(other.end_time) > pStart
+                        );
+                      %>
+                      <% if (collidingPending.length > 0) { %>
+                        <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 6px; padding: 0.45rem 0.65rem; margin-top: 0.5rem; font-size: 0.78rem; color: #a16207; display: flex; align-items: center; gap: 0.35rem;">
+                          <span>⚠️ <strong>มีคำขอจองชนช่วงเวลานี้อีก <%= collidingPending.length %> รายการ:</strong> หากอนุมัติรายการนี้ คิวอื่นที่จองเข้ามาตรงกันจะถูกปฏิเสธอัตโนมัติ ("มีผู้จองห้องก่อนแล้ว")</span>
+                        </div>
+                      <% } %>
                     </div>
 
                     <% if (p.attachment_id) { %>
@@ -46,7 +62,11 @@
                   </div>
 
                   <div style="display: flex; gap: 0.75rem; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.75rem;">
-                    <form action="/app/bookings/<%= p.booking_id %>/review" method="POST" style="flex: 1;">
+                    <form action="/app/bookings/<%= p.booking_id %>/review" method="POST" style="flex: 1;"
+                          <% if (collidingPending.length > 0) { %>
+                            onsubmit="return confirm('ยืนยันอนุมัติคำขอนี้? ระบบจะทำการปฏิเสธคำขอที่จองชนกันอีก <%= collidingPending.length %> รายการให้อัตโนมัติ (พร้อมระบุเหตุผล: มีผู้จองห้องก่อนแล้ว)');"
+                          <% } %>
+                    >
                       <input type="hidden" name="action" value="APPROVE">
                       <button class="btn btn-success" style="width: 100%; font-size: 0.85rem;">
                         อนุมัติการจอง (Approve)

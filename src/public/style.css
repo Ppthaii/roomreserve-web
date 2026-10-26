@@ -968,6 +968,18 @@ body {
   animation: bannerShake 0.3s ease;
 }
 
+.conflict-status-banner.is-warning {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  color: #a16207;
+}
+
+[data-theme="dark"] .conflict-status-banner.is-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
 @keyframes bannerShake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
@@ -2389,6 +2401,18 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
   text-decoration: line-through;
+}
+
+.time-slot-pill.has-pending:not(.is-start):not(.is-end):not(.in-range):not(.is-booked) {
+  border-color: #f59e0b;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+[data-theme="dark"] .time-slot-pill.has-pending:not(.is-start):not(.is-end):not(.in-range):not(.is-booked) {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 /* 6. Mobile & Tablet Bottom Navigation Bar */

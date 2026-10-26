@@ -57,7 +57,9 @@
                       <span style="font-size: 0.55rem;">ว่าง</span>
                     </div>
                   <% } else if (slotStatus === 'PENDING') { %>
-                    <div class="slot-block slot-pending" title="รออนุมัติ: <%= bookingInfo %>">
+                    <div class="slot-block slot-pending" 
+                         title="รออนุมัติ: <%= bookingInfo %> (คลิกเพื่อจองชนได้)"
+                         onclick="selectRoomAndSlot('<%= room.room_id %>', '<%= slotTime %>', '<%= slotTime.split(':')[0] %>:59')">
                       <span><%= slotTime %></span>
                       <span style="font-size: 0.55rem;">รอตรวจ</span>
                     </div>

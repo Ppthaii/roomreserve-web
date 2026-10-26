@@ -152,12 +152,13 @@ async function createBooking(req, res, next) {
       return res.redirect(`/app?error=${encodeURIComponent(`จำนวนผู้เข้าร่วม (${attendees_count} คน) เกินความจุของห้อง ${roomCheck.rows[0].room_name} (รองรับได้สูงสุด ${roomCapacity} คนเท่านั้น)`)}`);
     }
 
-    // ⚡ ขั้นที่ 2: ตรวจสอบว่าช่วงเวลานี้ชนกับรายการอื่นหรือไม่ (Time-Overlap Check)
+    // ⚡ ขั้นที่ 2: ตรวจสอบว่าช่วงเวลานี้ชนกับรายการที่อนุมัติหรือบล็อกไว้แล้วหรือไม่ (Approved/In Use/Blocked Check)
+    // อนุญาตให้ยื่นจองชนกับรายการสถานะ PENDING_APPROVAL ได้ เพื่อให้หัวหน้างานพิจารณาอนุมัติในภายหลัง
     const overlapCheck = await client.query(`
       SELECT booking_id, title, status, start_time, end_time
       FROM room_bookings
       WHERE room_id = $1
-        AND status IN ('PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED')
+        AND status IN ('APPROVED', 'IN_USE', 'BLOCKED')
         AND (start_time < $3 AND end_time > $2)
       LIMIT 1
     `, [roomIdNum, start_time, end_time]);
@@ -167,7 +168,7 @@ async function createBooking(req, res, next) {
       const conflict = overlapCheck.rows[0];
       const conflictMsg = conflict.status === 'BLOCKED' 
         ? `ห้องนี้ถูกเจ้าหน้าที่สถานที่บล็อกไว้: "${conflict.title}"`
-        : `ช่วงเวลานี้ชนกับการจองอื่น: "${conflict.title}"`;
+        : `ช่วงเวลานี้มีรายการจองที่ได้รับการอนุมัติแล้ว: "${conflict.title}"`;
       return res.redirect(`/app?error=${encodeURIComponent(conflictMsg)}`);
     }
 
@@ -294,6 +295,7 @@ async function cancelBooking(req, res, next) {
 
 // 4. พิจารณาอนุมัติ / ปฏิเสธ (Approver Action)
 async function reviewBooking(req, res, next) {
+  const client = await pool.connect();
   try {
     const bookingId = parseInt(req.params.id, 10);
     if (isNaN(bookingId)) {
@@ -301,36 +303,112 @@ async function reviewBooking(req, res, next) {
     }
     const { action, comment } = req.body; // action: 'APPROVE' or 'REJECT'
 
-    const targetStatus = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
+    if (action === 'APPROVE') {
+      await client.query('BEGIN');
 
-    const result = await pool.query(`
-      UPDATE room_bookings
-      SET status = $1, approver_id = $2, approver_comment = $3, approved_at = NOW()
-      WHERE booking_id = $4 AND status = 'PENDING_APPROVAL'
-      RETURNING *
-    `, [targetStatus, req.session.userId, comment || null, bookingId]);
+      // 1. อนุมัติคำขอที่เลือก
+      const result = await client.query(`
+        UPDATE room_bookings
+        SET status = 'APPROVED', approver_id = $1, approver_comment = $2, approved_at = NOW()
+        WHERE booking_id = $3 AND status = 'PENDING_APPROVAL'
+        RETURNING *
+      `, [req.session.userId, comment || null, bookingId]);
 
-    if (result.rowCount === 0) {
-      return res.redirect(`/app?error=${encodeURIComponent('คำขอนี้ถูกดำเนินการไปแล้วหรือไม่อยู่ในสถานะรออนุมัติ')}`);
+      if (result.rowCount === 0) {
+        await client.query('ROLLBACK');
+        return res.redirect(`/app?error=${encodeURIComponent('คำขอนี้ถูกดำเนินการไปแล้วหรือไม่อยู่ในสถานะรออนุมัติ')}`);
+      }
+
+      const approvedBooking = result.rows[0];
+
+      // 2. ค้นหาและปฏิเสธอัตโนมัติทุกคำขอสถานะ PENDING_APPROVAL ของห้องเดียวกันที่ช่วงเวลาทับซ้อนกัน
+      const autoRejectRes = await client.query(`
+        UPDATE room_bookings
+        SET status = 'REJECTED',
+            approver_id = $1,
+            approver_comment = 'มีผู้จองห้องก่อนแล้ว',
+            approved_at = NOW()
+        WHERE room_id = $2
+          AND status = 'PENDING_APPROVAL'
+          AND booking_id != $3
+          AND (start_time < $5 AND end_time > $4)
+        RETURNING booking_id, title, user_id
+      `, [req.session.userId, approvedBooking.room_id, bookingId, approvedBooking.start_time, approvedBooking.end_time]);
+
+      await client.query('COMMIT');
+
+      // 3. บันทึก Audit Log สำหรับรายการที่อนุมัติ
+      await logAudit({
+        userId: req.session.userId,
+        username: req.session.username,
+        roleName: req.session.roleName,
+        action: 'BOOKING_APPROVE',
+        resource: 'BOOKING',
+        resourceId: String(bookingId),
+        status: 'SUCCESS',
+        details: `อนุมัติคำขอ "${approvedBooking.title}": ${comment || 'อนุมัติเรียบร้อย'}`,
+        ip: req.ip,
+        ua: req.get('user-agent')
+      });
+
+      // 4. บันทึก Audit Log สำหรับรายการที่ถูกปฏิเสธอัตโนมัติ
+      for (const rej of autoRejectRes.rows) {
+        await logAudit({
+          userId: req.session.userId,
+          username: req.session.username,
+          roleName: req.session.roleName,
+          action: 'BOOKING_REJECT',
+          resource: 'BOOKING',
+          resourceId: String(rej.booking_id),
+          status: 'AUTO_REJECTED',
+          details: `ปฏิเสธอัตโนมัติเนื่องจากคำขอ #${bookingId} ("${approvedBooking.title}") ได้รับการอนุมัติก่อน (เหตุผล: มีผู้จองห้องก่อนแล้ว)`,
+          ip: req.ip,
+          ua: req.get('user-agent')
+        });
+      }
+
+      const autoRejCount = autoRejectRes.rowCount;
+      const msg = autoRejCount > 0
+        ? `อนุมัติคำขอจองห้องเรียบร้อยแล้ว (ระบบปฏิเสธคำขอที่ช่วงเวลาชนกันอีก ${autoRejCount} รายการให้อัตโนมัติ: มีผู้จองห้องก่อนแล้ว)`
+        : 'อนุมัติคำขอจองห้องเรียบร้อยแล้ว';
+      return res.redirect(`/app?success=${encodeURIComponent(msg)}`);
+
+    } else {
+      // ปฏิเสธคำขอปกติ (REJECT)
+      const result = await client.query(`
+        UPDATE room_bookings
+        SET status = 'REJECTED', approver_id = $1, approver_comment = $2, approved_at = NOW()
+        WHERE booking_id = $3 AND status = 'PENDING_APPROVAL'
+        RETURNING *
+      `, [req.session.userId, comment || 'ปฏิเสธคำขอ', bookingId]);
+
+      if (result.rowCount === 0) {
+        return res.redirect(`/app?error=${encodeURIComponent('คำขอนี้ถูกดำเนินการไปแล้วหรือไม่อยู่ในสถานะรออนุมัติ')}`);
+      }
+
+      await logAudit({
+        userId: req.session.userId,
+        username: req.session.username,
+        roleName: req.session.roleName,
+        action: 'BOOKING_REJECT',
+        resource: 'BOOKING',
+        resourceId: String(bookingId),
+        status: 'SUCCESS',
+        details: `ปฏิเสธคำขอ: ${comment || 'ไม่มีความเห็น'}`,
+        ip: req.ip,
+        ua: req.get('user-agent')
+      });
+
+      return res.redirect(`/app?success=${encodeURIComponent('ปฏิเสธคำขอจองห้องเรียบร้อยแล้ว')}`);
     }
-
-    await logAudit({
-      userId: req.session.userId,
-      username: req.session.username,
-      roleName: req.session.roleName,
-      action: `BOOKING_${action}`,
-      resource: 'BOOKING',
-      resourceId: String(bookingId),
-      status: 'SUCCESS',
-      details: `${action === 'APPROVE' ? 'อนุมัติ' : 'ปฏิเสธ'} คำขอ: ${comment || 'ไม่มีความเห็น'}`,
-      ip: req.ip,
-      ua: req.get('user-agent')
-    });
-
-    const msg = action === 'APPROVE' ? 'อนุมัติคำขอจองห้องเรียบร้อยแล้ว' : 'ปฏิเสธคำขอจองห้องเรียบร้อยแล้ว';
-    res.redirect(`/app?success=${encodeURIComponent(msg)}`);
   } catch (err) {
+    await client.query('ROLLBACK');
+    if (err.code === '23P01') {
+      return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถอนุมัติได้: มีรายการจองอื่นในช่วงเวลานี้ได้รับการอนุมัติไปก่อนแล้ว (Double-Booking Prevented)')}`);
+    }
     next(err);
+  } finally {
+    client.release();
   }
 }
 

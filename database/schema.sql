@@ -87,11 +87,19 @@ CREATE TABLE IF NOT EXISTS room_bookings (
   ),
   
   -- ⚡ หัวใจการป้องกัน Concurrency & Double-Booking ระดับ Database Engine
+  -- อนุญาตให้หลายคำขอยื่นจองชนกันได้ในสถานะ PENDING_APPROVAL แต่จะล็อกห้ามชนกันทันทีเมื่อได้รับอนุมัติ (APPROVED, IN_USE, BLOCKED)
   CONSTRAINT no_overlapping_active_bookings EXCLUDE USING gist (
     room_id WITH =,
     tsrange(start_time, end_time) WITH &&
-  ) WHERE (status IN ('PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'))
+  ) WHERE (status IN ('APPROVED', 'IN_USE', 'BLOCKED'))
 );
+
+-- ปรับปรุง Exclusion Constraint สำหรับฐานข้อมูลที่สร้างไว้แล้ว (Migration)
+ALTER TABLE room_bookings DROP CONSTRAINT IF EXISTS no_overlapping_active_bookings;
+ALTER TABLE room_bookings ADD CONSTRAINT no_overlapping_active_bookings EXCLUDE USING gist (
+  room_id WITH =,
+  tsrange(start_time, end_time) WITH &&
+) WHERE (status IN ('APPROVED', 'IN_USE', 'BLOCKED'));
 
 -- 8. ตารางไฟล์แนบ (Booking Attachments - Protected Storage)
 CREATE TABLE IF NOT EXISTS booking_attachments (
