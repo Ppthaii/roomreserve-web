@@ -179,13 +179,12 @@
                           <%= r.is_active ? 'ปิดปรับปรุง' : 'เปิดใช้งาน' %>
                         </button>
                       </form>
-                      <% if (Number(r.total_completed_bookings) === 0 && Number(r.active_bookings) === 0) { %>
-                        <form action="/app/rooms/<%= r.room_id %>/delete" method="POST" style="display:inline; margin: 0;" onsubmit="return confirm('ยืนยันลบห้อง <%= r.room_name %> ออกจากระบบ?');">
-                          <button class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #dc2626; border-color: #fca5a5; background: #fff5f5;">
-                            🗑️ ลบ
-                          </button>
-                        </form>
-                      <% } %>
+                      <% const hasBookings = (Number(r.total_completed_bookings) > 0 || Number(r.active_bookings) > 0); %>
+                      <form action="/app/rooms/<%= r.room_id %>/delete" method="POST" style="display:inline; margin: 0;" onsubmit="return confirm('ยืนยันลบห้อง <%= r.room_name %> ออกจากระบบ?<%= hasBookings ? ' (ห้องนี้มีประวัติการจอง ข้อมูลการจองจะถูกลบทั้งหมด)' : '' %>');">
+                        <button class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #dc2626; border-color: #fca5a5; background: #fff5f5;" title="ลบห้องประชุมนี้">
+                          🗑️ ลบ
+                        </button>
+                      </form>
                     </div>
                   </td>
                 <% } %>

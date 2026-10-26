@@ -154,28 +154,33 @@ async function toggleRoom(req, res, next) {
   }
 }
 
-// 5. ลบห้องประชุม (เฉพาะห้องที่ไม่มีประวัติการจองผูกอยู่)
+// 5. ลบห้องประชุม (พร้อมลบประวัติการจองและไฟล์แนบที่ผูกอยู่แบบ Cascade ใน Transaction)
 async function deleteRoom(req, res, next) {
+  const client = await pool.connect();
   try {
     const { id } = req.params;
 
-    // ตรวจสอบประวัติการจองในระบบ
-    const bookingCheck = await pool.query(`
-      SELECT COUNT(*) as count 
-      FROM room_bookings 
-      WHERE room_id = $1
-    `, [id]);
+    await client.query('BEGIN');
 
-    if (Number(bookingCheck.rows[0].count) > 0) {
-      return res.redirect(`/app/rooms?error=${encodeURIComponent('ไม่สามารถลบห้องนี้ได้ เนื่องจากมีประวัติการจองผูกอยู่ในระบบ (แนะนำให้เลือก "ปิดปรับปรุง" แทน)')}`);
-    }
-
-    const delRes = await pool.query(`DELETE FROM rooms WHERE room_id = $1 RETURNING *`, [id]);
-    if (delRes.rowCount === 0) {
+    const targetRoomRes = await client.query('SELECT * FROM rooms WHERE room_id = $1', [id]);
+    if (targetRoomRes.rowCount === 0) {
+      await client.query('ROLLBACK');
       return res.redirect(`/app/rooms?error=${encodeURIComponent('ไม่พบห้องประชุมที่ต้องการลบ')}`);
     }
+    const deletedRoom = targetRoomRes.rows[0];
 
-    const deletedRoom = delRes.rows[0];
+    // ลบไฟล์แนบและประวัติการจองที่ผูกอยู่กับห้องนี้ทั้งหมด
+    await client.query(`
+      DELETE FROM booking_attachments 
+      WHERE booking_id IN (SELECT booking_id FROM room_bookings WHERE room_id = $1)
+    `, [id]);
+
+    const delBookings = await client.query('DELETE FROM room_bookings WHERE room_id = $1', [id]);
+
+    // ลบห้อง
+    await client.query('DELETE FROM rooms WHERE room_id = $1', [id]);
+
+    await client.query('COMMIT');
 
     await logAudit({
       userId: req.session.userId,
@@ -185,14 +190,17 @@ async function deleteRoom(req, res, next) {
       resource: 'ROOM',
       resourceId: String(id),
       status: 'SUCCESS',
-      details: `ลบห้องประชุม: "${deletedRoom.room_name}" (${deletedRoom.location})`,
+      details: `ลบห้องประชุม: "${deletedRoom.room_name}" (${deletedRoom.location}) พร้อมล้างประวัติการจองที่เกี่ยวข้อง ${delBookings.rowCount} รายการ`,
       ip: req.ip,
       ua: req.get('user-agent')
     });
 
     res.redirect(`/app/rooms?success=${encodeURIComponent(`ลบห้องประชุม "${deletedRoom.room_name}" ออกจากระบบเรียบร้อยแล้ว`)}`);
   } catch (err) {
+    await client.query('ROLLBACK');
     next(err);
+  } finally {
+    client.release();
   }
 }
 
