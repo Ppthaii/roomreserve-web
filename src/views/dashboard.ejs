@@ -248,7 +248,13 @@
 
   <nav class="navbar">
     <div class="nav-left">
-      <a href="/app" class="nav-brand" onclick="switchRequesterView('home'); return false;">RoomReserve</a>
+      <a href="/app" class="nav-brand" onclick="switchRequesterView('home'); return false;">
+        <div class="nav-brand-logo">RR</div>
+        <div class="nav-brand-text">
+          <div class="nav-brand-title">RoomReserve</div>
+          <div class="nav-brand-subtitle">Smart Meeting Space</div>
+        </div>
+      </a>
     </div>
 
     <div class="nav-menu">
@@ -359,17 +365,7 @@
           <!-- 1. Deep Blue Gradient Header -->
           <div class="hero-blue-header">
             <div class="hero-inner">
-              <div class="hero-top-row">
-                <div class="hero-brand-wrap">
-                  <div class="hero-brand-logo">RR</div>
-                  <div>
-                    <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em;">RoomReserve</div>
-                    <div style="font-size: 0.75rem; opacity: 0.85;">Smart Meeting Space</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="hero-user-capsule" style="margin-top: 1.25rem;">
+              <div class="hero-user-capsule">
                 <div class="hero-avatar">
                   <%= user.fullName ? user.fullName.charAt(0) : 'U' %>
                 </div>
