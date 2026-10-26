@@ -345,6 +345,43 @@
         year: 'numeric' 
       });
 
+      // คำนวณวันสำหรับปฏิทินจิ๋ว (Mini Calendar Strip)
+      const miniCalDays = [];
+      const baseCalDate = new Date(selectedDate + 'T00:00:00');
+      const todayCalDate = new Date(todayStr + 'T00:00:00');
+      
+      let startCal = new Date(todayCalDate);
+      const dayDiff = Math.round((baseCalDate.getTime() - todayCalDate.getTime()) / (1000 * 3600 * 24));
+      
+      if (dayDiff > 4) {
+        startCal = new Date(baseCalDate);
+        startCal.setDate(startCal.getDate() - 3);
+        if (startCal < todayCalDate) startCal = new Date(todayCalDate);
+      }
+      
+      const thaiDayNames = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+      const thaiMonthShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+      for (let i = 0; i < 10; i++) {
+        const d = new Date(startCal);
+        d.setDate(d.getDate() + i);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const dStr = `${yyyy}-${mm}-${dd}`;
+        const dayOfWeek = d.getDay();
+        
+        miniCalDays.push({
+          dateStr: dStr,
+          dayNum: d.getDate(),
+          dayName: thaiDayNames[dayOfWeek],
+          monthName: thaiMonthShort[d.getMonth()],
+          isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+          isToday: dStr === todayStr,
+          isSelected: dStr === selectedDate
+        });
+      }
+
       // คำนวณสรุปสถิติวันนี้
       const activeRoomsCount = rooms.filter(r => r.is_active).length;
       const bookedRoomIds = new Set(dayBookings.map(b => b.room_id));
@@ -592,23 +629,6 @@
             </p>
           </div>
 
-          <!-- กล่องเลือกวันที่ -->
-          <div class="card" style="margin-bottom: 1rem; padding: 0.85rem 1.15rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-              <div style="display: flex; align-items: center; gap: 0.65rem;">
-                
-                <div>
-                  <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">วันที่เลือกใช้งาน:</div>
-                  <div style="font-size: 0.95rem; font-weight: 800; color: var(--dark);"><%= formattedThaiDate %></div>
-                </div>
-              </div>
-              
-              <form action="/app" method="GET" style="display: flex; align-items: center; gap: 0.4rem; margin: 0;">
-                <input type="date" name="date" value="<%= selectedDate %>" min="<%= todayStr %>" onchange="this.form.submit()" class="form-control" style="font-size: 0.82rem; padding: 0.35rem 0.65rem; height: 34px; width: auto;" title="เปลี่ยนวันที่">
-              </form>
-            </div>
-          </div>
-
           <!-- อาคาร 1, 2, 3 พร้อมรูปภาพคมชัดตามที่ผู้ใช้กำหนด -->
           <div style="margin-bottom: 1.25rem;">
             <div style="font-size: 0.92rem; font-weight: 800; color: var(--dark); margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.4rem;">
@@ -683,6 +703,61 @@
                   <input type="radio" name="visual_room_radio" class="visual-room-radio" value="<%= room.room_id %>" style="display: none;">
                 </div>
               <% }) %>
+            </div>
+          </div>
+
+          <!-- กล่องปฏิทินจิ๋วเลือกวันที่ (Mini Calendar Strip) ย้ายมาไว้ข้างล่างเลือกห้อง -->
+          <div class="mini-calendar-container">
+            <div class="mini-calendar-header">
+              <div class="mini-cal-title-group">
+                <div class="mini-cal-label">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <span>วันที่เลือกใช้งาน:</span>
+                </div>
+                <div class="mini-cal-selected-text">
+                  <span><%= formattedThaiDate %></span>
+                  <% if (isToday) { %>
+                    <span class="mini-cal-today-badge">วันนี้</span>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="mini-cal-actions">
+                <% if (!isToday) { %>
+                  <button type="button" class="mini-cal-today-btn" onclick="changeBookingDate('<%= todayStr %>')">
+                    กลับสู่วันนี้
+                  </button>
+                <% } %>
+                <form action="/app" method="GET" class="mini-cal-picker-form" onsubmit="return false;">
+                  <input type="date" id="miniCalDateInput" name="date" value="<%= selectedDate %>" min="<%= todayStr %>" onchange="changeBookingDate(this.value)" class="form-control mini-cal-date-input" title="คลิกเพื่อเลือกวันอื่นในปฏิทิน">
+                </form>
+              </div>
+            </div>
+
+            <!-- แถบปฏิทินจิ๋ว (Mini Calendar Date Strip) -->
+            <div class="mini-calendar-strip-wrap">
+              <button type="button" class="mini-cal-nav-btn prev" onclick="navigateMiniCal(-1)" title="เลื่อนดูวันก่อนหน้า">
+                &#8249;
+              </button>
+              
+              <div class="mini-calendar-strip" id="miniCalendarStrip">
+                <% miniCalDays.forEach(day => { %>
+                  <div class="mini-cal-day-card <%= day.isSelected ? 'active' : '' %> <%= day.isToday ? 'is-today' : '' %> <%= day.isWeekend ? 'is-weekend' : '' %>"
+                       onclick="changeBookingDate('<%= day.dateStr %>')"
+                       title="<%= day.dateStr %>">
+                    <div class="mini-cal-day-name"><%= day.dayName %></div>
+                    <div class="mini-cal-day-num"><%= day.dayNum %></div>
+                    <div class="mini-cal-day-month"><%= day.monthName %></div>
+                    <% if (day.isToday) { %>
+                      <div class="mini-cal-today-dot"></div>
+                    <% } %>
+                  </div>
+                <% }) %>
+              </div>
+
+              <button type="button" class="mini-cal-nav-btn next" onclick="navigateMiniCal(1)" title="เลื่อนดูวันถัดไป">
+                &#8250;
+              </button>
             </div>
           </div>
 
@@ -2156,7 +2231,42 @@
           switchRequesterView(cleanView);
         }
       }
+
+      // Auto-scroll ปฏิทินจิ๋วให้การ์ดวันที่เลือกอยู่ตรงกลางสายตา
+      const activeCalCard = document.querySelector('.mini-cal-day-card.active');
+      if (activeCalCard) {
+        activeCalCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
     });
+
+    // เปลี่ยนวันที่ใช้งานสำหรับปฏิทินจิ๋ว (คงค่าอาคารและสถานะวิวไว้)
+    function changeBookingDate(newDate) {
+      if (!newDate) return;
+      const url = new URL(window.location.href);
+      url.searchParams.set('date', newDate);
+      url.searchParams.set('view', 'booking');
+      
+      // รักษาอาคารที่เลือกไว้
+      const activeBuilding = document.querySelector('.building-card.active');
+      if (activeBuilding) {
+        const bNum = activeBuilding.id.replace('btn-building-', '');
+        if (bNum) url.searchParams.set('building', bNum);
+      }
+      window.location.href = url.toString();
+    }
+
+    // เลื่อนวันในปฏิทินจิ๋ว (+1 หรือ -1 วัน)
+    function navigateMiniCal(direction) {
+      const cur = new Date('<%= selectedDate %>' + 'T00:00:00');
+      cur.setDate(cur.getDate() + direction);
+      const minDate = new Date('<%= todayStr %>' + 'T00:00:00');
+      if (cur < minDate) return; // ไม่ให้ย้อนหลังเกินวันนี้
+      
+      const yyyy = cur.getFullYear();
+      const mm = String(cur.getMonth() + 1).padStart(2, '0');
+      const dd = String(cur.getDate()).padStart(2, '0');
+      changeBookingDate(`${yyyy}-${mm}-${dd}`);
+    }
   </script>
 
   <!-- Mobile Bottom Navigation Bar (Dynamic per Permission & Role) -->
