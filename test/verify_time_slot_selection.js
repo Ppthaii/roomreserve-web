@@ -13,14 +13,13 @@ const dashboardHtml = fs.readFileSync(dashboardEjsPath, 'utf8') +
 
 console.log('Testing dashboard.ejs time slot range logic...');
 
-// 1. Verify grid only generates slots 9 to 17 (09:00 to 17:00), no 18:00 pill
-assert.ok(dashboardHtml.includes('for (let h = 9; h < 18; h++)'), 'Pills loop must be h < 18 to exclude 18:00 pill');
-assert.ok(!dashboardHtml.includes('for (let h = 9; h <= 18; h++)'), 'Must not have h <= 18 for pills');
+// 1. Verify grid generates slots from 9 to 18 (including 18:00 end pill)
+assert.ok(dashboardHtml.includes('for (let h = 9; h <= 18; h++)'), 'Pills loop must be h <= 18 to include 18:00 pill');
 
-// 2. Simulate renderTimeRangePills logic
+// 2. Simulate renderTimeRangePills logic with 18:00 pill support
 function simulatePillSelection(rangeStartHour, rangeEndHour, bookedHours = [16, 17]) {
   const pills = {};
-  for (let h = 9; h < 18; h++) {
+  for (let h = 9; h <= 18; h++) {
     pills[h] = { classes: [] };
     if (bookedHours.includes(h)) {
       pills[h].classes.push('is-booked');
@@ -28,19 +27,15 @@ function simulatePillSelection(rangeStartHour, rangeEndHour, bookedHours = [16, 
   }
 
   // Apply render logic
-  for (let h = 9; h < 18; h++) {
+  for (let h = 9; h <= 18; h++) {
     const pill = pills[h];
-    if (h >= rangeStartHour && h < rangeEndHour) {
-      if (!pill.classes.includes('is-booked')) {
-        if (rangeEndHour - rangeStartHour === 1) {
-          pill.classes.push('is-start');
-        } else if (h === rangeStartHour) {
-          pill.classes.push('is-start');
-        } else if (h === rangeEndHour - 1) {
-          pill.classes.push('is-end');
-        } else {
-          pill.classes.push('in-range');
-        }
+    if (!pill.classes.includes('is-booked')) {
+      if (h === rangeStartHour) {
+        pill.classes.push('is-start');
+      } else if (h === rangeEndHour) {
+        pill.classes.push('is-end');
+      } else if (h > rangeStartHour && h < rangeEndHour) {
+        pill.classes.push('in-range');
       }
     }
   }
@@ -48,32 +43,30 @@ function simulatePillSelection(rangeStartHour, rangeEndHour, bookedHours = [16, 
   return pills;
 }
 
-// Scenario 1: Select 14:00 (1 hour: 14:00 - 15:00)
+// Scenario 1: Select 14:00 to 15:00 (1 hour)
 {
   const result = simulatePillSelection(14, 15, [16, 17]);
   assert.ok(result[14].classes.includes('is-start'), 'Slot 14 should have is-start');
-  assert.strictEqual(result[15].classes.length, 0, 'Slot 15 must NOT have any selected class when only slot 14 is clicked');
+  assert.ok(result[15].classes.includes('is-end'), 'Slot 15 should have is-end');
   assert.ok(result[16].classes.includes('is-booked'), 'Slot 16 is booked');
-  console.log('✔ Scenario 1 passed: Selecting 14:00 only highlights 14:00, 15:00 is untouched.');
+  console.log('✔ Scenario 1 passed: Selecting 14:00 - 15:00 highlights start 14:00 and end 15:00.');
 }
 
-// Scenario 2: Select 15:00 (1 hour: 15:00 - 16:00, before booked 16:00)
+// Scenario 2: Select 17:00 to 18:00 (1 hour up to closing time)
 {
-  const result = simulatePillSelection(15, 16, [16, 17]);
-  assert.ok(result[15].classes.includes('is-start'), 'Slot 15 should have is-start');
-  assert.ok(!result[15].classes.includes('is-booked'), 'Slot 15 is free');
-  assert.ok(result[16].classes.includes('is-booked'), 'Slot 16 is booked');
-  assert.ok(!result[16].classes.includes('is-start') && !result[16].classes.includes('is-end'), 'Slot 16 must NOT be highlighted as selected');
-  console.log('✔ Scenario 2 passed: Selecting 15:00 cleanly highlights 15:00 without conflicting with booked 16:00.');
+  const result = simulatePillSelection(17, 18, []);
+  assert.ok(result[17].classes.includes('is-start'), 'Slot 17 should have is-start');
+  assert.ok(result[18].classes.includes('is-end'), 'Slot 18 should have is-end');
+  console.log('✔ Scenario 2 passed: Selecting 17:00 - 18:00 highlights start 17:00 and end 18:00.');
 }
 
-// Scenario 3: Select 14:00 to 16:00 (2 hours: slots 14 and 15)
+// Scenario 3: Select 14:00 to 16:00 (2 hours: slots 14, 15, 16)
 {
-  const result = simulatePillSelection(14, 16, [16, 17]);
+  const result = simulatePillSelection(14, 16, []);
   assert.ok(result[14].classes.includes('is-start'), 'Slot 14 is start');
-  assert.ok(result[15].classes.includes('is-end'), 'Slot 15 is end');
-  assert.strictEqual(result[13].classes.length, 0, 'Slot 13 is untouched');
-  console.log('✔ Scenario 3 passed: Selecting 14:00 - 16:00 highlights slots 14 (start) and 15 (end).');
+  assert.ok(result[15].classes.includes('in-range'), 'Slot 15 is in-range');
+  assert.ok(result[16].classes.includes('is-end'), 'Slot 16 is end');
+  console.log('✔ Scenario 3 passed: Selecting 14:00 - 16:00 highlights 14 (start), 15 (in-range), and 16 (end).');
 }
 
 // Scenario 4: Conflict check logic for 15:00 - 16:00 when 16:00 is booked

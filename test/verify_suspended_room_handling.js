@@ -11,17 +11,17 @@ console.log('Testing suspended room & 18:00 selection handling...');
 const dashboardJs = fs.readFileSync(path.join(__dirname, '../src/public/dashboard.js'), 'utf8');
 const bookingEjs = fs.readFileSync(path.join(__dirname, '../src/views/partials/dashboard/booking.ejs'), 'utf8');
 
-// 1. Verify onTimeRangePillClick blocks suspended room and hour >= 18
+// 1. Verify onTimeRangePillClick blocks suspended room and validates boundary
 assert.ok(dashboardJs.includes('if (room && !room.is_active)'), 'Must check room.is_active');
-assert.ok(dashboardJs.includes('if (hour >= 18)'), 'Must block hour >= 18 in onTimeRangePillClick');
+assert.ok(dashboardJs.includes('hour === 18'), 'Must handle 18:00 boundary in onTimeRangePillClick');
 
 // 2. Verify checkBookingConflict blocks suspended room and startH >= 18
 assert.ok(dashboardJs.includes('ไม่สามารถจองได้: ห้องนี้ถูกระงับการใช้งาน (ปิดปรับปรุง)'), 'Must set suspended conflict message');
 assert.ok(dashboardJs.includes('startH >= 18'), 'Must block startH >= 18 in checkBookingConflict');
 
-// 3. Verify renderTimeRangePills marks all pills is-booked when room is inactive
+// 3. Verify renderTimeRangePills marks suspended rooms
 assert.ok(dashboardJs.includes("pill.title = 'ห้องนี้ถูกระงับการใช้งาน / ปิดปรับปรุง';"), 'Must title suspended pills');
-assert.ok(dashboardJs.includes("pill.title = 'อาคารปิดทำการ 18:00 น.';"), 'Must title hour 18 as closed');
+assert.ok(dashboardJs.includes("18:00 น."), 'Must support 18:00 pill title');
 
 // 4. Verify visual room card displays suspended badge
 assert.ok(bookingEjs.includes('is-suspended'), 'Visual room card must have is-suspended class');

@@ -559,18 +559,7 @@
         return;
       }
 
-      if (hour >= 18) {
-        const toast = document.getElementById('slotNoticeToast');
-        const text = document.getElementById('slotNoticeText');
-        if (toast && text) {
-          text.innerHTML = `<strong>เลือกไม่ได้:</strong> อาคารปิดให้บริการเวลา 18:00 น. ไม่สามารถเริ่มจองที่ 18:00 ได้`;
-          toast.style.display = 'flex';
-          setTimeout(() => { toast.style.display = 'none'; }, 3000);
-        }
-        return;
-      }
-
-      const pill = document.querySelector(`.time-slot-pill[data-hour="${hour}"]`);
+      const pill = document.querySelector(`.time-slot-pill:not(.maint-time-pill)[data-hour="${hour}"]`);
       if (pill && pill.classList.contains('is-booked')) {
         const toast = document.getElementById('slotNoticeToast');
         const text = document.getElementById('slotNoticeText');
@@ -584,15 +573,41 @@
 
       const guidePill = document.getElementById('slotGuidePill');
 
-      if (!isSettingEnd || hour < rangeStartHour) {
+      if (hour === 18) {
+        // แตะที่ปุ่ม 18:00 (เวลาสิ้นสุด)
+        let hasConflict = false;
+        const startCheck = (isSettingEnd && rangeStartHour < 18) ? rangeStartHour : 17;
+        for (let checkH = startCheck; checkH < 18; checkH++) {
+          const checkPill = document.querySelector(`.time-slot-pill:not(.maint-time-pill)[data-hour="${checkH}"]`);
+          if (checkPill && checkPill.classList.contains('is-booked')) {
+            hasConflict = true;
+            break;
+          }
+        }
+        if (hasConflict) {
+          const toast = document.getElementById('slotNoticeToast');
+          const text = document.getElementById('slotNoticeText');
+          if (toast && text) {
+            text.innerHTML = `<strong>เลือกไม่ได้:</strong> ช่วงเวลาก่อน 18:00 น. มีคิวจองหรือปิดปรับปรุง`;
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+          }
+          return;
+        }
+
+        if (isSettingEnd && rangeStartHour < 18) {
+          rangeEndHour = 18;
+          isSettingEnd = false;
+        } else {
+          rangeStartHour = 17;
+          rangeEndHour = 18;
+          isSettingEnd = false;
+        }
+      } else if (!isSettingEnd || hour < rangeStartHour) {
         // เลือกสล็อตเริ่มต้นเดี่ยวๆ (1 ชั่วโมง)
         rangeStartHour = hour;
         rangeEndHour = hour + 1;
         isSettingEnd = true;
-        if (guidePill) {
-          guidePill.className = 'conflict-status-banner is-free';
-          guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(rangeStartHour).padStart(2,'0')}:00 - ${String(rangeEndHour).padStart(2,'0')}:00 น. (แตะช่องอื่นเพื่อขยายเวลา)`;
-        }
       } else if (hour === rangeStartHour && rangeEndHour === hour + 1) {
         // แตะซ้ำที่สล็อตเดิม -> คงไว้ที่ 1 ชั่วโมง
         isSettingEnd = false;
@@ -600,7 +615,7 @@
         // แตะสล็อตที่อยู่ถัดไป -> ตรวจสอบว่าระหว่างทางมีสล็อตที่ติดจองหรือไม่
         let hasConflictInBetween = false;
         for (let checkH = rangeStartHour; checkH <= hour; checkH++) {
-          const checkPill = document.querySelector(`.time-slot-pill[data-hour="${checkH}"]`);
+          const checkPill = document.querySelector(`.time-slot-pill:not(.maint-time-pill)[data-hour="${checkH}"]`);
           if (checkPill && checkPill.classList.contains('is-booked')) {
             hasConflictInBetween = true;
             break;
@@ -608,7 +623,6 @@
         }
 
         if (hasConflictInBetween) {
-          // หากมีสล็อตติดจองคั่นกลาง ให้เริ่มเลือกใหม่ที่สล็อตปัจจุบัน 1 ชั่วโมง
           rangeStartHour = hour;
           rangeEndHour = hour + 1;
           isSettingEnd = true;
@@ -616,11 +630,11 @@
           rangeEndHour = hour + 1;
           isSettingEnd = false;
         }
+      }
 
-        if (guidePill) {
-          guidePill.className = 'conflict-status-banner is-free';
-          guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(rangeStartHour).padStart(2,'0')}:00 - ${String(rangeEndHour).padStart(2,'0')}:00 น. (${rangeEndHour - rangeStartHour} ชม.)`;
-        }
+      if (guidePill) {
+        guidePill.className = 'conflict-status-banner is-free';
+        guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(rangeStartHour).padStart(2,'0')}:00 - ${String(rangeEndHour).padStart(2,'0')}:00 น. (${rangeEndHour - rangeStartHour} ชม.)`;
       }
 
       const startSelect = document.getElementById('form_start_time');
@@ -638,14 +652,14 @@
       checkBookingConflict();
     }
 
-    // Render ไฮไลต์ช่วงเวลาบน Grid (เฉพาะสล็อตที่ครอบคลุมอยู่ใน [rangeStartHour, rangeEndHour))
+    // Render ไฮไลต์ช่วงเวลาบน Grid
     function renderTimeRangePills() {
       const roomSelect = document.getElementById('form_room_id');
       if (!roomSelect) return;
       const roomId = Number(roomSelect.value);
       const room = ROOMS.find(r => Number(r.room_id) === roomId);
 
-      document.querySelectorAll('.time-slot-pill').forEach(pill => {
+      document.querySelectorAll('.time-slot-pill:not(.maint-time-pill)').forEach(pill => {
         const h = parseInt(pill.getAttribute('data-hour'), 10);
         pill.className = 'time-slot-pill';
 
@@ -655,42 +669,49 @@
           return;
         }
 
-        if (h >= 18) {
-          pill.classList.add('is-booked');
-          pill.title = 'อาคารปิดทำการ 18:00 น.';
-          return;
-        }
+        if (h === 18) {
+          // สล็อต 18:00 เป็นจุดสิ้นสุดการให้บริการ (ติดจองถ้าช่วง 17:00-18:00 ติดจอง)
+          const check17 = DAY_BOOKINGS.find(b => {
+            if (Number(b.room_id) !== roomId) return false;
+            if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+            const bStart = new Date(b.start_time);
+            const bEnd = new Date(b.end_time);
+            const slotStart = new Date(`${SELECTED_DATE}T17:00:00`);
+            const slotEnd = new Date(`${SELECTED_DATE}T18:00:00`);
+            return bStart < slotEnd && bEnd > slotStart;
+          });
+          if (check17) {
+            pill.classList.add('is-booked');
+            pill.title = 'ช่วงเวลา 17:00-18:00 ติดคิวจอง';
+          }
+        } else {
+          const hStartStr = `${String(h).padStart(2,'0')}:00`;
+          const hEndStr = `${String(h+1).padStart(2,'0')}:00`;
+          const slotStart = new Date(`${SELECTED_DATE}T${hStartStr}:00`);
+          const slotEnd = new Date(`${SELECTED_DATE}T${hEndStr}:00`);
 
-        const hStartStr = `${String(h).padStart(2,'0')}:00`;
-        const hEndStr = `${String(h+1).padStart(2,'0')}:00`;
-        const slotStart = new Date(`${SELECTED_DATE}T${hStartStr}:00`);
-        const slotEnd = new Date(`${SELECTED_DATE}T${hEndStr}:00`);
+          const overlap = DAY_BOOKINGS.find(b => {
+            if (Number(b.room_id) !== roomId) return false;
+            if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+            const bStart = new Date(b.start_time);
+            const bEnd = new Date(b.end_time);
+            return bStart < slotEnd && bEnd > slotStart;
+          });
 
-        const overlap = DAY_BOOKINGS.find(b => {
-          if (Number(b.room_id) !== roomId) return false;
-          if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
-          const bStart = new Date(b.start_time);
-          const bEnd = new Date(b.end_time);
-          return bStart < slotEnd && bEnd > slotStart;
-        });
-
-        if (overlap) {
-          pill.classList.add('is-booked');
-          pill.title = overlap.title || 'ติดคิว';
+          if (overlap) {
+            pill.classList.add('is-booked');
+            pill.title = overlap.title || 'ติดคิว';
+          }
         }
 
         // ไฮไลต์เฉพาะสล็อตที่ถูกเลือกใช้งานจริง
-        if (h >= rangeStartHour && h < rangeEndHour) {
-          if (!pill.classList.contains('is-booked')) {
-            if (rangeEndHour - rangeStartHour === 1) {
-              pill.classList.add('is-start');
-            } else if (h === rangeStartHour) {
-              pill.classList.add('is-start');
-            } else if (h === rangeEndHour - 1) {
-              pill.classList.add('is-end');
-            } else {
-              pill.classList.add('in-range');
-            }
+        if (!pill.classList.contains('is-booked')) {
+          if (h === rangeStartHour) {
+            pill.classList.add('is-start');
+          } else if (h === rangeEndHour) {
+            pill.classList.add('is-end');
+          } else if (h > rangeStartHour && h < rangeEndHour) {
+            pill.classList.add('in-range');
           }
         }
       });
@@ -957,42 +978,35 @@
     }
 
     function onMaintTimeRangePillClick(hour) {
-      if (hour >= 18) {
-        const toast = document.getElementById('slotNoticeToast');
-        const text = document.getElementById('slotNoticeText');
-        if (toast && text) {
-          text.innerHTML = `<strong>เลือกไม่ได้:</strong> อาคารปิดให้บริการเวลา 18:00 น. ไม่สามารถเริ่มบล็อกที่ 18:00 ได้`;
-          toast.style.display = 'flex';
-          setTimeout(() => { toast.style.display = 'none'; }, 3000);
-        }
-        return;
-      }
-
       const guidePill = document.getElementById('maintSlotGuidePill');
 
-      if (!maintIsSettingEnd || hour < maintRangeStartHour) {
+      if (hour === 18) {
+        if (maintIsSettingEnd && maintRangeStartHour < 18) {
+          maintRangeEndHour = 18;
+          maintIsSettingEnd = false;
+        } else {
+          maintRangeStartHour = 17;
+          maintRangeEndHour = 18;
+          maintIsSettingEnd = false;
+        }
+      } else if (!maintIsSettingEnd || hour < maintRangeStartHour) {
         maintRangeStartHour = hour;
         maintRangeEndHour = hour + 1;
         maintIsSettingEnd = true;
-        if (guidePill) {
-          guidePill.className = 'conflict-status-banner';
-          guidePill.style.background = '#fffbeb';
-          guidePill.style.color = '#b45309';
-          guidePill.style.borderColor = '#fde68a';
-          guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(maintRangeStartHour).padStart(2,'0')}:00 - ${String(maintRangeEndHour).padStart(2,'0')}:00 น. (แตะช่องอื่นเพื่อขยายเวลา)`;
-        }
       } else if (hour === maintRangeStartHour && maintRangeEndHour === hour + 1) {
         maintIsSettingEnd = false;
       } else {
         maintRangeEndHour = hour + 1;
         maintIsSettingEnd = false;
-        if (guidePill) {
-          guidePill.className = 'conflict-status-banner';
-          guidePill.style.background = '#fffbeb';
-          guidePill.style.color = '#b45309';
-          guidePill.style.borderColor = '#fde68a';
-          guidePill.innerText = `ช่วงเวลาปิดซ่อม: ${String(maintRangeStartHour).padStart(2,'0')}:00 - ${String(maintRangeEndHour).padStart(2,'0')}:00 น. (${maintRangeEndHour - maintRangeStartHour} ชม.)`;
-        }
+      }
+
+      if (guidePill) {
+        guidePill.className = 'conflict-status-banner';
+        guidePill.style.background = '#fffbeb';
+        guidePill.style.color = '#b45309';
+        guidePill.style.borderColor = '#fde68a';
+        const dur = maintRangeEndHour - maintRangeStartHour;
+        guidePill.innerText = `ช่วงเวลาปิดซ่อม: ${String(maintRangeStartHour).padStart(2,'0')}:00 - ${String(maintRangeEndHour).padStart(2,'0')}:00 น. (${dur} ชม.)`;
       }
 
       const startSelect = document.getElementById('maint_start_time');
@@ -1019,43 +1033,51 @@
         const h = parseInt(pill.getAttribute('data-hour'), 10);
         pill.className = 'time-slot-pill maint-time-pill';
 
-        if (h >= 18) {
-          pill.classList.add('is-booked');
-          pill.title = 'อาคารปิดทำการ 18:00 น.';
-          return;
-        }
-
-        const hStartStr = `${String(h).padStart(2,'0')}:00`;
-        const hEndStr = `${String(h+1).padStart(2,'0')}:00`;
-        const slotStart = new Date(`${SELECTED_DATE}T${hStartStr}:00`);
-        const slotEnd = new Date(`${SELECTED_DATE}T${hEndStr}:00`);
-
-        const overlap = DAY_BOOKINGS.find(b => {
-          if (Number(b.room_id) !== roomId) return false;
-          if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
-          const bStart = new Date(b.start_time);
-          const bEnd = new Date(b.end_time);
-          return bStart < slotEnd && bEnd > slotStart;
-        });
-
-        if (overlap) {
-          if (overlap.status === 'BLOCKED') {
+        if (h === 18) {
+          const slotStart = new Date(`${SELECTED_DATE}T17:00:00`);
+          const slotEnd = new Date(`${SELECTED_DATE}T18:00:00`);
+          const overlap = DAY_BOOKINGS.find(b => {
+            if (Number(b.room_id) !== roomId) return false;
+            if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+            const bStart = new Date(b.start_time);
+            const bEnd = new Date(b.end_time);
+            return bStart < slotEnd && bEnd > slotStart;
+          });
+          if (overlap && overlap.status === 'BLOCKED') {
             pill.classList.add('is-booked');
-            pill.title = `ปิดซ่อมอยู่แล้ว: ${overlap.title}`;
-          } else {
-            pill.classList.add('is-booked');
-            pill.title = `มีคิวจอง: ${overlap.title} (${overlap.status})`;
+            pill.title = 'ปิดซ่อมอยู่แล้ว';
+          }
+        } else {
+          const hStartStr = `${String(h).padStart(2,'0')}:00`;
+          const hEndStr = `${String(h+1).padStart(2,'0')}:00`;
+          const slotStart = new Date(`${SELECTED_DATE}T${hStartStr}:00`);
+          const slotEnd = new Date(`${SELECTED_DATE}T${hEndStr}:00`);
+
+          const overlap = DAY_BOOKINGS.find(b => {
+            if (Number(b.room_id) !== roomId) return false;
+            if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+            const bStart = new Date(b.start_time);
+            const bEnd = new Date(b.end_time);
+            return bStart < slotEnd && bEnd > slotStart;
+          });
+
+          if (overlap) {
+            if (overlap.status === 'BLOCKED') {
+              pill.classList.add('is-booked');
+              pill.title = `ปิดซ่อมอยู่แล้ว: ${overlap.title}`;
+            } else {
+              pill.classList.add('is-booked');
+              pill.title = `มีคิวจอง: ${overlap.title} (${overlap.status})`;
+            }
           }
         }
 
-        if (h >= maintRangeStartHour && h < maintRangeEndHour) {
-          if (maintRangeEndHour - maintRangeStartHour === 1) {
+        if (!pill.classList.contains('is-booked')) {
+          if (h === maintRangeStartHour) {
             pill.classList.add('is-maint-start');
-          } else if (h === maintRangeStartHour) {
-            pill.classList.add('is-maint-start');
-          } else if (h === maintRangeEndHour - 1) {
+          } else if (h === maintRangeEndHour) {
             pill.classList.add('is-maint-end');
-          } else {
+          } else if (h > maintRangeStartHour && h < maintRangeEndHour) {
             pill.classList.add('in-maint-range');
           }
         }

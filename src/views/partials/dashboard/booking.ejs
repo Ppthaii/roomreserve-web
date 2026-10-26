@@ -168,13 +168,13 @@
                   แตะช่องเวลาเพื่อกำหนดเวลาเริ่มต้น
                 </div>
 
-                <!-- Grid สล็อตเวลา 09:00 - 18:00 (Hourly Buttons: สล็อตละ 1 ชั่วโมง) -->
+                <!-- Grid สล็อตเวลา 09:00 - 18:00 (Hourly Buttons: สล็อตละ 1 ชั่วโมง พร้อมปุ่มสิ้นสุด 18:00) -->
                 <div class="time-range-picker-grid" id="timeRangeGrid">
-                  <% for (let h = 9; h < 18; h++) { 
+                  <% for (let h = 9; h <= 18; h++) { 
                     const hourStr = `${String(h).padStart(2, '0')}:00`;
                     const nextHourStr = `${String(h+1).padStart(2, '0')}:00`;
                   %>
-                    <div class="time-slot-pill" data-hour="<%= h %>" data-time="<%= hourStr %>" onclick="onTimeRangePillClick(<%= h %>)" title="<%= hourStr %> - <%= nextHourStr %> น.">
+                    <div class="time-slot-pill" data-hour="<%= h %>" data-time="<%= hourStr %>" onclick="onTimeRangePillClick(<%= h %>)" title="<%= h < 18 ? `${hourStr} - ${nextHourStr} น.` : '18:00 น. (เวลาสิ้นสุดการให้บริการ)' %>">
                       <%= hourStr %>
                     </div>
                   <% } %>
