@@ -1063,38 +1063,6 @@
               </div>
             </div>
 
-            <!-- แก้ไขข้อมูลส่วนตัว (Edit Personal Info - All Roles) -->
-            <div style="text-align: left; margin-bottom: 1.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
-              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                แก้ไขข้อมูลส่วนตัว (Profile Settings)
-              </h4>
-              <form action="/app/profile/update" method="POST">
-                <div class="form-group" style="margin-bottom: 0.75rem;">
-                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--dark); display: block; margin-bottom: 0.25rem;">ชื่อ-นามสกุล:</label>
-                  <input type="text" name="full_name" class="form-control" value="<%= user.fullName || '' %>" required style="font-size: 0.85rem;">
-                </div>
-                <div class="form-group" style="margin-bottom: 0.75rem;">
-                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--dark); display: block; margin-bottom: 0.25rem;">แผนก / สังกัด:</label>
-                  <input type="text" name="department" class="form-control" value="<%= user.department || '' %>" placeholder="เช่น แผนกเทคโนโลยีสารสนเทศ" style="font-size: 0.85rem;">
-                </div>
-                <div style="border-top: 1px dashed var(--border); margin: 1rem 0; padding-top: 0.75rem;">
-                  <div style="font-size: 0.8rem; font-weight: 600; color: var(--dark); margin-bottom: 0.5rem;">เปลี่ยนรหัสผ่าน (เว้นว่างไว้หากไม่ต้องการเปลี่ยน):</div>
-                  <div class="form-group" style="margin-bottom: 0.75rem;">
-                    <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.25rem;">รหัสผ่านเดิม (จำเป็นหากต้องการเปลี่ยนรหัสผ่านใหม่):</label>
-                    <input type="password" name="current_password" class="form-control" placeholder="••••••••" style="font-size: 0.85rem;">
-                  </div>
-                  <div class="form-group" style="margin-bottom: 0.75rem;">
-                    <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.25rem;">รหัสผ่านใหม่:</label>
-                    <input type="password" name="new_password" class="form-control" placeholder="รหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร" minlength="6" style="font-size: 0.85rem;">
-                  </div>
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; font-weight: 700; padding: 0.6rem;">
-                  บันทึกข้อมูลส่วนตัว
-                </button>
-              </form>
-            </div>
-
             <!-- สลับบทบาททดสอบด่วน -->
             <div style="text-align: left; margin-bottom: 1.5rem;">
               <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--dark); margin-bottom: 0.75rem;">สลับบทบาททดสอบ (Demo Switcher)</h4>

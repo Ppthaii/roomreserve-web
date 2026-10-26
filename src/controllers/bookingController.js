@@ -415,86 +415,6 @@ async function deleteBookingHistory(req, res, next) {
   }
 }
 
-// 8. อัปเดตข้อมูลส่วนตัว (Full Name, Department, Password) - สำหรับทุกบทบาท
-async function updateProfile(req, res, next) {
-  try {
-    const userId = req.session.userId;
-    const { full_name, department, current_password, new_password } = req.body;
-
-    if (!full_name || !full_name.trim()) {
-      return res.redirect(`/app?error=${encodeURIComponent('กรุณาระบุชื่อ-นามสกุล')}`);
-    }
-
-    const trimmedName = full_name.trim();
-    const trimmedDept = department ? department.trim() : null;
-
-    // หากมีการระบุรหัสผ่านใหม่
-    if (new_password && new_password.trim()) {
-      if (!current_password) {
-        return res.redirect(`/app?error=${encodeURIComponent('กรุณากรอกรหัสผ่านเดิมเพื่อยืนยันการเปลี่ยนรหัสผ่าน')}`);
-      }
-      if (new_password.trim().length < 6) {
-        return res.redirect(`/app?error=${encodeURIComponent('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร')}`);
-      }
-
-      // ดึงรหัสผ่านปัจจุบันจากฐานข้อมูลมาตรวจสอบ
-      const userRes = await pool.query('SELECT password_hash FROM users WHERE user_id = $1', [userId]);
-      if (userRes.rows.length === 0) {
-        return res.redirect('/login');
-      }
-
-      const isMatch = await bcrypt.compare(current_password, userRes.rows[0].password_hash);
-      if (!isMatch) {
-        await logAudit({
-          userId,
-          username: req.session.username,
-          roleName: req.session.roleName,
-          action: 'PROFILE_PASSWORD_FAILED',
-          resource: 'USER',
-          resourceId: String(userId),
-          status: 'DENIED',
-          details: 'พยายามเปลี่ยนรหัสผ่านแต่รหัสผ่านเดิมไม่ถูกต้อง',
-          ip: req.ip,
-          ua: req.get('user-agent')
-        });
-        return res.redirect(`/app?error=${encodeURIComponent('รหัสผ่านเดิมไม่ถูกต้อง')}`);
-      }
-
-      const newHash = await bcrypt.hash(new_password.trim(), 10);
-      await pool.query(
-        'UPDATE users SET full_name = $1, department = $2, password_hash = $3 WHERE user_id = $4',
-        [trimmedName, trimmedDept, newHash, userId]
-      );
-    } else {
-      await pool.query(
-        'UPDATE users SET full_name = $1, department = $2 WHERE user_id = $3',
-        [trimmedName, trimmedDept, userId]
-      );
-    }
-
-    // ปรับปรุง Session ทันที
-    req.session.fullName = trimmedName;
-    req.session.department = trimmedDept;
-
-    await logAudit({
-      userId,
-      username: req.session.username,
-      roleName: req.session.roleName,
-      action: 'PROFILE_UPDATE',
-      resource: 'USER',
-      resourceId: String(userId),
-      status: 'SUCCESS',
-      details: `อัปเดตข้อมูลส่วนตัว (ชื่อ: ${trimmedName}, แผนก: ${trimmedDept || '-'}${new_password ? ', เปลี่ยนรหัสผ่านใหม่' : ''})`,
-      ip: req.ip,
-      ua: req.get('user-agent')
-    });
-
-    return res.redirect(`/app?success=${encodeURIComponent('บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว')}`);
-  } catch (err) {
-    next(err);
-  }
-}
-
 module.exports = {
   getDashboard,
   createBooking,
@@ -502,7 +422,7 @@ module.exports = {
   reviewBooking,
   revokeApproval,
   clearBookingHistory,
-  deleteBookingHistory,
-  updateProfile
+  deleteBookingHistory
 };
+
 

@@ -75,13 +75,10 @@ async function runTests() {
   assert(!appHtml.includes('+1ชม.'), 'Button "+1ชม." must be removed');
   console.log('✅ 2.3 ปฏิทินจิ๋วรวมอยู่ใน Card เดียวกันกับฟอร์มเวลา และปุ่มด่วนถูกเอาออกเรียบร้อย');
 
-  // 2.4 ตรวจสอบฟอร์มแก้ไขข้อมูลส่วนตัวในหน้า Dashboard
-  assert(appHtml.includes('action="/app/profile/update"'), 'Profile update form must be present');
-  assert(appHtml.includes('name="full_name"'), 'full_name input must be present');
-  assert(appHtml.includes('name="department"'), 'department input must be present');
-  assert(appHtml.includes('name="current_password"'), 'current_password input must be present');
-  assert(appHtml.includes('name="new_password"'), 'new_password input must be present');
-  console.log('✅ 2.4 ฟอร์มแก้ไขข้อมูลส่วนตัว (Profile Settings) พร้อมใช้งาน');
+  // 2.4 ตรวจสอบว่าฟอร์มแก้ไขข้อมูลส่วนตัวถูกนำออกตามคำสั่งผู้ใช้
+  assert(!appHtml.includes('action="/app/profile/update"'), 'Profile update form must be removed');
+  assert(!appHtml.includes('แก้ไขข้อมูลส่วนตัว (Profile Settings)'), 'Profile Settings heading must be removed');
+  console.log('✅ 2.4 ฟอร์มแก้ไขข้อมูลส่วนตัว (Profile Settings) ถูกนำออกเรียบร้อย');
 
   // 2.5 ตรวจสอบว่าใน Subviews ของ dashboard ไม่มีปุ่มกลับหน้าแรกซ้ำซ้อน
   assert(!appHtml.includes('&larr; กลับหน้าแรก'), 'Dashboard subview cards must not have redundant back buttons');
@@ -131,9 +128,9 @@ async function runTests() {
   assert(logsRes.data.includes('href="/app" style="font-weight: 700; color: #1d4ed8;">&larr; กลับหน้าแรก</a>'), 'Logs page navbar must have back link');
   console.log('✅ 4.2 หน้า /admin/logs มีลิงก์กลับหน้าแรกบน Navbar เรียบร้อย');
 
-  // 5. ทดสอบ API POST /app/profile/update สำหรับผู้ใช้งานทั่วไป (somchai)
+  // 5. ตรวจสอบว่า API POST /app/profile/update ถูกนำออกแล้ว (404)
   const somchaiCookie = await login('somchai', 'user123');
-  const updateBody = `full_name=${encodeURIComponent('นายสมชาย มั่นคง (ปรับปรุงใหม่)')}&department=${encodeURIComponent('ฝ่ายพัฒนาธุรกิจและนวัตกรรม')}`;
+  const updateBody = `full_name=${encodeURIComponent('test')}`;
   const updateRes = await request({
     hostname: 'localhost',
     port: 3000,
@@ -146,9 +143,8 @@ async function runTests() {
     }
   }, updateBody);
 
-  assert.strictEqual(updateRes.res.statusCode, 302, 'Profile update should redirect');
-  assert(updateRes.res.headers['location'].includes('success'), 'Redirect should indicate success');
-  console.log('✅ 5. ผู้ใช้งานทั่วไป (somchai) อัปเดตข้อมูลส่วนตัว (ชื่อ-นามสกุล, สังกัด) สำเร็จ');
+  assert.strictEqual(updateRes.res.statusCode, 404, 'Profile update endpoint should be removed (404)');
+  console.log('✅ 5. เส้นทาง API /app/profile/update ถูกนำออกเรียบร้อย (404)');
 
   // 6. ตรวจสอบ render.yaml ไม่ seed ทับ
   const renderYaml = fs.readFileSync('render.yaml', 'utf8');
