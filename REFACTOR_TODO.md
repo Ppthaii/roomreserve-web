@@ -33,14 +33,14 @@
 
 ## ✅ Task Checklist
 
-- [ ] **R0** — Baseline ก่อนเริ่ม (บังคับ)
-- [ ] **R1** — แยก CSS inline ออกเป็นไฟล์ `.css`
-- [ ] **R2** — แยก JS inline ของ `acl.ejs` → `public/acl.js`
-- [ ] **R3** — แยก JS inline ของ `dashboard.ejs` → `public/dashboard.js` (⚠️ มีตัวแปร EJS ปน)
-- [ ] **R4** — สร้าง partial `head.ejs` ใช้ร่วม 6 ไฟล์
-- [ ] **R5** — สร้าง partial `navbar.ejs` ใช้ร่วม 4 ไฟล์
-- [ ] **R6** — หั่น HTML ของ `dashboard.ejs` เป็น partials ตาม Subview (⚠️ ต้องส่งตัวแปรเอง)
-- [ ] **R7** — Verify รวมทั้งระบบ + อัปเดต README
+- [x] **R0** — Baseline ก่อนเริ่ม (บังคับ) (เสร็จสิ้น)
+- [x] **R1** — แยก CSS inline ออกเป็นไฟล์ `.css` (`public/dashboard.css`, `public/acl.css`, `public/login.css`)
+- [x] **R2** — แยก JS inline ของ `acl.ejs` → `public/acl.js`
+- [x] **R3** — แยก JS inline ของ `dashboard.ejs` → `public/dashboard.js` (ใช้ Server Data Bridge)
+- [x] **R4** — สร้าง partial `head.ejs` ใช้ร่วม 6 ไฟล์
+- [x] **R5** — สร้าง partial `navbar.ejs` ใช้ร่วม 4 ไฟล์
+- [x] **R6** — หั่น HTML ของ `dashboard.ejs` เป็น 10 partials ย่อยใน `src/views/partials/dashboard/`
+- [x] **R7** — Verify รวมทั้งระบบ 6 Test Suites ผ่าน 100% (Zero Logic Loss)
 
 ---
 

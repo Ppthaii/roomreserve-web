@@ -66,12 +66,20 @@
                 let bNum = getBuildingNumHelper(room);
                 const bImg = `/images/building${['1','2','3'].includes(bNum) ? bNum : '1'}.jpg`;
               %>
-                <div class="visual-room-card" data-building="<%= bNum %>" data-room-id="<%= room.room_id %>" data-capacity="<%= room.capacity %>" onclick="selectBookingRoom('<%= room.room_id %>')">
-                  <div class="visual-room-img-wrap">
+                <div class="visual-room-card <%= !room.is_active ? 'is-suspended' : '' %>" data-building="<%= bNum %>" data-room-id="<%= room.room_id %>" data-capacity="<%= room.capacity %>" onclick="selectBookingRoom('<%= room.room_id %>')">
+                  <div class="visual-room-img-wrap" style="position: relative;">
                     <img src="<%= bImg %>" alt="<%= room.room_name %>" class="visual-room-img" onerror="this.src='/images/building1.jpg'">
+                    <% if (!room.is_active) { %>
+                      <div class="room-suspended-overlay">ระงับการใช้งาน</div>
+                    <% } %>
                   </div>
                   <div class="visual-room-body">
-                    <div class="visual-room-name"><%= room.room_name %></div>
+                    <div class="visual-room-name">
+                      <%= room.room_name %>
+                      <% if (!room.is_active) { %>
+                        <span style="font-size: 0.72rem; color: #dc2626; font-weight: 700; margin-left: 0.35rem;">[ระงับการใช้งาน]</span>
+                      <% } %>
+                    </div>
                     <div class="visual-room-meta">
                       <span class="visual-room-badge"><%= room.location %></span>
                       <span class="visual-room-badge">รองรับ <%= room.capacity %> คน</span>

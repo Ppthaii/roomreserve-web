@@ -96,9 +96,16 @@
       if (loc.includes('3')) return '3';
       return '1';
     }
-    const b1Names = rooms.filter(r => getBuildingNumHelper(r) === '1').map(r => r.room_name).join(' • ');
-    const b2Names = rooms.filter(r => getBuildingNumHelper(r) === '2').map(r => r.room_name).join(' • ');
-    const b3Names = rooms.filter(r => getBuildingNumHelper(r) === '3').map(r => r.room_name).join(' • ');
+    function getBuildingRoomsText(bNum) {
+      const bRooms = rooms.filter(r => getBuildingNumHelper(r) === String(bNum));
+      if (bRooms.length === 0) return 'ไม่มีห้องประชุม';
+      const activeRooms = bRooms.filter(r => r.is_active);
+      if (activeRooms.length === 0) return 'ระงับการใช้งานทุกห้อง (ปิดปรับปรุง)';
+      return bRooms.map(r => r.room_name + (!r.is_active ? ' (ปิด)' : '')).join(' • ');
+    }
+    const b1Names = getBuildingRoomsText('1');
+    const b2Names = getBuildingRoomsText('2');
+    const b3Names = getBuildingRoomsText('3');
 
     // Pack view context object for all subview partials
     const v = {

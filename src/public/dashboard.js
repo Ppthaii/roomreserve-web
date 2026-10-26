@@ -162,7 +162,34 @@
       const start = new Date(`${dateStr}T${startTimeStr}:00`);
       const end = new Date(`${dateStr}T${endTimeStr}:00`);
 
+      const room = ROOMS.find(r => Number(r.room_id) === roomId);
+
+      // ตรวจสอบว่าห้องถูกระงับการใช้งาน / ปิดปรับปรุงหรือไม่
+      if (room && !room.is_active) {
+        banner.className = 'conflict-status-banner is-conflict';
+        banner.innerHTML = '<span>ไม่สามารถจองได้: ห้องนี้ถูกระงับการใช้งาน (ปิดปรับปรุง)</span>';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+        const guidePill = document.getElementById('slotGuidePill');
+        if (guidePill) {
+          guidePill.className = 'conflict-status-banner is-conflict';
+          guidePill.innerText = 'ห้องนี้ถูกระงับการใช้งาน ไม่เปิดให้จอง';
+        }
+        return;
+      }
+
       // 1. ตรวจสอบเงื่อนไขเวลาเริ่มต้น - สิ้นสุด
+      const startH = parseInt(startTimeStr.split(':')[0], 10);
+      if (startH >= 18) {
+        banner.className = 'conflict-status-banner is-conflict';
+        banner.innerHTML = '<span>ไม่สามารถเลือกได้: อาคารปิดทำการเวลา 18:00 น.</span>';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+        return;
+      }
+
       if (end <= start) {
         banner.className = 'conflict-status-banner is-conflict';
         banner.innerHTML = '<span>เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น</span>';
@@ -511,6 +538,32 @@
 
     // ฟังก์ชันคลิกเลือกช่วงเวลาบน Time Range Grid (แต่ละปุ่มแทนสล็อต 1 ชั่วโมงเต็ม เช่น 14:00 คือ 14:00-15:00)
     function onTimeRangePillClick(hour) {
+      const roomSelect = document.getElementById('form_room_id');
+      const roomId = roomSelect ? Number(roomSelect.value) : null;
+      const room = ROOMS.find(r => Number(r.room_id) === roomId);
+
+      if (room && !room.is_active) {
+        const toast = document.getElementById('slotNoticeToast');
+        const text = document.getElementById('slotNoticeText');
+        if (toast && text) {
+          text.innerHTML = `<strong>เลือกไม่ได้:</strong> ห้องนี้ถูกระงับการใช้งาน (ปิดปรับปรุง)`;
+          toast.style.display = 'flex';
+          setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+        return;
+      }
+
+      if (hour >= 18) {
+        const toast = document.getElementById('slotNoticeToast');
+        const text = document.getElementById('slotNoticeText');
+        if (toast && text) {
+          text.innerHTML = `<strong>เลือกไม่ได้:</strong> อาคารปิดให้บริการเวลา 18:00 น. ไม่สามารถเริ่มจองที่ 18:00 ได้`;
+          toast.style.display = 'flex';
+          setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+        return;
+      }
+
       const pill = document.querySelector(`.time-slot-pill[data-hour="${hour}"]`);
       if (pill && pill.classList.contains('is-booked')) {
         const toast = document.getElementById('slotNoticeToast');
@@ -590,27 +643,34 @@
         const h = parseInt(pill.getAttribute('data-hour'), 10);
         pill.className = 'time-slot-pill';
 
-        if (h < 18) {
-          const hStartStr = `${String(h).padStart(2,'0')}:00`;
-          const hEndStr = `${String(h+1).padStart(2,'0')}:00`;
-          const slotStart = new Date(`${SELECTED_DATE}T${hStartStr}:00`);
-          const slotEnd = new Date(`${SELECTED_DATE}T${hEndStr}:00`);
+        if (room && !room.is_active) {
+          pill.classList.add('is-booked');
+          pill.title = 'ห้องนี้ถูกระงับการใช้งาน / ปิดปรับปรุง';
+          return;
+        }
 
-          const overlap = DAY_BOOKINGS.find(b => {
-            if (Number(b.room_id) !== roomId) return false;
-            if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
-            const bStart = new Date(b.start_time);
-            const bEnd = new Date(b.end_time);
-            return bStart < slotEnd && bEnd > slotStart;
-          });
+        if (h >= 18) {
+          pill.classList.add('is-booked');
+          pill.title = 'อาคารปิดทำการ 18:00 น.';
+          return;
+        }
 
-          if (room && !room.is_active) {
-            pill.classList.add('is-booked');
-            pill.title = 'ห้องปิดปรับปรุง';
-          } else if (overlap) {
-            pill.classList.add('is-booked');
-            pill.title = overlap.title || 'ติดคิว';
-          }
+        const hStartStr = `${String(h).padStart(2,'0')}:00`;
+        const hEndStr = `${String(h+1).padStart(2,'0')}:00`;
+        const slotStart = new Date(`${SELECTED_DATE}T${hStartStr}:00`);
+        const slotEnd = new Date(`${SELECTED_DATE}T${hEndStr}:00`);
+
+        const overlap = DAY_BOOKINGS.find(b => {
+          if (Number(b.room_id) !== roomId) return false;
+          if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+          const bStart = new Date(b.start_time);
+          const bEnd = new Date(b.end_time);
+          return bStart < slotEnd && bEnd > slotStart;
+        });
+
+        if (overlap) {
+          pill.classList.add('is-booked');
+          pill.title = overlap.title || 'ติดคิว';
         }
 
         // ไฮไลต์เฉพาะสล็อตที่ถูกเลือกใช้งานจริง
@@ -679,15 +739,19 @@
       }
 
       let visibleCount = 0;
-      let firstMatchRoomId = null;
+      let firstActiveRoomId = null;
+      let firstAnyRoomId = null;
       document.querySelectorAll('.visual-room-card').forEach(c => {
         const b = c.getAttribute('data-building');
         const isMatch = b === String(buildingNumber);
         c.style.display = isMatch ? 'flex' : 'none';
         if (isMatch) {
           visibleCount++;
-          if (!firstMatchRoomId) {
-            firstMatchRoomId = c.getAttribute('data-room-id');
+          const rId = c.getAttribute('data-room-id');
+          if (!firstAnyRoomId) firstAnyRoomId = rId;
+          const rObj = ROOMS.find(r => Number(r.room_id) === Number(rId));
+          if (rObj && rObj.is_active && !firstActiveRoomId) {
+            firstActiveRoomId = rId;
           }
         }
       });
@@ -697,13 +761,14 @@
         roomsGrid.setAttribute('data-count', String(visibleCount));
       }
 
+      const chosenRoomId = firstActiveRoomId || firstAnyRoomId;
       const hiddenInput = document.getElementById('form_room_id');
       const currentSelected = hiddenInput ? hiddenInput.value : null;
       const currentCard = currentSelected ? document.querySelector(`.visual-room-card[data-room-id="${currentSelected}"]`) : null;
       const isCurrentInBuilding = currentCard && currentCard.getAttribute('data-building') === String(buildingNumber);
 
-      if (!isCurrentInBuilding && firstMatchRoomId) {
-        selectBookingRoom(firstMatchRoomId);
+      if (!isCurrentInBuilding && chosenRoomId) {
+        selectBookingRoom(chosenRoomId);
       } else if (currentSelected) {
         selectBookingRoom(currentSelected);
       }
