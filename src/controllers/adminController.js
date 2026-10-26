@@ -10,6 +10,64 @@ const CORE_PERMISSIONS = [
   'acl.manage', 'user.manage', 'log.read'
 ];
 
+// คำจำกัดความและไอคอนหมวดหมู่สิทธิ์ (Permission Category Definitions)
+const CATEGORY_DEFINITIONS = {
+  admin: {
+    key: 'admin',
+    name: 'การจัดการระบบและความปลอดภัย',
+    enName: 'System Administration & Security',
+    icon: '⚙️',
+    color: '#4f46e5',
+    badgeClass: 'cat-badge-admin',
+    order: 1
+  },
+  room: {
+    key: 'room',
+    name: 'การจัดการห้องประชุมและทรัพยากร',
+    enName: 'Room & Resource Management',
+    icon: '🏢',
+    color: '#0284c7',
+    badgeClass: 'cat-badge-room',
+    order: 2
+  },
+  booking: {
+    key: 'booking',
+    name: 'การจองห้องและการอนุมัติ',
+    enName: 'Room Bookings & Approvals',
+    icon: '📅',
+    color: '#059669',
+    badgeClass: 'cat-badge-booking',
+    order: 3
+  },
+  facility: {
+    key: 'facility',
+    name: 'การดูแลสถานที่และปฏิบัติการ',
+    enName: 'Facilities & Operations',
+    icon: '🛠️',
+    color: '#d97706',
+    badgeClass: 'cat-badge-facility',
+    order: 4
+  },
+  file: {
+    key: 'file',
+    name: 'เอกสารและไฟล์แนบ',
+    enName: 'Files & Documents',
+    icon: '📎',
+    color: '#7c3aed',
+    badgeClass: 'cat-badge-file',
+    order: 5
+  },
+  general: {
+    key: 'general',
+    name: 'สิทธิ์ทั่วไป / สิทธิ์เพิ่มเติม',
+    enName: 'General & Custom Permissions',
+    icon: '📌',
+    color: '#475569',
+    badgeClass: 'cat-badge-general',
+    order: 6
+  }
+};
+
 // 1. หน้าจัดการตารางสิทธิ์ Dynamic ACL Matrix (Role × Permission)
 async function getAclMatrix(req, res, next) {
   try {
@@ -23,11 +81,44 @@ async function getAclMatrix(req, res, next) {
       grantsRes.rows.map(g => `${g.role_id}_${g.permission_id}`)
     );
 
+    // จัดกลุ่ม Permissions ตามหมวดหมู่ (Group by Category)
+    const groupsMap = new Map();
+    for (const p of permissionsRes.rows) {
+      const catKey = p.category || 'general';
+      if (!groupsMap.has(catKey)) {
+        const meta = CATEGORY_DEFINITIONS[catKey] || {
+          key: catKey,
+          name: `หมวดหมู่ ${catKey}`,
+          enName: catKey,
+          icon: '🏷️',
+          color: '#64748b',
+          badgeClass: 'cat-badge-general',
+          order: 99
+        };
+        groupsMap.set(catKey, {
+          categoryKey: catKey,
+          meta,
+          permissions: []
+        });
+      }
+      groupsMap.get(catKey).permissions.push(p);
+    }
+
+    // เรียงลำดับหมวดหมู่ตาม order ที่กำหนด
+    const groupedPermissions = Array.from(groupsMap.values()).sort((a, b) => {
+      const orderA = a.meta.order || 99;
+      const orderB = b.meta.order || 99;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.categoryKey.localeCompare(b.categoryKey);
+    });
+
     res.render('admin/acl', {
       title: 'จัดการตารางสิทธิ์ (Dynamic ACL Matrix)',
       user: req.session,
       roles: rolesRes.rows,
       permissions: permissionsRes.rows,
+      groupedPermissions,
+      categoryDefinitions: CATEGORY_DEFINITIONS,
       grantSet,
       corePermissions: CORE_PERMISSIONS,
       coreRoles: ['admin', 'requester', 'approver', 'facility'],
