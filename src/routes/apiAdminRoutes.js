@@ -4,11 +4,8 @@ const pool = require('../config/db');
 const adminController = require('../controllers/adminController');
 const { requireAuth, requireAdmin } = require('../middlewares/auth');
 
-// ทุก API ในนี้ต้องผ่าน Authentication และ Authorization เฉพาะ Admin เท่านั้น
-// หากยังไม่ล็อกอินจะตอบ 401 JSON และหากสิทธิ์ไม่พอจะตอบ 403 JSON ทันที (ป้องกันการยิง API ตรง)
 router.use(requireAuth, requireAdmin);
 
-// 1. ดึงรายชื่อผู้ใช้งานทั้งหมด (เลือกเฉพาะฟิลด์ที่ปลอดภัย ห้ามส่ง password_hash ออกไปเด็ดขาด)
 router.get('/users', async (req, res, next) => {
   try {
     const result = await pool.query(`
@@ -24,7 +21,6 @@ router.get('/users', async (req, res, next) => {
   }
 });
 
-// 2. ดึงรายการบทบาท (Roles) ทั้งหมด
 router.get('/roles', async (req, res, next) => {
   try {
     const result = await pool.query(`
@@ -38,7 +34,6 @@ router.get('/roles', async (req, res, next) => {
   }
 });
 
-// 3. ดึงรายการสิทธิ์การใช้งาน (Permissions) ทั้งหมด
 router.get('/permissions', async (req, res, next) => {
   try {
     const result = await pool.query(`
@@ -52,7 +47,6 @@ router.get('/permissions', async (req, res, next) => {
   }
 });
 
-// 4. ดึงตาราง ACL ปัจจุบัน (Role x Permission Matrix)
 router.get('/acl', async (req, res, next) => {
   try {
     const result = await pool.query(`
@@ -66,7 +60,6 @@ router.get('/acl', async (req, res, next) => {
   }
 });
 
-// 5. ดึงประวัติการทำงาน (Audit Logs) ล่าสุด (จำกัดจำนวนและปลอดภัย)
 router.get('/logs', async (req, res, next) => {
   try {
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
@@ -83,7 +76,6 @@ router.get('/logs', async (req, res, next) => {
   }
 });
 
-// 6. เปลี่ยนแปลงสิทธิ์สดใน ACL Matrix (Reuse ฟังก์ชันจาก adminController)
 router.post('/acl/toggle', adminController.togglePermission);
 
 module.exports = router;

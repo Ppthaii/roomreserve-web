@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
 const { logAudit } = require('../middlewares/auth');
 
-// สิทธิ์หลักของระบบที่ผูกกับ Route ในโค้ด ไม่อนุญาตให้ลบ เพื่อป้องกันฟังก์ชันหลักของระบบพัง
 const CORE_PERMISSIONS = [
   'room.view_schedule', 'room.manage', 'room.block_schedule',
   'booking.create', 'booking.read_own', 'booking.read_all', 'booking.cancel_own', 'booking.approve',
@@ -10,7 +9,6 @@ const CORE_PERMISSIONS = [
   'acl.manage', 'user.manage', 'log.read'
 ];
 
-// คำจำกัดความและไอคอนหมวดหมู่สิทธิ์ (Permission Category Definitions)
 const CATEGORY_DEFINITIONS = {
   admin: {
     key: 'admin',
@@ -68,20 +66,17 @@ const CATEGORY_DEFINITIONS = {
   }
 };
 
-// 1. หน้าจัดการตารางสิทธิ์ Dynamic ACL Matrix (Role × Permission)
 async function getAclMatrix(req, res, next) {
   try {
     const rolesRes = await pool.query('SELECT * FROM roles ORDER BY role_id ASC');
     const permissionsRes = await pool.query('SELECT * FROM permissions ORDER BY category, permission_id ASC');
-    
-    // ดึงสิทธิ์ที่แต่ละ Role ได้รับอยู่ในปัจจุบัน
+
     const grantsRes = await pool.query('SELECT role_id, permission_id FROM role_permissions');
-    
+
     const grantSet = new Set(
       grantsRes.rows.map(g => `${g.role_id}_${g.permission_id}`)
     );
 
-    // จัดกลุ่ม Permissions ตามหมวดหมู่ (Group by Category)
     const groupsMap = new Map();
     for (const p of permissionsRes.rows) {
       const catKey = p.category || 'general';
@@ -104,7 +99,6 @@ async function getAclMatrix(req, res, next) {
       groupsMap.get(catKey).permissions.push(p);
     }
 
-    // เรียงลำดับหมวดหมู่ตาม order ที่กำหนด
     const groupedPermissions = Array.from(groupsMap.values()).sort((a, b) => {
       const orderA = a.meta.order || 99;
       const orderB = b.meta.order || 99;
@@ -130,16 +124,14 @@ async function getAclMatrix(req, res, next) {
   }
 }
 
-// 2. ปรับเปลี่ยนสิทธิ์ในตาราง ACL Matrix (มีผลทันที Real-time)
 async function updateAclMatrix(req, res, next) {
   const client = await pool.connect();
   try {
-    const { grants } = req.body; // Array ของ string เช่น ["1_1", "1_2", "2_1"]
+    const { grants } = req.body;
     const submittedGrants = Array.isArray(grants) ? grants : (grants ? [grants] : []);
 
     await client.query('BEGIN');
 
-    // เพื่อความปลอดภัย: ห้ามถอดสิทธิ์ acl.manage ของ Admin เด็ดขาด
     const adminRoleIdRes = await client.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
     const aclManagePermRes = await client.query("SELECT permission_id FROM permissions WHERE permission_code = 'acl.manage'");
 
@@ -148,11 +140,10 @@ async function updateAclMatrix(req, res, next) {
       const aclPermId = aclManagePermRes.rows[0].permission_id;
       const adminCrucialGrant = `${adminRoleId}_${aclPermId}`;
       if (!submittedGrants.includes(adminCrucialGrant)) {
-        submittedGrants.push(adminCrucialGrant); // บังคับคงสิทธิ์เพื่อไม่ให้ระบบล็อกตัวเอง
+        submittedGrants.push(adminCrucialGrant);
       }
     }
 
-    // ล้างและอัปเดตสิทธิ์ทั้งหมด
     await client.query('DELETE FROM role_permissions');
 
     for (const g of submittedGrants) {
@@ -190,7 +181,6 @@ async function updateAclMatrix(req, res, next) {
   }
 }
 
-// 2.1 สลับสิทธิ์แบบทันทีทันใด (Instant AJAX Toggle - ไม่ต้องกดปุ่มบันทึก)
 async function togglePermission(req, res, next) {
   try {
     const { role_id, permission_id, granted } = req.body;
@@ -201,7 +191,6 @@ async function togglePermission(req, res, next) {
       return res.status(400).json({ error: 'รหัสบทบาทหรือรหัสสิทธิ์ไม่ถูกต้อง (Invalid Role ID or Permission ID)' });
     }
 
-    // ป้องกันการปลดสิทธิ์ acl.manage ของ Admin
     const adminRoleIdRes = await pool.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
     const aclManagePermRes = await pool.query("SELECT permission_id FROM permissions WHERE permission_code = 'acl.manage'");
 
@@ -223,10 +212,9 @@ async function togglePermission(req, res, next) {
       );
     }
 
-    // ดึงข้อมูลชื่อเพื่อลง Audit Log
     const info = await pool.query(`
-      SELECT r.display_name as role_name, p.permission_code 
-      FROM roles r, permissions p 
+      SELECT r.display_name as role_name, p.permission_code
+      FROM roles r, permissions p
       WHERE r.role_id = $1 AND p.permission_id = $2
     `, [rId, pId]);
 
@@ -253,12 +241,11 @@ async function togglePermission(req, res, next) {
   }
 }
 
-// 2.2 สร้าง Role ใหม่ผ่านหน้าเว็บ (Live Demo ข้อ 5)
 async function createRole(req, res, next) {
   try {
     const { role_name, display_name, description } = req.body;
     const cleanRoleName = String(role_name || '').trim().toLowerCase().replace(/\s+/g, '_');
-    
+
     if (!cleanRoleName || !display_name) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('กรุณาระบุรหัสบทบาทและชื่อบทบาทให้ครบถ้วน')}`);
     }
@@ -291,7 +278,6 @@ async function createRole(req, res, next) {
   }
 }
 
-// 2.3 สร้าง Permission ใหม่ผ่านหน้าเว็บ (Live Demo ข้อ 6)
 async function createPermission(req, res, next) {
   try {
     const { permission_code, description, category } = req.body;
@@ -307,7 +293,6 @@ async function createPermission(req, res, next) {
       RETURNING *
     `, [cleanCode, description.trim(), category || 'general']);
 
-    // ตามหลักความปลอดภัย มอบสิทธิ์นี้ให้ Admin เริ่มต้นอัตโนมัติ
     const adminRole = await pool.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
     if (adminRole.rowCount > 0) {
       await pool.query(
@@ -338,7 +323,6 @@ async function createPermission(req, res, next) {
   }
 }
 
-// 2.4 แก้ไขข้อมูลบทบาท (Role Update)
 async function updateRole(req, res, next) {
   try {
     const roleId = parseInt(req.params.id, 10);
@@ -381,7 +365,6 @@ async function updateRole(req, res, next) {
   }
 }
 
-// 2.5 ลบบทบาท (Role Delete - พร้อม Guard ป้องกัน Admin สูญหาย และ Guard ป้องกันลบ Role ที่มีผู้ใช้ผูกอยู่)
 async function deleteRole(req, res, next) {
   try {
     const roleId = parseInt(req.params.id, 10);
@@ -395,19 +378,16 @@ async function deleteRole(req, res, next) {
 
     const role = targetRole.rows[0];
 
-    // 1. ป้องกันการลบ Admin Role เด็ดขาด
     if (role.role_name === 'admin') {
       return res.redirect(`/admin/acl?error=${encodeURIComponent('ไม่สามารถลบบทบาทผู้ดูแลระบบ (Admin) ได้')}`);
     }
 
-    // 2. ป้องกันการลบ Role ที่ยังมีผู้ใช้งานผูกอยู่ (ตามข้อกำหนดอาจารย์ Spec 3.2)
     const usersCount = await pool.query('SELECT COUNT(*) FROM users WHERE role_id = $1', [roleId]);
     const count = Number(usersCount.rows[0].count);
     if (count > 0) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent(`ไม่สามารถลบบทบาท "${role.display_name}" ได้ เนื่องจากยังมีผู้ใช้งานผูกอยู่ ${count} คน`)}`);
     }
 
-    // 3. ลบบทบาท (role_permissions จะถูก CASCADE ลบตาม)
     await pool.query('DELETE FROM roles WHERE role_id = $1', [roleId]);
 
     await logAudit({
@@ -430,7 +410,6 @@ async function deleteRole(req, res, next) {
   }
 }
 
-// 2.6 แก้ไขข้อมูลสิทธิ์ (Permission Update)
 async function updatePermission(req, res, next) {
   try {
     const permId = parseInt(req.params.id, 10);
@@ -474,7 +453,6 @@ async function updatePermission(req, res, next) {
   }
 }
 
-// 2.7 ลบสิทธิ์ (Permission Delete - ป้องกันการลบ Core Permissions)
 async function deletePermission(req, res, next) {
   try {
     const permId = parseInt(req.params.id, 10);
@@ -488,7 +466,6 @@ async function deletePermission(req, res, next) {
 
     const perm = targetPerm.rows[0];
 
-    // ป้องกันการลบ Core Permissions ที่โค้ดระบบใช้งาน
     if (CORE_PERMISSIONS.includes(perm.permission_code)) {
       return res.redirect(`/admin/acl?error=${encodeURIComponent(`ไม่สามารถลบสิทธิ์หลัก "${perm.permission_code}" ได้ เนื่องจากจำเป็นต่อการทำงานของระบบ`)}`);
     }
@@ -515,7 +492,6 @@ async function deletePermission(req, res, next) {
   }
 }
 
-// 3. หน้าตรวจสอบ Audit Logs (รองรับการกรอง Action, Status, Search และช่วงเวลา from - to)
 async function getAuditLogs(req, res, next) {
   try {
     let { action, status, search, from, to, limit = 50 } = req.query;
@@ -527,7 +503,6 @@ async function getAuditLogs(req, res, next) {
       to = null;
     }
 
-    // ตรวจสอบและสลับช่วงเวลาหาก from > to เพื่อป้องกันการค้นหาที่ขัดแย้งกัน
     if (from && to && from > to) {
       const temp = from;
       from = to;
@@ -564,7 +539,6 @@ async function getAuditLogs(req, res, next) {
 
     const logsRes = await pool.query(queryStr, params);
 
-    // รายการ actions สำหรับตัวเลือกกรอง
     const distinctActions = await pool.query('SELECT DISTINCT action FROM audit_logs ORDER BY action ASC');
 
     res.render('admin/logs', {
@@ -584,7 +558,6 @@ async function getAuditLogs(req, res, next) {
   }
 }
 
-// 3.1 ส่งออก Audit Logs เป็นไฟล์ CSV (รองรับการกรองตามเงื่อนไขที่เลือก)
 async function exportAuditLogs(req, res, next) {
   try {
     let { action, status, search, from, to } = req.query;
@@ -596,7 +569,6 @@ async function exportAuditLogs(req, res, next) {
       to = null;
     }
 
-    // ตรวจสอบและสลับช่วงเวลาหาก from > to เพื่อป้องกันการค้นหาที่ขัดแย้งกัน
     if (from && to && from > to) {
       const temp = from;
       from = to;
@@ -631,7 +603,6 @@ async function exportAuditLogs(req, res, next) {
 
     const logsRes = await pool.query(queryStr, params);
 
-    // ใส่ UTF-8 BOM (\uFEFF) เพื่อให้เปิดใน Microsoft Excel แล้วภาษาไทยไม่เป็นภาษาต่างดาว
     let csv = '\uFEFFLog ID,Timestamp,Username,Role,Action,Resource,Resource ID,Status,Details,IP Address\n';
 
     logsRes.rows.forEach(r => {
@@ -649,7 +620,6 @@ async function exportAuditLogs(req, res, next) {
   }
 }
 
-// 4. หน้าจัดการผู้ใช้ (User Management)
 async function getUsers(req, res, next) {
   try {
     const usersRes = await pool.query(`
@@ -673,7 +643,6 @@ async function getUsers(req, res, next) {
   }
 }
 
-// 5. สลับสถานะเปิดใช้งาน / ปิดใช้งานผู้ใช้
 async function toggleUserStatus(req, res, next) {
   try {
     const userId = parseInt(req.params.id, 10);
@@ -691,7 +660,6 @@ async function toggleUserStatus(req, res, next) {
     }
     const targetUser = targetUserRes.rows[0];
 
-    // ป้องกันการระงับการใช้งาน Admin คนสุดท้ายในระบบ (ตามข้อกำหนดอาจารย์ Spec 3.2 & R6)
     const adminRoleRes = await pool.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
     const adminRoleId = adminRoleRes.rows[0]?.role_id;
 
@@ -705,9 +673,9 @@ async function toggleUserStatus(req, res, next) {
     }
 
     const result = await pool.query(`
-      UPDATE users 
-      SET is_active = NOT is_active 
-      WHERE user_id = $1 
+      UPDATE users
+      SET is_active = NOT is_active
+      WHERE user_id = $1
       RETURNING *
     `, [userId]);
 
@@ -730,7 +698,6 @@ async function toggleUserStatus(req, res, next) {
   }
 }
 
-// 6. เปลี่ยนบทบาท (Role) ของผู้ใช้งาน (Live Demo ข้อ 5 - ผูก Role กับบัญชีทดสอบ)
 async function updateUserRole(req, res, next) {
   try {
     const userId = parseInt(req.params.id, 10);
@@ -740,7 +707,6 @@ async function updateUserRole(req, res, next) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('รหัสผู้ใช้หรือรหัสบทบาทไม่ถูกต้อง')}`);
     }
 
-    // ตรวจสอบว่าป้องกันไม่ให้เปลี่ยน Role ของ Admin คนสุดท้าย
     const targetUser = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
     if (targetUser.rowCount === 0) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่พบผู้ใช้งานนี้')}`);
@@ -786,7 +752,6 @@ async function updateUserRole(req, res, next) {
   }
 }
 
-// 7. สร้างผู้ใช้งานใหม่ (User Creation)
 async function createUser(req, res, next) {
   try {
     const { username, password, full_name, department, role_id } = req.body;
@@ -797,7 +762,6 @@ async function createUser(req, res, next) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('กรุณากรอกข้อมูล Username, Password, ชื่อ-นามสกุล และเลือกบทบาทให้ถูกต้อง')}`);
     }
 
-    // ตรวจสอบว่า Username มีอยู่ในระบบแล้วหรือไม่
     const existUser = await pool.query('SELECT user_id FROM users WHERE username = $1', [cleanUsername]);
     if (existUser.rowCount > 0) {
       return res.redirect(`/admin/users?error=${encodeURIComponent('ชื่อผู้ใช้งาน (Username) นี้มีอยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น')}`);
@@ -831,7 +795,6 @@ async function createUser(req, res, next) {
   }
 }
 
-// 8. ลบผู้ใช้งาน (User Deletion - พร้อม Transaction จัดการประวัติที่เกี่ยวข้องอย่างปลอดภัย)
 async function deleteUser(req, res, next) {
   const client = await pool.connect();
   try {
@@ -850,7 +813,6 @@ async function deleteUser(req, res, next) {
     }
     const targetUser = targetUserRes.rows[0];
 
-    // ป้องกันการลบ Admin คนสุดท้ายในระบบ
     const adminRoleRes = await pool.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
     const adminRoleId = adminRoleRes.rows[0]?.role_id;
 
@@ -865,23 +827,18 @@ async function deleteUser(req, res, next) {
 
     await client.query('BEGIN');
 
-    // 1. ลบ attachments ของ bookings ที่ user นี้สร้าง
     await client.query(`
       DELETE FROM booking_attachments
       WHERE booking_id IN (SELECT booking_id FROM room_bookings WHERE user_id = $1)
     `, [userId]);
 
-    // 2. ปลดความสัมพันธ์ใน room_bookings ที่ user นี้เป็น approver หรือ facility officer
     await client.query('UPDATE room_bookings SET approver_id = NULL WHERE approver_id = $1', [userId]);
     await client.query('UPDATE room_bookings SET facility_officer_id = NULL WHERE facility_officer_id = $1', [userId]);
 
-    // 3. ลบ bookings ที่ user นี้เป็นผู้ขอ
     const delBookings = await client.query('DELETE FROM room_bookings WHERE user_id = $1', [userId]);
 
-    // 4. ลบ attachments ที่ user นี้อัปโหลด (ถ้ามีหลงเหลือ)
     await client.query('DELETE FROM booking_attachments WHERE uploaded_by = $1', [userId]);
 
-    // 5. ลบ user
     await client.query('DELETE FROM users WHERE user_id = $1', [userId]);
 
     await client.query('COMMIT');

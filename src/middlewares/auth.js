@@ -1,6 +1,5 @@
 const pool = require('../config/db');
 
-// 1. ตรวจสอบการเข้าสู่ระบบ (Authentication Guard)
 function requireAuth(req, res, next) {
   if (!req.session || !req.session.userId) {
     if (req.xhr || req.headers.accept?.includes('json') || req.originalUrl.startsWith('/api/')) {
@@ -14,8 +13,6 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// 2. ตรวจสอบสิทธิ์เฉพาะ Admin สำหรับเส้นทาง /admin และ /api/admin (Admin Route Guard)
-// ดึงข้อมูล Role ปัจจุบันสดๆ จากฐานข้อมูล เพื่อให้การเปลี่ยนแปลงมีผลทันที
 async function requireAdmin(req, res, next) {
   try {
     if (!req.session || !req.session.userId) {
@@ -25,9 +22,8 @@ async function requireAdmin(req, res, next) {
       return res.redirect('/login');
     }
 
-    // ดึง Role สดจาก Database และเช็คว่าบัญชียังเปิดใช้งาน (is_active) หรือไม่
     const r = await pool.query(`
-      SELECT ro.role_name 
+      SELECT ro.role_name
       FROM users u
       JOIN roles ro ON ro.role_id = u.role_id
       WHERE u.user_id = $1 AND u.is_active = TRUE
@@ -36,7 +32,7 @@ async function requireAdmin(req, res, next) {
     const isAdmin = r.rows[0]?.role_name === 'admin';
 
     if (!isAdmin) {
-      // บันทึก Security Audit Log การพยายามเข้าถึงโดยไม่มีสิทธิ์
+
       await logAudit({
         userId: req.session.userId,
         username: req.session.username,
@@ -67,8 +63,6 @@ async function requireAdmin(req, res, next) {
   }
 }
 
-// 3. Dynamic ACL Guard (เช็คสิทธิ์แบบ Real-time จากฐานข้อมูล)
-// ข้อกำหนดอาจารย์: ติ๊กเปลี่ยนสิทธิ์หรือสลับ Role แล้วต้องมีผลทันที ห้าม Restart Server และไม่ต้อง Login ใหม่
 function requirePermission(permissionCode) {
   return async (req, res, next) => {
     try {
@@ -79,10 +73,8 @@ function requirePermission(permissionCode) {
         return res.status(401).redirect('/login');
       }
 
-      // ดึงสิทธิ์สดๆ ของผู้ใช้จากฐานข้อมูลแบบ Real-time โดยตรง (ไม่พึ่งพา Session เก่า)
-      // เชื่อมโยง users -> role_permissions -> permissions และตรวจความพร้อมของบัญชี (is_active = TRUE)
       const result = await pool.query(`
-        SELECT 1 
+        SELECT 1
         FROM users u
         JOIN role_permissions rp ON rp.role_id = u.role_id
         JOIN permissions p ON rp.permission_id = p.permission_id
@@ -90,7 +82,7 @@ function requirePermission(permissionCode) {
       `, [req.session.userId, permissionCode]);
 
       if (result.rowCount === 0) {
-        // บันทึก Security Audit Log
+
         await logAudit({
           userId: req.session.userId,
           username: req.session.username,
@@ -105,8 +97,8 @@ function requirePermission(permissionCode) {
         });
 
         if (req.xhr || req.headers.accept?.includes('json') || req.originalUrl.startsWith('/api/')) {
-          return res.status(403).json({ 
-            error: `คุณไม่มีสิทธิ์ดำเนินการในส่วนนี้ (${permissionCode})` 
+          return res.status(403).json({
+            error: `คุณไม่มีสิทธิ์ดำเนินการในส่วนนี้ (${permissionCode})`
           });
         }
         return res.status(403).render('error', {
@@ -123,7 +115,6 @@ function requirePermission(permissionCode) {
   };
 }
 
-// 4. ฟังก์ชันบันทึก Audit Log ลงตารางใน PostgreSQL
 async function logAudit({ userId, username, roleName, action, resource, resourceId, status, details, ip, ua }) {
   try {
     await pool.query(`

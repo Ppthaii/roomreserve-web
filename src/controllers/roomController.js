@@ -1,14 +1,13 @@
 const pool = require('../config/db');
 const { logAudit } = require('../middlewares/auth');
 
-// 1. แสดงรายการห้องประชุมทั้งหมดและหน้าจัดการ
 async function getRoomsPage(req, res, next) {
   try {
     const roomsRes = await pool.query(`
-      SELECT r.*, 
+      SELECT r.*,
         (SELECT COUNT(*) FROM room_bookings rb WHERE rb.room_id = r.room_id AND rb.status = 'COMPLETED') as total_completed_bookings,
         (SELECT COUNT(*) FROM room_bookings rb WHERE rb.room_id = r.room_id AND rb.status IN ('PENDING_APPROVAL', 'APPROVED', 'IN_USE')) as active_bookings
-      FROM rooms r 
+      FROM rooms r
       ORDER BY r.room_id ASC
     `);
 
@@ -24,12 +23,10 @@ async function getRoomsPage(req, res, next) {
   }
 }
 
-// 2. เพิ่มห้องประชุมใหม่ (ควบคุมสิทธิ์ด้วย requirePermission('room.manage'))
 async function createRoom(req, res, next) {
   try {
     const { room_name, capacity, location, building, custom_building, floor_detail, equipment_description } = req.body;
 
-    // รวม format สถานที่ตั้งจากตัวเลือกตึก + ชั้นอย่างเป็นมาตรฐาน
     let finalLocation = location ? location.trim() : '';
     if (building) {
       const bName = (building === 'CUSTOM' && custom_building) ? custom_building.trim() : building.trim();
@@ -68,7 +65,6 @@ async function createRoom(req, res, next) {
   }
 }
 
-// 3. แก้ไขข้อมูลห้องประชุม (ควบคุมสิทธิ์ด้วย requirePermission('room.manage'))
 async function updateRoom(req, res, next) {
   try {
     const roomId = parseInt(req.params.id, 10);
@@ -88,7 +84,7 @@ async function updateRoom(req, res, next) {
     }
 
     const result = await pool.query(`
-      UPDATE rooms 
+      UPDATE rooms
       SET room_name = $1, capacity = $2, location = $3, equipment_description = $4
       WHERE room_id = $5
       RETURNING *
@@ -120,7 +116,6 @@ async function updateRoom(req, res, next) {
   }
 }
 
-// 4. สลับสถานะเปิดใช้งาน / ปิดปรับปรุงห้อง (ควบคุมสิทธิ์ด้วย requirePermission('room.manage'))
 async function toggleRoom(req, res, next) {
   try {
     const roomId = parseInt(req.params.id, 10);
@@ -129,9 +124,9 @@ async function toggleRoom(req, res, next) {
     }
 
     const result = await pool.query(`
-      UPDATE rooms 
-      SET is_active = NOT is_active 
-      WHERE room_id = $1 
+      UPDATE rooms
+      SET is_active = NOT is_active
+      WHERE room_id = $1
       RETURNING *
     `, [roomId]);
 
@@ -160,7 +155,6 @@ async function toggleRoom(req, res, next) {
   }
 }
 
-// 5. ลบห้องประชุม (พร้อมลบประวัติการจองและไฟล์แนบที่ผูกอยู่แบบ Cascade ใน Transaction)
 async function deleteRoom(req, res, next) {
   const client = await pool.connect();
   try {
@@ -178,15 +172,13 @@ async function deleteRoom(req, res, next) {
     }
     const deletedRoom = targetRoomRes.rows[0];
 
-    // ลบไฟล์แนบและประวัติการจองที่ผูกอยู่กับห้องนี้ทั้งหมด
     await client.query(`
-      DELETE FROM booking_attachments 
+      DELETE FROM booking_attachments
       WHERE booking_id IN (SELECT booking_id FROM room_bookings WHERE room_id = $1)
     `, [roomId]);
 
     const delBookings = await client.query('DELETE FROM room_bookings WHERE room_id = $1', [roomId]);
 
-    // ลบห้อง
     await client.query('DELETE FROM rooms WHERE room_id = $1', [roomId]);
 
     await client.query('COMMIT');
@@ -220,4 +212,3 @@ module.exports = {
   toggleRoom,
   deleteRoom
 };
-

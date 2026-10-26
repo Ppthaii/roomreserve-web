@@ -12,37 +12,30 @@ const { logAudit } = require('./middlewares/auth');
 
 const app = express();
 
-// เชื่อถือ Reverse Proxy (Render / Cloudflare) ป้องกัน Cookie และ Session หลุด
 app.set('trust proxy', 1);
 
-// ตั้งค่า View Engine (EJS ตามที่อาจารย์สอน)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Body Parser & Static files
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// สไลด์นำเสนอโครงงาน 30 คะแนน (Presentation Slide Deck)
 app.get('/slides', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/slides.html'));
 });
 
-// Dev Live Auto-Reload Ping Endpoint (ตรวจจับการรีสตาร์ตเพื่อสั่งเบราว์เซอร์รีเฟรชตัวเองทันที)
 const SERVER_BOOT_TIME = Date.now();
 app.get('/__dev_ping', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.json({ bootTime: SERVER_BOOT_TIME });
 });
 
-// Dynamic ACL Matrix Version Endpoint สำหรับ Live ACL Sync
 app.get('/api/acl-version', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.json({ version: global.ACL_VERSION || 1 });
 });
 
-// Session Health Check Endpoint สำหรับ Client Heartbeat
 app.get('/api/session-status', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   if (!req.session || !req.session.userId) {
@@ -60,9 +53,8 @@ app.get('/api/session-status', (req, res) => {
   });
 });
 
-// Session Configuration (Persistent Session via PostgreSQL to survive dev reloads + Inactivity Expiration)
 const pgSession = require('connect-pg-simple')(session);
-const SESSION_TIMEOUT_MS = parseInt(process.env.SESSION_TIMEOUT_MS, 10) || (30 * 60 * 1000); // ค่าเริ่มต้น 30 นาที
+const SESSION_TIMEOUT_MS = parseInt(process.env.SESSION_TIMEOUT_MS, 10) || (30 * 60 * 1000);
 app.use(session({
   store: new pgSession({
     pool: pool,
@@ -72,7 +64,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'roomreserve_secret_2026',
   resave: false,
   saveUninitialized: false,
-  rolling: true, // รีเฟรชอายุ Session อัตโนมัติเมื่อผู้ใช้มีการใช้งานอย่างต่อเนื่อง
+  rolling: true,
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
@@ -80,7 +72,6 @@ app.use(session({
   }
 }));
 
-// Global Template Variables
 app.use(async (req, res, next) => {
   try {
     let userPermissions = [];
@@ -111,11 +102,8 @@ app.use(async (req, res, next) => {
   }
 });
 
-// ================= Authentication Routes =================
-
-// หน้า Login
 app.get('/login', async (req, res) => {
-  // หากมีคำขอ force หรือ logout ให้ล้างเซสชันและเปิดหน้า login ทันที
+
   if (req.query.force || req.query.logout) {
     return req.session.destroy(() => {
       res.clearCookie('connect.sid');
@@ -127,7 +115,6 @@ app.get('/login', async (req, res) => {
     });
   }
 
-  // หากมีเซสชันค้างอยู่ ให้ตรวจสอบว่าบัญชีนี้ยังมีอยู่จริงในฐานข้อมูลและยังเปิดใช้งาน
   if (req.session.userId) {
     try {
       const uRes = await pool.query('SELECT user_id, is_active FROM users WHERE user_id = $1', [req.session.userId]);
@@ -143,12 +130,12 @@ app.get('/login', async (req, res) => {
       }
       return res.redirect('/app');
     } catch (e) {
-      // หากเกิดข้อผิดพลาดในการ query ให้แสดงหน้า login ตามปกติ
+
     }
   }
 
   let errorMsg = req.query.error || '';
-  // ซ่อนการแจ้งเตือนเซสชันหมดอายุ/ไม่ได้รับอนุญาต ตอนเซิร์ฟเวอร์รีสตาร์ตจากการอัปเดตโค้ด
+
   if (errorMsg === 'unauthorized' || errorMsg === 'expired') {
     errorMsg = '';
   }
@@ -159,12 +146,10 @@ app.get('/login', async (req, res) => {
   });
 });
 
-// ตรวจสอบการ Login
 app.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
-    // ระบบป้องกัน Brute Force: ระงับการเข้าสู่ระบบหากล็อกอินผิดพลาดเกิน 8 ครั้งใน 10 นาที (Slide 8 Rubric)
     const MAX_FAILED_ATTEMPTS = 8;
     const lockCheck = await pool.query(`
       SELECT COUNT(*) as failed_count
@@ -199,7 +184,6 @@ app.post('/login', async (req, res, next) => {
 
     const user = userRes.rows[0];
 
-    // ตรวจสอบว่ามีผู้ใช้นี้หรือไม่ หรือบัญชีถูกระงับหรือไม่
     if (!user || !(await bcrypt.compare(password || '', user.password_hash))) {
       await logAudit({
         userId: user ? user.user_id : null,
@@ -220,7 +204,6 @@ app.post('/login', async (req, res, next) => {
       return res.redirect('/login?error=' + encodeURIComponent('บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'));
     }
 
-    // ทำ Session Regeneration เพื่อป้องกัน Session Fixation Attack (ตามที่อาจารย์สอน)
     req.session.regenerate((err) => {
       if (err) return next(err);
       req.session.userId = user.user_id;
@@ -253,7 +236,6 @@ app.post('/login', async (req, res, next) => {
   }
 });
 
-// ออกจากระบบผ่าน GET (สะดวกสำหรับลิงก์และหน้า Error)
 app.get('/logout', (req, res, next) => {
   const uId = req.session?.userId;
   const uName = req.session?.username;
@@ -279,7 +261,6 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
-// ออกจากระบบ (Logout POST)
 app.post('/logout', (req, res, next) => {
   const uId = req.session.userId;
   const uName = req.session.username;
@@ -306,18 +287,15 @@ app.post('/logout', (req, res, next) => {
   });
 });
 
-// หน้า Root redirect ไปที่ /app
 app.get('/', (req, res) => {
   if (req.session.userId) return res.redirect('/app');
   res.redirect('/login');
 });
 
-// Mount Routes (แยกกลุ่ม Route ชัดเจน: ผู้ใช้ทั่วไป, หน้าเว็บ Admin, และ REST API)
 app.use('/app', require('./routes/appRoutes'));
 app.use('/admin', require('./routes/adminRoutes'));
 app.use('/api/admin', require('./routes/apiAdminRoutes'));
 
-// 404 Handler
 app.use((req, res) => {
   res.status(404).render('error', {
     title: '404 ไม่พบหน้านี้',
@@ -326,7 +304,6 @@ app.use((req, res) => {
   });
 });
 
-// Centralized Error Handler (ดักจับ PostgreSQL Error Codes ตามที่อาจารย์สอน)
 app.use((err, req, res, next) => {
   console.error('SERVER ERROR:', err);
 

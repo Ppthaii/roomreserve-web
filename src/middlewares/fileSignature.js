@@ -1,13 +1,8 @@
 const fs = require('fs');
 const { logAudit } = require('./auth');
 
-/**
- * Middleware ตรวจสอบลายเซ็นไฟล์จริง (Magic Bytes / File Signature Verification) ฝั่ง Server
- * ป้องกันการปลอมแปลงนามสกุลไฟล์ เช่น การเปลี่ยนชื่อ virus.exe หรือ script.sh เป็น document.pdf
- * ตามเกณฑ์ความปลอดภัยของโครงงานและอาจารย์ผู้สอน (Rubric & Live Demo ข้อ 8)
- */
 async function verifyFileSignature(req, res, next) {
-  // หากไม่มีการแนบไฟล์ ให้ผ่านไปยัง Controller ตามปกติ
+
   if (!req.file || !req.file.path) {
     return next();
   }
@@ -16,7 +11,7 @@ async function verifyFileSignature(req, res, next) {
   const mimeType = req.file.mimetype;
 
   try {
-    // อ่าน 8 ไบต์แรกของไฟล์เพื่อตรวจสอบ Magic Number
+
     const buffer = Buffer.alloc(8);
     const fd = fs.openSync(filePath, 'r');
     fs.readSync(fd, buffer, 0, 8, 0);
@@ -24,7 +19,6 @@ async function verifyFileSignature(req, res, next) {
 
     let isValid = false;
 
-    // 1. PDF Magic Bytes: 25 50 44 46 (%PDF)
     if (mimeType === 'application/pdf') {
       isValid = buffer.length >= 4 &&
                 buffer[0] === 0x25 &&
@@ -32,14 +26,14 @@ async function verifyFileSignature(req, res, next) {
                 buffer[2] === 0x44 &&
                 buffer[3] === 0x46;
     }
-    // 2. JPEG Magic Bytes: FF D8 FF
+
     else if (mimeType === 'image/jpeg') {
       isValid = buffer.length >= 3 &&
                 buffer[0] === 0xFF &&
                 buffer[1] === 0xD8 &&
                 buffer[2] === 0xFF;
     }
-    // 3. PNG Magic Bytes: 89 50 4E 47 0D 0A 1A 0A
+
     else if (mimeType === 'image/png') {
       isValid = buffer.length >= 8 &&
                 buffer[0] === 0x89 &&
@@ -53,7 +47,7 @@ async function verifyFileSignature(req, res, next) {
     }
 
     if (!isValid) {
-      // ลบไฟล์ที่ไม่ปลอดภัยออกจากดิสก์ทันที ป้องกันไฟล์ขยะหรือไฟล์อันตรายตกค้าง
+
       if (fs.existsSync(filePath)) {
         try {
           fs.unlinkSync(filePath);
@@ -62,7 +56,6 @@ async function verifyFileSignature(req, res, next) {
         }
       }
 
-      // บันทึก Security Audit Log
       await logAudit({
         userId: req.session ? req.session.userId : null,
         username: req.session ? req.session.username : 'anonymous',

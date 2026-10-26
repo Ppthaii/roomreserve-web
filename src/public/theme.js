@@ -1,4 +1,3 @@
-// Script จัดการ Dark Mode / Light Mode แบบ Persistent
 (function() {
   const saved = localStorage.getItem('roomreserve_theme');
   if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -26,9 +25,6 @@ function updateThemeButtons() {
 
 document.addEventListener('DOMContentLoaded', updateThemeButtons);
 
-// ========================================================
-// Live Dev Auto-Reload: เมื่อเซิร์ฟเวอร์อัปเดต ให้เบราว์เซอร์รีเฟรชหน้าจอเองอัตโนมัติ 100%
-// ========================================================
 (function() {
   let initialBoot = null;
   let isChecking = false;
@@ -49,14 +45,12 @@ document.addEventListener('DOMContentLoaded', updateThemeButtons);
         }
       }
     } catch (e) {
-      // เซิร์ฟเวอร์กำลังรีบูต รออีกรอบถัดไป
+
     } finally {
       isChecking = false;
     }
   }
 
-  // เช็คทุก 1 วินาที เพื่อให้หน้าจอเด้งอัปเดตทันใจ
   setInterval(checkLiveReload, 1000);
   checkLiveReload();
 })();
-

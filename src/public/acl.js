@@ -1,6 +1,3 @@
-// acl.js - สคริปต์จัดการสิทธิ์ ACL (Toggle Checkbox, Modals, Live Toast)
-
-// ดักจับ Event เมื่อมีการคลิก Checkbox ทุกตัวในตาราง
 document.querySelectorAll('.acl-checkbox').forEach(box => {
   box.addEventListener('change', async function() {
     const roleId = this.getAttribute('data-role-id');
@@ -9,7 +6,6 @@ document.querySelectorAll('.acl-checkbox').forEach(box => {
     const roleName = this.getAttribute('data-role-name');
     const granted = this.checked;
 
-    // Effect ขณะกำลังบันทึก
     this.style.opacity = '0.5';
 
     try {
@@ -33,7 +29,7 @@ document.querySelectorAll('.acl-checkbox').forEach(box => {
         const actionText = granted ? 'เปิดสิทธิ์' : 'เพิกถอนสิทธิ์';
         showToast(`${actionText} "${permCode}" ให้ ${roleName} สำเร็จทันที!`);
       } else {
-        // หาก Server ปฏิเสธ (เช่น ล็อกสิทธิ์ Admin) ให้คืนค่าเดิม
+
         this.checked = !granted;
         showToast(`${data.error || 'เกิดข้อผิดพลาด'}`, true);
       }
@@ -67,9 +63,6 @@ function showToast(msg, isError = false) {
   }, 3500);
 }
 
-// ====================================================================
-// ระบบกรองหมวดหมู่สิทธิ์และการค้นหาแบบ Real-time (Category & Search Filter)
-// ====================================================================
 let currentCategoryFilter = 'all';
 let currentSearchQuery = '';
 
@@ -98,7 +91,6 @@ function applyAclFilters() {
     }
   });
 
-  // ซ่อน/แสดง Category Header Rows ตามจำนวนแถวที่มองเห็นในหมวดหมู่นั้น
   catHeaders.forEach(header => {
     const cat = header.getAttribute('data-category');
     if (catVisibleCounts[cat] && catVisibleCounts[cat] > 0) {
@@ -108,13 +100,11 @@ function applyAclFilters() {
     }
   });
 
-  // แสดงแจ้งเตือนกรณีไม่พบข้อมูล
   if (emptyRow) {
     emptyRow.style.display = (totalVisible === 0) ? '' : 'none';
   }
 }
 
-// ผูก Event ปุ่มเลือกหมวดหมู่
 document.querySelectorAll('.cat-filter-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.cat-filter-btn').forEach(b => b.classList.remove('active'));
@@ -124,7 +114,6 @@ document.querySelectorAll('.cat-filter-btn').forEach(btn => {
   });
 });
 
-// ผูก Event ค้นหาข้อความ
 const searchInput = document.getElementById('aclSearchInput');
 if (searchInput) {
   searchInput.addEventListener('input', function() {
@@ -132,4 +121,3 @@ if (searchInput) {
     applyAclFilters();
   });
 }
-

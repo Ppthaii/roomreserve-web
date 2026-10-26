@@ -1,11 +1,5 @@
-// dashboard.js - Client-side scripts for Dashboard (Booking, Filters, Time Slots)
+let toastTimer = null;
 
-    // ข้อมูลการจองและห้องของวันที่เลือกสำหรับการตรวจสอบแบบ Real-time
-    // DAY_BOOKINGS provided by Data Bridge
-    // ROOMS provided by Data Bridge
-    let toastTimer = null;
-
-    // สลับแท็บ (Alias เข้าหา switchRequesterView เพื่อความเข้ากันได้)
     function switchTab(tabId, btn = null) {
       const viewName = tabId.replace('tab-', '');
       switchRequesterView(viewName, btn);
@@ -13,7 +7,6 @@
 
     let isFinishedHidden = false;
 
-    // ซ่อนหรือแสดงรายการประวัติที่สิ้นสุดแล้ว (Soft Hide / No Delete)
     function toggleHideFinished() {
       isFinishedHidden = !isFinishedHidden;
       const btn = document.getElementById('btnToggleFinished');
@@ -21,7 +14,6 @@
       const text = document.getElementById('toggleFinishedText');
       const finishedCount = document.querySelectorAll('.my-booking-row[data-finished="true"]').length;
 
-      // Re-apply current active category filter
       const activeChip = document.querySelector('.status-filter-chip.active');
       const currentCat = activeChip ? activeChip.getAttribute('onclick').match(/'([^']+)'/)[1] : 'ALL';
       filterMyBookings(currentCat, activeChip);
@@ -41,7 +33,6 @@
       }
     }
 
-    // กรองหมวดหมู่คำขอของฉันด้วย Modern Segmented Controls
     function filterMyBookings(category, btn) {
       document.querySelectorAll('.segmented-item, .status-filter-chip').forEach(c => c.classList.remove('active'));
       if (btn) btn.classList.add('active');
@@ -58,7 +49,7 @@
         } else if (category === 'APPROVED') {
           show = (rowCat === 'APPROVED' || rowCat === 'IN_USE');
         } else if (category === 'FINISHED') {
-          show = isFin; // เสร็จสิ้น, ยกเลิก, ปฏิเสธ
+          show = isFin;
         } else if (category === 'ALL') {
           show = true;
         }
@@ -96,7 +87,6 @@
         if (targetBtn) targetBtn.classList.add('active');
       }
 
-      // ซ่อนข้อความแนะนำก่อนเลือก และแสดงคอนเทนเนอร์ห้องประชุม & ตารางเวลา
       const notice = document.getElementById('noBuildingSelectedNotice');
       if (notice) notice.style.display = 'none';
 
@@ -110,7 +100,6 @@
         headerText.innerText = `ข้อมูลห้องประชุม - ตึก ${buildingNumber}${sub}`;
       }
 
-      // แสดงเฉพาะห้องของตึกที่เลือก
       document.querySelectorAll('.casual-room-card').forEach(card => {
         const cardBuilding = card.getAttribute('data-building');
         if (cardBuilding === String(buildingNumber)) {
@@ -120,13 +109,11 @@
         }
       });
 
-      // เลื่อนสายตาลงมายังตารางห้องและช่วงเวลาว่าง
       if (container && btn) {
         container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
 
-    // ฟังก์ชันช่วยหาเลขตึกจากข้อมูลห้อง
     function getBuildingFromRoom(room) {
       if (!room) return '1';
       const loc = String(room.location || '');
@@ -141,7 +128,6 @@
       return '1';
     }
 
-    // Real-time Conflict Checker ตรวจสอบความถูกต้องทันทีก่อนส่ง
     function checkBookingConflict() {
       const roomSelect = document.getElementById('form_room_id');
       const dateInput = document.getElementById('form_booking_date');
@@ -164,7 +150,6 @@
 
       const room = ROOMS.find(r => Number(r.room_id) === roomId);
 
-      // ตรวจสอบว่าห้องถูกระงับการใช้งานหรือไม่
       if (room && !room.is_active) {
         banner.className = 'conflict-status-banner is-conflict';
         banner.innerHTML = '<span>ไม่สามารถจองได้: ห้องนี้ถูกระงับการใช้งาน</span>';
@@ -179,7 +164,6 @@
         return;
       }
 
-      // 1. ตรวจสอบเงื่อนไขเวลาเริ่มต้น - สิ้นสุด
       const startH = parseInt(startTimeStr.split(':')[0], 10);
       if (startH >= 18) {
         banner.className = 'conflict-status-banner is-conflict';
@@ -199,8 +183,6 @@
         return;
       }
 
-      // 2. ตรวจสอบการทับซ้อนช่วงเวลากับรายการจองในระบบ Real-time
-      // รายการที่ APPROVED, IN_USE, BLOCKED จะถือเป็นข้อขัดแย้งเด็ดขาด (ห้ามจอง)
       const hardConflict = DAY_BOOKINGS.find(b => {
         if (Number(b.room_id) !== roomId) return false;
         if (!['APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
@@ -209,7 +191,6 @@
         return bStart < end && bEnd > start;
       });
 
-      // ตรวจสอบว่ามีรายการ PENDING_APPROVAL รอพิจารณาอยู่หรือไม่
       const pendingConflict = DAY_BOOKINGS.find(b => {
         if (Number(b.room_id) !== roomId) return false;
         if (b.status !== 'PENDING_APPROVAL') return false;
@@ -241,7 +222,6 @@
         submitBtn.style.cursor = 'pointer';
       }
 
-      // ซิงค์ตัวเลือกเวลากับ Time Range Pills บนหน้าจอ
       const sH = parseInt(startTimeStr.split(':')[0], 10);
       const eH = parseInt(endTimeStr.split(':')[0], 10);
       if (!isNaN(sH) && !isNaN(eH)) {
@@ -266,7 +246,6 @@
       }
     }
 
-    // เมื่อผู้ใช้เปลี่ยนเวลาเริ่มต้น (เลือกเฉพาะรายชั่วโมงเต็ม)
     function onStartTimeChange(runConflictCheck = true) {
       const startSelect = document.getElementById('form_start_time');
       const endSelect = document.getElementById('form_end_time');
@@ -275,13 +254,11 @@
       const startHour = parseInt(startSelect.value.split(':')[0], 10);
       const endHour = parseInt(endSelect.value.split(':')[0], 10);
 
-      // Disable ตัวเลือกเวลาสิ้นสุดที่น้อยกว่าหรือเท่ากับเวลาเริ่มต้น
       Array.from(endSelect.options).forEach(opt => {
         const optHour = parseInt(opt.value.split(':')[0], 10);
         opt.disabled = optHour <= startHour;
       });
 
-      // หากเวลาสิ้นสุดปัจจุบัน <= เวลาเริ่มต้น ให้ปรับเป็น startHour + 1
       if (endHour <= startHour) {
         const nextHour = Math.min(18, startHour + 1);
         endSelect.value = `${String(nextHour).padStart(2, '0')}:00`;
@@ -292,7 +269,6 @@
       }
     }
 
-    // ตรวจสอบจำนวนผู้เข้าร่วมไม่ให้เกินความจุของห้องที่เลือก
     function validateAttendees() {
       const attendeesInput = document.getElementById('form_attendees');
       const roomSelect = document.getElementById('form_room_id');
@@ -337,7 +313,6 @@
       }
     }
 
-    // เมื่อคลิกเลือกช่วงเวลาว่าง (Visual Slot Picker) -> แสดงฟอร์มให้กรอกทันที
     function selectRoomAndSlot(roomId, startStr, endStr) {
       const room = ROOMS.find(r => Number(r.room_id) === Number(roomId));
       const roomSelect = document.getElementById('form_room_id');
@@ -359,7 +334,6 @@
         selectBuilding(getBuildingFromRoom(room));
       }
 
-      // ปรับความจุผู้เข้าร่วมสูงสุดตามขนาดห้องที่เลือก
       const attendeesInput = document.getElementById('form_attendees');
       const maxDisplay = document.getElementById('attendeesMaxDisplay');
       const errorMax = document.getElementById('attendeesErrorMax');
@@ -373,23 +347,18 @@
       if (room && errorMax) errorMax.innerText = room.capacity;
       validateAttendees();
 
-      // ปรับตัวเลือกเวลาสิ้นสุดให้สอดคล้องกับเวลาเริ่มต้น
       onStartTimeChange(false);
 
-      // ไฮไลต์การ์ดห้องที่เลือก
       document.querySelectorAll('.casual-room-card').forEach(c => c.classList.remove('selected-room'));
       const targetCard = document.getElementById(`room-card-${roomId}`);
       if (targetCard) targetCard.classList.add('selected-room');
 
-      // ไฮไลต์ชิปเวลาที่เลือก
       document.querySelectorAll('.slot-interactive-chip').forEach(s => s.classList.remove('slot-selected'));
       const activeChip = document.querySelector(`.slot-interactive-chip[data-room="${roomId}"][data-start="${startStr}"]`);
       if (activeChip) activeChip.classList.add('slot-selected');
 
-      // ตรวจสอบความว่าง Real-time ทันที
       checkBookingConflict();
 
-      // สลับไปยังหน้าฟอร์มจองห้องทันที
       switchRequesterView('booking');
       const titleInput = document.getElementById('form_title');
       if (titleInput) {
@@ -397,13 +366,11 @@
       }
     }
 
-    // ปิด Modal ฟอร์ม
     function closeBookingModal(e) {
       const modal = document.getElementById('bookingFormModal');
       if (modal) modal.style.display = 'none';
     }
 
-    // เมื่อคลิกช่วงเวลาที่จองไม่ได้ (แสดง Toast ทันทีว่าเลือกไม่ได้)
     function showUnavailableNotice(roomName, startStr, endStr, bookingTitle, slotType) {
       const toast = document.getElementById('slotNoticeToast');
       const text = document.getElementById('slotNoticeText');
@@ -419,7 +386,6 @@
       }, 3500);
     }
 
-    // เมื่อผู้ใช้เปลี่ยนห้องจาก Dropdown ในฟอร์ม
     function onRoomSelectChange() {
       const roomId = document.getElementById('form_room_id').value;
       const room = ROOMS.find(r => Number(r.room_id) === Number(roomId));
@@ -434,7 +400,6 @@
       checkBookingConflict();
     }
 
-    // เมื่อผู้ใช้เปลี่ยนวันที่ในฟอร์ม
     function onDateInputChange() {
       const formDate = document.getElementById('form_booking_date').value;
       if (formDate && formDate !== SELECTED_DATE) {
@@ -444,7 +409,6 @@
       }
     }
 
-    // ดูไฟล์เอกสารแนบ (Anti-IDOR Stream)
     function openFilePreview(fileId, fileName) {
       const fileUrl = `/app/files/${fileId}`;
       document.getElementById('previewFileName').innerText = fileName;
@@ -458,7 +422,6 @@
       document.getElementById('previewFrame').src = 'about:blank';
     }
 
-    // จัดการ Modal ปฏิเสธคำขอ (Approver Rejection)
     function openRejectModal(bookingId, title, requesterName) {
       const modal = document.getElementById('rejectModal');
       const form = document.getElementById('rejectForm');
@@ -477,15 +440,10 @@
       if (modal) modal.style.display = 'none';
     }
 
-    // ================= Script สำหรับ Requester Mobile Flow (Adapted Layout) =================
     let rangeStartHour = 9;
     let rangeEndHour = 10;
     let isSettingEnd = false;
 
-    // CAN_BOOK provided by Data Bridge
-    // CAN_VIEW_OWN provided by Data Bridge
-
-    // สลับ View ย่อยของ Requester (Home, Booking, My Bookings, Profile)
     function switchRequesterView(viewName, btnEl = null) {
       if (viewName === 'booking' && !CAN_BOOK) return;
       if (viewName === 'mybookings' && !CAN_VIEW_OWN) return;
@@ -495,7 +453,6 @@
       document.querySelectorAll('.req-subview').forEach(v => v.style.display = 'none');
       targetView.style.display = 'block';
 
-      // ซิงก์สถานะ Active ทั้งบน Desktop Sub-Nav และ Mobile Bottom Nav
       document.querySelectorAll('.bottom-nav-item, .desktop-nav-item').forEach(b => {
         if (b.getAttribute('data-view') === viewName) {
           b.classList.add('active');
@@ -518,14 +475,13 @@
       }
     }
 
-    // เริ่มต้นโฟลว์จองห้อง (จากปุ่ม Quick Booking หรือการ์ดห้องว่าง)
     function startBookingFlow(roomId = null, buildingNum = null) {
       if (!CAN_BOOK) return;
       switchRequesterView('booking');
       if (buildingNum) {
         selectBuilding(Number(buildingNum));
       } else {
-        // ซ่อนกล่องห้องไว้ก่อนและล้างการเลือกตึกเดิมออก เพื่อให้ผู้ใช้กดเลือกตึกก่อน
+
         const roomsBox = document.getElementById('buildingRoomsBox');
         if (roomsBox) roomsBox.style.display = 'none';
         document.querySelectorAll('.building-card').forEach(b => b.classList.remove('active'));
@@ -535,7 +491,6 @@
       }
     }
 
-    // เมื่อเปลี่ยนห้องประชุมที่เลือก
     function onBookingRoomChange() {
       const select = document.getElementById('form_room_id');
       if (!select) return;
@@ -562,7 +517,6 @@
       checkBookingConflict();
     }
 
-    // ฟังก์ชันคลิกเลือกช่วงเวลาบน Time Range Grid (แต่ละปุ่มแทนสล็อต 1 ชั่วโมงเต็ม เช่น 14:00 คือ 14:00-15:00)
     function onTimeRangePillClick(hour) {
       const roomSelect = document.getElementById('form_room_id');
       const roomId = roomSelect ? Number(roomSelect.value) : null;
@@ -594,7 +548,7 @@
       const guidePill = document.getElementById('slotGuidePill');
 
       if (hour === 18) {
-        // แตะที่ปุ่ม 18:00 (เวลาสิ้นสุด)
+
         let hasConflict = false;
         const startCheck = (isSettingEnd && rangeStartHour < 18) ? rangeStartHour : 17;
         for (let checkH = startCheck; checkH < 18; checkH++) {
@@ -624,15 +578,15 @@
           isSettingEnd = false;
         }
       } else if (!isSettingEnd || hour < rangeStartHour) {
-        // เลือกสล็อตเริ่มต้นเดี่ยวๆ (1 ชั่วโมง)
+
         rangeStartHour = hour;
         rangeEndHour = hour + 1;
         isSettingEnd = true;
       } else if (hour === rangeStartHour && rangeEndHour === hour + 1) {
-        // แตะซ้ำที่สล็อตเดิม -> คงไว้ที่ 1 ชั่วโมง
+
         isSettingEnd = false;
       } else {
-        // แตะสล็อตที่อยู่ถัดไป -> ตรวจสอบว่าระหว่างทางมีสล็อตที่ติดจองหรือไม่
+
         let hasConflictInBetween = false;
         for (let checkH = rangeStartHour; checkH <= hour; checkH++) {
           const checkPill = document.querySelector(`.time-slot-pill:not(.maint-time-pill)[data-hour="${checkH}"]`);
@@ -672,7 +626,6 @@
       checkBookingConflict();
     }
 
-    // Render ไฮไลต์ช่วงเวลาบน Grid
     function renderTimeRangePills() {
       const roomSelect = document.getElementById('form_room_id');
       if (!roomSelect) return;
@@ -690,7 +643,7 @@
         }
 
         if (h === 18) {
-          // สล็อต 18:00 เป็นจุดสิ้นสุดการให้บริการ (ติดจองถ้าช่วง 17:00-18:00 ติดจอง)
+
           const check17 = DAY_BOOKINGS.find(b => {
             if (Number(b.room_id) !== roomId) return false;
             if (!['APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
@@ -750,7 +703,6 @@
           }
         }
 
-        // ไฮไลต์เฉพาะสล็อตที่ถูกเลือกใช้งานจริง
         if (!pill.classList.contains('is-booked')) {
           if (h === rangeStartHour) {
             pill.classList.add('is-start');
@@ -763,14 +715,12 @@
       });
     }
 
-    // ฟังก์ชันเลือกห้องจากการ์ดห้องแบบ Visual
     function selectBookingRoom(roomId) {
       const hiddenInput = document.getElementById('form_room_id');
       if (hiddenInput) {
         hiddenInput.value = roomId;
       }
 
-      // ไฮไลต์การ์ดที่ถูกเลือก
       document.querySelectorAll('.visual-room-card').forEach(c => {
         const match = c.getAttribute('data-room-id') === String(roomId);
         c.classList.toggle('selected', match);
@@ -790,7 +740,6 @@
       checkBookingConflict();
     }
 
-    // ฟังก์ชันเลือกอาคารและกรอง Visual Room Cards
     const originalSelectBuilding = selectBuilding;
     selectBuilding = function(buildingNumber, btn = null) {
       document.querySelectorAll('.building-card').forEach(b => b.classList.remove('active'));
@@ -801,7 +750,6 @@
         if (targetBtn) targetBtn.classList.add('active');
       }
 
-      // แสดงกล่องเลือกห้องประชุมเมื่อคลิกเลือกตึก
       const roomsBox = document.getElementById('buildingRoomsBox');
       const headerLabel = document.getElementById('buildingRoomsHeaderLabel');
       if (roomsBox) {
@@ -854,9 +802,8 @@
       }
     };
 
-    // ตรวจสอบความว่างเริ่มต้นเมื่อโหลดหน้า
     document.addEventListener('DOMContentLoaded', () => {
-      // Auto-dismiss Flash Success Alert after 3.5s
+
       const flashAlert = document.getElementById('flashSuccessAlert');
       if (flashAlert) {
         setTimeout(() => {
@@ -866,11 +813,10 @@
         }, 3500);
       }
 
-      // Smart Default Filter สำหรับ My Bookings: เปิดแท็บที่มีรายการค้างอยู่
       const pendingBtn = document.querySelector('.segmented-item[data-category="PENDING"]');
       const approvedBtn = document.querySelector('.segmented-item[data-category="APPROVED"]');
       const finishedBtn = document.querySelector('.segmented-item[data-category="FINISHED"]');
-      
+
       const pendingBadge = pendingBtn ? parseInt(pendingBtn.querySelector('.segmented-badge')?.innerText || '0', 10) : 0;
       const approvedBadge = approvedBtn ? parseInt(approvedBtn.querySelector('.segmented-badge')?.innerText || '0', 10) : 0;
       const finishedBadge = finishedBtn ? parseInt(finishedBtn.querySelector('.segmented-badge')?.innerText || '0', 10) : 0;
@@ -887,8 +833,7 @@
 
       checkBookingConflict();
       renderTimeRangePills();
-      
-      // ดักจับคลิกปุ่มปฏิเสธ
+
       document.querySelectorAll('.btn-open-reject').forEach(btn => {
         btn.addEventListener('click', function() {
           openRejectModal(this.dataset.bookingId, this.dataset.title, this.dataset.requester);
@@ -901,7 +846,6 @@
         selectBuilding(Number(bParam));
       }
 
-      // ตรวจสอบ query string เพื่อเปิด subview ที่ระบุทันที
       const viewParam = urlParams.get('view') || urlParams.get('tab');
       if (viewParam) {
         const cleanView = viewParam.replace('tab-', '');
@@ -911,34 +855,29 @@
         }
       }
 
-      // Auto-scroll ปฏิทินจิ๋วให้การ์ดวันที่เลือกอยู่ตรงกลางสายตา
       const activeCalCard = document.querySelector('.mini-cal-day-card.active');
       if (activeCalCard) {
         activeCalCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
 
-      // เริ่มต้นระบบบล็อกห้องซ่อมบำรุง (Maintenance Flow)
       if (document.getElementById('btn-maint-building-1')) {
         selectMaintBuilding(1);
       }
     });
 
-    // เปลี่ยนวันที่ใช้งานสำหรับปฏิทินจิ๋ว (คงค่าอาคารและสถานะวิวไว้)
     function changeBookingDate(newDate) {
       if (!newDate) return;
       const url = new URL(window.location.href);
       url.searchParams.set('date', newDate);
-      
-      // ตรวจสอบว่ากำลังเปิดแท็บปิดซ่อมบำรุงอยู่หรือไม่
-      const isMaintView = document.getElementById('req-view-facility-block') && 
+
+      const isMaintView = document.getElementById('req-view-facility-block') &&
                           document.getElementById('req-view-facility-block').style.display !== 'none';
       if (isMaintView) {
         url.searchParams.set('view', 'facility-block');
       } else {
         url.searchParams.set('view', 'booking');
       }
-      
-      // รักษาอาคารที่เลือกไว้
+
       const activeBuilding = document.querySelector('.building-card.active');
       if (activeBuilding) {
         const bNum = activeBuilding.id.replace('btn-building-', '').replace('btn-maint-building-', '');
@@ -947,20 +886,18 @@
       window.location.href = url.toString();
     }
 
-    // เลื่อนวันในปฏิทินจิ๋ว (+1 หรือ -1 วัน)
     function navigateMiniCal(direction) {
       const cur = new Date(SELECTED_DATE + 'T00:00:00');
       cur.setDate(cur.getDate() + direction);
       const minDate = new Date(TODAY_STR + 'T00:00:00');
-      if (cur < minDate) return; // ไม่ให้ย้อนหลังเกินวันนี้
-      
+      if (cur < minDate) return;
+
       const yyyy = cur.getFullYear();
       const mm = String(cur.getMonth() + 1).padStart(2, '0');
       const dd = String(cur.getDate()).padStart(2, '0');
       changeBookingDate(`${yyyy}-${mm}-${dd}`);
     }
 
-    // ================= Script สำหรับ Maintenance / Block Schedule Flow =================
     let maintRangeStartHour = 9;
     let maintRangeEndHour = 12;
     let maintIsSettingEnd = false;
@@ -1231,5 +1168,3 @@
         input.focus();
       }
     }
-
-  

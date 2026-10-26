@@ -1,12 +1,11 @@
 const pool = require('../config/db');
 const { logAudit } = require('../middlewares/auth');
 
-// 1. เจ้าหน้าที่สถานที่กดบล็อกห้องล่วงหน้า (Block Schedule for Maintenance / Big Event)
 async function blockSchedule(req, res, next) {
   const client = await pool.connect();
   try {
     const { room_id, reason, block_date, start_time_str, end_time_str } = req.body;
-    
+
     const start_time = `${block_date} ${start_time_str}:00`;
     const end_time = `${block_date} ${end_time_str}:00`;
 
@@ -16,14 +15,12 @@ async function blockSchedule(req, res, next) {
 
     await client.query('BEGIN');
 
-    // ล็อกแถวห้อง
     await client.query('SELECT room_id FROM rooms WHERE room_id = $1 FOR UPDATE', [room_id]);
 
-    // ตรวจสอบการทับซ้อน
     const overlapCheck = await client.query(`
-      SELECT booking_id, title 
+      SELECT booking_id, title
       FROM room_bookings
-      WHERE room_id = $1 
+      WHERE room_id = $1
         AND status IN ('PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED')
         AND (start_time < $3 AND end_time > $2)
       LIMIT 1
@@ -34,7 +31,6 @@ async function blockSchedule(req, res, next) {
       return res.redirect(`/app?error=${encodeURIComponent(`ไม่สามารถบล็อกได้: มีรายการจอง "${overlapCheck.rows[0].title}" อยู่ในช่วงเวลานี้แล้ว`)}`);
     }
 
-    // ทำการบันทึกสถานะ BLOCKED
     const insertRes = await client.query(`
       INSERT INTO room_bookings (
         room_id, user_id, title, purpose, attendees_count,
@@ -67,7 +63,6 @@ async function blockSchedule(req, res, next) {
   }
 }
 
-// 2. ส่งมอบห้อง / Check-in
 async function checkinRoom(req, res, next) {
   try {
     const bookingId = parseInt(req.params.id, 10);
@@ -104,7 +99,6 @@ async function checkinRoom(req, res, next) {
   }
 }
 
-// 3. ตรวจสอบห้องหลังใช้งานและปิดงาน / Check-out พร้อมแนบรูปถ่าย
 async function checkoutRoom(req, res, next) {
   try {
     const bookingId = parseInt(req.params.id, 10);
@@ -124,7 +118,6 @@ async function checkoutRoom(req, res, next) {
       return res.redirect(`/app?error=${encodeURIComponent('ไม่สามารถ Check-out ได้ (รายการต้องอยู่ในสถานะกำลังใช้งาน)')}`);
     }
 
-    // บันทึกรูปถ่ายการตรวจห้อง (ถ้ามีแนบ)
     if (req.file) {
       await pool.query(`
         INSERT INTO booking_attachments (
