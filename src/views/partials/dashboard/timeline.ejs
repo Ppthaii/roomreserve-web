@@ -1,0 +1,87 @@
+<div id="req-view-timeline" class="req-subview" style="display: none;">
+        <div class="card" style="margin-bottom: 1rem; border-left: 4px solid #6366f1;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+            แผนผังช่วงเวลาห้องประชุม (Time Slots Matrix)
+          </h3>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
+            ตารางแสดงสถานะความว่างของห้องประชุมทุก 30 นาที สำหรับผู้ดูแลระบบ
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom: 0.5rem;">
+            แผนผังช่วงเวลาความว่างของห้องประชุม (30-Minute Time Slots)
+          </div>
+          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem;">
+            ตารางแสดงสถานะความว่างทุก 30 นาที สำหรับผู้ดูแลระบบ
+          </p>
+
+          <% 
+            const timeSlots = [];
+            for (let h = 8; h < 18; h++) {
+              const hStr = String(h).padStart(2, '0');
+              timeSlots.push(`${hStr}:00`);
+              timeSlots.push(`${hStr}:30`);
+            }
+          %>
+
+          <% rooms.forEach(room => { %>
+            <div class="room-slot-row">
+              <div class="room-slot-info">
+                <strong style="font-size: 0.85rem; color: var(--dark);"><%= room.room_name %></strong><br>
+                <small style="color: var(--muted); font-size: 0.7rem;">จุ <%= room.capacity %> คน</small>
+              </div>
+              <div class="slots-container">
+                <% timeSlots.forEach(slotTime => { 
+                  const slotDateTime = new Date(`${selectedDate}T${slotTime}:00`);
+                  let slotStatus = 'FREE';
+                  let bookingInfo = '';
+
+                  dayBookings.forEach(b => {
+                    if (b.room_id === room.room_id) {
+                      const bStart = new Date(b.start_time);
+                      const bEnd = new Date(b.end_time);
+                      if (slotDateTime >= bStart && slotDateTime < bEnd) {
+                        if (b.status === 'BLOCKED') slotStatus = 'BLOCKED';
+                        else if (b.status === 'PENDING_APPROVAL') slotStatus = 'PENDING';
+                        else if (['APPROVED', 'IN_USE'].includes(b.status)) slotStatus = 'BOOKED';
+                        bookingInfo = b.title;
+                      }
+                    }
+                  });
+                %>
+                  <% if (slotStatus === 'FREE') { %>
+                    <div class="slot-block slot-free" 
+                         title="ว่าง: คลิกเพื่อเลือกเวลานี้ (<%= slotTime %>)"
+                         onclick="selectRoomAndSlot('<%= room.room_id %>', '<%= slotTime %>', '<%= slotTime.split(':')[0] %>:59')">
+                      <span><%= slotTime %></span>
+                      <span style="font-size: 0.55rem;">ว่าง</span>
+                    </div>
+                  <% } else if (slotStatus === 'PENDING') { %>
+                    <div class="slot-block slot-pending" title="รออนุมัติ: <%= bookingInfo %>">
+                      <span><%= slotTime %></span>
+                      <span style="font-size: 0.55rem;">รอตรวจ</span>
+                    </div>
+                  <% } else if (slotStatus === 'BOOKED') { %>
+                    <div class="slot-block slot-booked" title="ติดจอง: <%= bookingInfo %>">
+                      <span><%= slotTime %></span>
+                      <span style="font-size: 0.55rem;">ติดจอง</span>
+                    </div>
+                  <% } else if (slotStatus === 'BLOCKED') { %>
+                    <div class="slot-block slot-blocked" title="ปิดซ่อม: <%= bookingInfo %>">
+                      <span><%= slotTime %></span>
+                      <span style="font-size: 0.55rem;">ปิดซ่อม</span>
+                    </div>
+                  <% } %>
+                <% }) %>
+              </div>
+            </div>
+          <% }) %>
+
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.35rem;"><div style="width: 12px; height: 12px; border-radius: 3px; background: #ecfdf5; border: 1px solid #a7f3d0;"></div> ว่าง</div>
+            <div style="display: flex; align-items: center; gap: 0.35rem;"><div style="width: 12px; height: 12px; border-radius: 3px; background: #fef3c7; border: 1px solid #fde68a;"></div> รออนุมัติ</div>
+            <div style="display: flex; align-items: center; gap: 0.35rem;"><div style="width: 12px; height: 12px; border-radius: 3px; background: #e0e7ff; border: 1px solid #c7d2fe;"></div> อนุมัติแล้ว / ใช้งาน</div>
+            <div style="display: flex; align-items: center; gap: 0.35rem;"><div style="width: 12px; height: 12px; border-radius: 3px; background: #f1f5f9; border: 1px solid #cbd5e1;"></div> บล็อกปิดซ่อม (Blocked)</div>
+          </div>
+        </div>
+      </div>

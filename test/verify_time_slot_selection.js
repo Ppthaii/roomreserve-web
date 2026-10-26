@@ -7,7 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const dashboardEjsPath = path.join(__dirname, '../src/views/dashboard.ejs');
-const dashboardHtml = fs.readFileSync(dashboardEjsPath, 'utf8');
+const bookingPartialPath = path.join(__dirname, '../src/views/partials/dashboard/booking.ejs');
+const dashboardHtml = fs.readFileSync(dashboardEjsPath, 'utf8') + 
+  (fs.existsSync(bookingPartialPath) ? fs.readFileSync(bookingPartialPath, 'utf8') : '');
 
 console.log('Testing dashboard.ejs time slot range logic...');
 

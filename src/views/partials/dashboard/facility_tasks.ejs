@@ -1,0 +1,69 @@
+<div id="req-view-facility" class="req-subview" style="display: none;">
+        <div class="card" style="margin-bottom: 1rem; border-left: 4px solid var(--success);">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+            คิวงานส่งมอบห้อง & ตรวจรับ (<%= facilityTasks.length %>)
+          </h3>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
+            ส่งมอบห้อง (Check-in) และตรวจสภาพความพร้อมของห้องหลังใช้งาน (Check-out)
+          </p>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--success);">
+          <div class="card-title">รายการงานส่งมอบ & ตรวจสภาพห้อง (<%= facilityTasks.length %>)</div>
+          <% if (facilityTasks.length === 0) { %>
+            <div style="text-align: center; padding: 2.5rem; color: var(--muted); font-size: 0.9rem;">
+              <div style="font-size: 1.8rem; margin-bottom: 0.5rem; opacity: 0.6;">✨</div>
+              ไม่มีคิวงานส่งมอบหรือตรวจรับห้องในขณะนี้ ทุกห้องพร้อมใช้งานเรียบร้อย
+            </div>
+          <% } else { %>
+            <div style="display: grid; gap: 0.85rem;">
+              <% facilityTasks.forEach(t => { %>
+                <div class="facility-task-card">
+                  <div style="display: flex; justify-content: space-between; align-items: start; gap: 0.75rem; flex-wrap: wrap;">
+                    <div>
+                      <strong style="font-size: 1.05rem; color: var(--dark);"><%= t.title %></strong>
+                      <div style="font-size: 0.85rem; color: var(--slate); margin-top: 0.2rem;">
+                        <strong>ห้อง:</strong> <%= t.room_name %> &bull; <strong>ผู้ขอ:</strong> <%= t.requester_name %>
+                      </div>
+                      <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem;">
+                        ⏰ <%= new Date(t.start_time).toLocaleDateString('th-TH') %> 
+                        (<%= new Date(t.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> - 
+                        <%= new Date(t.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> น.)
+                      </div>
+                    </div>
+                    <span class="status-badge status-<%= t.status %>"><%= t.status %></span>
+                  </div>
+
+                  <% if (t.attachment_id) { %>
+                    <div style="margin: 0.65rem 0;">
+                      <button type="button" class="btn btn-outline btn-xs" onclick="openFilePreview('<%= t.attachment_id %>', '<%= t.file_name %>')" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                        ดูผังจัดห้อง / วาระการประชุม
+                      </button>
+                    </div>
+                  <% } %>
+
+                  <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed var(--border);">
+                    <% if (t.status === 'APPROVED') { %>
+                      <form action="/app/facility/checkin/<%= t.booking_id %>" method="POST" style="margin: 0;">
+                        <button class="btn btn-primary btn-sm" style="width: 100%; font-weight: 700; padding: 0.6rem;">
+                          ส่งมอบห้อง & เปิดระบบ (Check-in)
+                        </button>
+                      </form>
+                    <% } else if (t.status === 'IN_USE') { %>
+                      <form action="/app/facility/checkout/<%= t.booking_id %>" method="POST" enctype="multipart/form-data" style="margin: 0;">
+                        <div class="form-group" style="margin-bottom: 0.65rem;">
+                          <label style="font-size: 0.8rem; font-weight: 700; color: var(--dark);">ถ่ายรูปตรวจสภาพห้องหลังใช้ (Inspection Photo):</label>
+                          <input type="file" name="inspection_file" class="form-control" style="font-size: 0.8rem;" accept="image/*,.pdf">
+                        </div>
+                        <button class="btn btn-success btn-sm" style="width: 100%; font-weight: 700; padding: 0.6rem;">
+                          ตรวจสภาพเรียบร้อย & ปิดงาน (Check-out)
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>

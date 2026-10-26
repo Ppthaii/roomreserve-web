@@ -1,0 +1,44 @@
+/* acl.css - สไตล์เฉพาะหน้าจัดการสิทธิ์ ACL */
+
+/* Toast Notification สำหรับแจ้งเตือนการ Auto-Save ทันที */
+#toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+.toast {
+  background: #1e1b4b;
+  color: white;
+  padding: 0.85rem 1.25rem;
+  border-radius: 10px;
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideIn 0.3s ease-out;
+  border-left: 4px solid #10b981;
+}
+.toast-error {
+  border-left-color: #ef4444;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.switch-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  margin-right: 6px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.6; }
+}

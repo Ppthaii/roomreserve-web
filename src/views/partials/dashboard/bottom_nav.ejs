@@ -1,0 +1,55 @@
+<!-- Mobile Bottom Navigation Bar (Dynamic per Permission & Role) -->
+  <nav class="mobile-bottom-nav">
+    <button type="button" class="bottom-nav-item active" data-view="home" onclick="switchRequesterView('home', this)">
+      <span>หน้าแรก</span>
+    </button>
+
+    <% if (canApprove) { %>
+      <button type="button" class="bottom-nav-item" data-view="approvals" onclick="switchRequesterView('approvals', this)">
+        <span>รออนุมัติ</span>
+        <% if (pendingApprovals.length > 0) { %>
+          <span class="nav-badge" style="background: #f59e0b;"><%= pendingApprovals.length %></span>
+        <% } %>
+      </button>
+    <% } %>
+
+    <% if (canFacility) { %>
+      <button type="button" class="bottom-nav-item" data-view="facility" onclick="switchRequesterView('facility', this)">
+        <span>ส่งมอบ</span>
+        <% if (facilityTasks.length > 0) { %>
+          <span class="nav-badge" style="background: #10b981;"><%= facilityTasks.length %></span>
+        <% } %>
+      </button>
+    <% } %>
+
+    <% if (canBlockSchedule) { %>
+      <button type="button" class="bottom-nav-item" data-view="facility-block" onclick="switchRequesterView('facility-block', this)">
+        <span>ปิดซ่อม</span>
+      </button>
+    <% } %>
+
+    <% if (isAdminUser) { %>
+      <button type="button" class="bottom-nav-item" data-view="timeline" onclick="switchRequesterView('timeline', this)">
+        <span>ไทม์ไลน์</span>
+      </button>
+    <% } %>
+
+    <% if (canBook) { %>
+      <button type="button" class="bottom-nav-item" data-view="booking" onclick="switchRequesterView('booking', this)">
+        <span>จองห้อง</span>
+      </button>
+    <% } %>
+
+    <% if (canViewOwnBookings) { %>
+      <button type="button" class="bottom-nav-item" data-view="mybookings" onclick="switchRequesterView('mybookings', this)">
+        <span>การจองของฉัน</span>
+        <% if (activeMyBookingsCount > 0) { %>
+          <span class="nav-badge"><%= activeMyBookingsCount %></span>
+        <% } %>
+      </button>
+    <% } %>
+
+    <button type="button" class="bottom-nav-item" data-view="profile" onclick="switchRequesterView('profile', this)">
+      <span>โปรไฟล์</span>
+    </button>
+  </nav>

@@ -1,0 +1,251 @@
+<div id="req-view-booking" class="req-subview" style="display: none;">
+          
+          <!-- Stepper / Progress Header -->
+          <div class="card" style="margin-bottom: 1rem; border-left: 4px solid #2563eb;">
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+              จองห้องประชุม (เลือกวันและเวลา)
+            </h3>
+            <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
+              ขั้นตอนที่ 1/2: เลือกอาคาร ห้องประชุม และช่วงเวลาที่ต้องการใช้งาน
+            </p>
+          </div>
+
+          <!-- อาคาร 1, 2, 3 พร้อมรูปภาพคมชัดตามที่ผู้ใช้กำหนด -->
+          <div style="margin-bottom: 1.25rem;">
+            <div style="font-size: 0.92rem; font-weight: 800; color: var(--dark); margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.4rem;">
+              <span>เลือกอาคาร:</span>
+              <span style="font-weight: 500; font-size: 0.8rem; color: var(--muted);">(กรุณาคลิกเลือกอาคารเพื่อดูห้องประชุม)</span>
+            </div>
+
+            <div class="building-cards-grid">
+              <div class="building-card" onclick="selectBuilding(1, this)" id="btn-building-1">
+                <div class="building-card-img-wrap">
+                  <img src="/images/building1.jpg" alt="ตึก 1" class="building-card-img" onerror="this.src='/images/building1.jpg'">
+                </div>
+                <div class="building-card-body">
+                  <div class="building-card-title">ตึก 1</div>
+                  <div class="building-card-rooms"><%= b1Names || 'ไม่มีห้องประชุม' %></div>
+                </div>
+              </div>
+
+              <div class="building-card" onclick="selectBuilding(2, this)" id="btn-building-2">
+                <div class="building-card-img-wrap">
+                  <img src="/images/building2.jpg" alt="ตึก 2" class="building-card-img" onerror="this.src='/images/building2.jpg'">
+                </div>
+                <div class="building-card-body">
+                  <div class="building-card-title">ตึก 2</div>
+                  <div class="building-card-rooms"><%= b2Names || 'ไม่มีห้องประชุม' %></div>
+                </div>
+              </div>
+
+              <div class="building-card" onclick="selectBuilding(3, this)" id="btn-building-3">
+                <div class="building-card-img-wrap">
+                  <img src="/images/building3.jpg" alt="ตึก 3" class="building-card-img" onerror="this.src='/images/building3.jpg'">
+                </div>
+                <div class="building-card-body">
+                  <div class="building-card-title">ตึก 3</div>
+                  <div class="building-card-rooms"><%= b3Names || 'ไม่มีห้องประชุม' %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- กล่องแสดงห้องในตึกที่เลือก (ซ่อนไว้ก่อน เริ่มต้น display: none) -->
+          <div id="buildingRoomsBox" style="margin-bottom: 1.5rem; display: none;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: var(--dark); margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span id="buildingRoomsHeaderLabel">ห้องประชุมในอาคาร:</span>
+                <span id="buildingRoomsTitle" style="font-weight: 500; font-size: 0.82rem; color: var(--muted);">(แตะที่การ์ดห้องเพื่อเลือก)</span>
+              </div>
+              <span id="selectedRoomNoticeBadge" style="font-size: 0.75rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.65rem; border-radius: 9999px; display: none;">
+                เลือกแล้ว
+              </span>
+            </div>
+            <div class="visual-rooms-grid" id="visualRoomsGrid">
+              <% rooms.forEach(room => { 
+                let bNum = getBuildingNumHelper(room);
+                const bImg = `/images/building${['1','2','3'].includes(bNum) ? bNum : '1'}.jpg`;
+              %>
+                <div class="visual-room-card" data-building="<%= bNum %>" data-room-id="<%= room.room_id %>" data-capacity="<%= room.capacity %>" onclick="selectBookingRoom('<%= room.room_id %>')">
+                  <div class="visual-room-img-wrap">
+                    <img src="<%= bImg %>" alt="<%= room.room_name %>" class="visual-room-img" onerror="this.src='/images/building1.jpg'">
+                  </div>
+                  <div class="visual-room-body">
+                    <div class="visual-room-name"><%= room.room_name %></div>
+                    <div class="visual-room-meta">
+                      <span class="visual-room-badge"><%= room.location %></span>
+                      <span class="visual-room-badge">รองรับ <%= room.capacity %> คน</span>
+                    </div>
+                  </div>
+                  <input type="radio" name="visual_room_radio" class="visual-room-radio" value="<%= room.room_id %>" style="display: none;">
+                </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- กล่องระบุวันเวลาและรายละเอียดการจอง (Unified Date & Time Booking Card) -->
+          <div class="card" style="padding: 1.25rem;">
+            <!-- ส่วนเลือกวันที่แบบปฏิทินจิ๋ว (Mini Calendar Strip) -->
+            <div class="mini-calendar-container" style="border: none; background: transparent; padding: 0 0 1rem 0; margin-bottom: 1rem; border-bottom: 1px solid var(--border);">
+              <div class="mini-calendar-header">
+                <div class="mini-cal-title-group">
+                  <div class="mini-cal-label">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>วันที่เลือกใช้งาน:</span>
+                  </div>
+                  <div class="mini-cal-selected-text">
+                    <span><%= formattedThaiDate %></span>
+                    <% if (isToday) { %>
+                      <span class="mini-cal-today-badge">วันนี้</span>
+                    <% } %>
+                  </div>
+                </div>
+
+                <div class="mini-cal-actions">
+                  <% if (!isToday) { %>
+                    <button type="button" class="mini-cal-today-btn" onclick="changeBookingDate('<%= todayStr %>')">
+                      กลับสู่วันนี้
+                    </button>
+                  <% } %>
+                  <div class="mini-cal-picker-form">
+                    <input type="date" id="miniCalDateInput" name="date" value="<%= selectedDate %>" min="<%= todayStr %>" onchange="changeBookingDate(this.value)" class="form-control mini-cal-date-input" title="คลิกเพื่อเลือกวันอื่นในปฏิทิน">
+                  </div>
+                </div>
+              </div>
+
+              <!-- แถบปฏิทินจิ๋ว (Mini Calendar Date Strip) -->
+              <div class="mini-calendar-strip-wrap">
+                <button type="button" class="mini-cal-nav-btn prev" onclick="navigateMiniCal(-1)" title="เลื่อนดูวันก่อนหน้า">
+                  &#8249;
+                </button>
+                
+                <div class="mini-calendar-strip" id="miniCalendarStrip">
+                  <% miniCalDays.forEach(day => { %>
+                    <div class="mini-cal-day-card <%= day.isSelected ? 'active' : '' %> <%= day.isToday ? 'is-today' : '' %> <%= day.isWeekend ? 'is-weekend' : '' %>"
+                         onclick="changeBookingDate('<%= day.dateStr %>')"
+                         title="<%= day.dateStr %>">
+                      <div class="mini-cal-day-name"><%= day.dayName %></div>
+                      <div class="mini-cal-day-num"><%= day.dayNum %></div>
+                      <div class="mini-cal-day-month"><%= day.monthName %></div>
+                      <% if (day.isToday) { %>
+                        <div class="mini-cal-today-dot"></div>
+                      <% } %>
+                    </div>
+                  <% }) %>
+                </div>
+
+                <button type="button" class="mini-cal-nav-btn next" onclick="navigateMiniCal(1)" title="เลื่อนดูวันถัดไป">
+                  &#8250;
+                </button>
+              </div>
+            </div>
+
+            <!-- ฟอร์มและช่วงเวลา (Interactive Time Range Grid) -->
+            <form action="/app/bookings" method="POST" enctype="multipart/form-data" id="bookingMainForm" onsubmit="return validateAttendees();">
+              <input type="hidden" name="booking_date" id="form_booking_date" value="<%= selectedDate %>">
+              
+              <!-- เลือกระบุห้องในตึกนี้ -->
+              <input type="hidden" name="room_id" id="form_room_id" required>
+
+              <!-- Interactive Time Range Selector -->
+              <div style="margin-bottom: 1.25rem;">
+                <div style="margin-bottom: 0.5rem;">
+                  <label style="font-size: 0.85rem; font-weight: 700; color: var(--dark); margin: 0;">
+                    เลือกช่วงเวลา (แตะเวลาเริ่ม แล้วแตะเวลาสิ้นสุด):
+                  </label>
+                </div>
+
+                <!-- คำแนะนำการเลือกเวลา (Guide Pill) -->
+                <div id="slotGuidePill" class="conflict-status-banner is-free" style="margin-bottom: 0.75rem; text-align: center;">
+                  แตะช่องเวลาเพื่อกำหนดเวลาเริ่มต้น
+                </div>
+
+                <!-- Grid สล็อตเวลา 09:00 - 18:00 (Hourly Buttons: สล็อตละ 1 ชั่วโมง) -->
+                <div class="time-range-picker-grid" id="timeRangeGrid">
+                  <% for (let h = 9; h < 18; h++) { 
+                    const hourStr = `${String(h).padStart(2, '0')}:00`;
+                    const nextHourStr = `${String(h+1).padStart(2, '0')}:00`;
+                  %>
+                    <div class="time-slot-pill" data-hour="<%= h %>" data-time="<%= hourStr %>" onclick="onTimeRangePillClick(<%= h %>)" title="<%= hourStr %> - <%= nextHourStr %> น.">
+                      <%= hourStr %>
+                    </div>
+                  <% } %>
+                </div>
+
+                <!-- Input selects สำหรับเวลาเริ่มต้นและสิ้นสุด -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.2rem;">เวลาเริ่มต้น:</label>
+                    <select name="start_time_str" id="form_start_time" class="form-control" onchange="onStartTimeChange()" required style="height: 38px; font-weight: 700;">
+                      <% for (let h = 9; h < 18; h++) { 
+                        const hourStr = `${String(h).padStart(2, '0')}:00`;
+                      %>
+                        <option value="<%= hourStr %>"><%= hourStr %> น.</option>
+                      <% } %>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.2rem;">เวลาสิ้นสุด:</label>
+                    <select name="end_time_str" id="form_end_time" class="form-control" onchange="checkBookingConflict()" required style="height: 38px; font-weight: 700;">
+                      <% for (let h = 10; h <= 18; h++) { 
+                        const hourStr = `${String(h).padStart(2, '0')}:00`;
+                      %>
+                        <option value="<%= hourStr %>"><%= hourStr %> น.</option>
+                      <% } %>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="conflictStatusBanner" class="conflict-status-banner is-free" style="margin-top: 0.75rem;">
+                  <span>ช่วงเวลานี้ว่าง สามารถทำรายการจองได้</span>
+                </div>
+              </div>
+
+              <hr style="border: none; border-top: 1px dashed var(--border); margin: 1.25rem 0;">
+
+              <!-- Step 2: รายละเอียดการประชุม -->
+              <div style="font-size: 0.95rem; font-weight: 800; color: var(--dark); margin-bottom: 0.85rem;">
+                Step 2: รายละเอียดการประชุม
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.85rem;">
+                <label for="form_title" style="font-size: 0.82rem; font-weight: 700;">หัวข้อการประชุม / กิจกรรม *</label>
+                <input type="text" name="title" id="form_title" class="form-control" placeholder="เช่น ประชุมสรุปงานประจำสัปดาห์, วางแผนการตลาด" required>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                  <label for="form_attendees" style="font-size: 0.82rem; font-weight: 700; margin: 0;">จำนวนผู้เข้าร่วม (คน) *</label>
+                  <span style="font-size: 0.75rem; color: var(--muted);">
+                    (ความจุห้องนี้สูงสุด: <strong id="attendeesMaxDisplay" style="color: #2563eb;"><%= rooms[0] ? rooms[0].capacity : 20 %></strong> คน)
+                  </span>
+                </div>
+                <input type="number" name="attendees_count" id="form_attendees" class="form-control" value="5" min="1" max="<%= rooms[0] ? rooms[0].capacity : 20 %>" oninput="validateAttendees()" required>
+                <small id="attendeesErrorMsg" style="color: var(--danger); font-size: 0.75rem; display: none; margin-top: 0.35rem; font-weight: 600;"></small>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.85rem;">
+                <label for="form_purpose" style="font-size: 0.82rem; font-weight: 700;">วัตถุประสงค์ / อุปกรณ์เสริม (ถ้ามี)</label>
+                <textarea name="purpose" id="form_purpose" class="form-control" rows="2" placeholder="ระบุสิ่งที่ต้องการเพิ่มเติม เช่น ขอไมโครโฟนไร้สาย 2 ตัว"></textarea>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label for="form_agenda" style="font-size: 0.82rem; font-weight: 700;">แนบเอกสารวาระหรือผังประชุม (ถ้ามี)</label>
+                <input type="file" name="agenda_file" id="form_agenda" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                <span style="font-size: 0.72rem; color: var(--muted); display: block; margin-top: 0.25rem;">
+                  รองรับไฟล์ PDF, JPG, PNG (ขนาดไม่เกิน 5 MB)
+                </span>
+              </div>
+
+              <div style="display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center;">
+                <button type="button" class="btn btn-outline" onclick="switchRequesterView('home')">
+                  ย้อนกลับ
+                </button>
+                <button type="submit" id="submitBookingBtn" class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-weight: 800; font-size: 0.95rem;">
+                  ยืนยันการจองห้อง
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
