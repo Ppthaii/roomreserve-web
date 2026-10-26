@@ -598,6 +598,25 @@
             <span style="font-size: 0.78rem; color: var(--muted);"><%= canBook ? 'เลือกอาคารเพื่อเริ่มจอง' : 'ภาพรวมอาคารประชุม' %></span>
           </div>
 
+          <%
+            function getBuildingNumHelper(r) {
+              if (!r) return '1';
+              const loc = String(r.location || '');
+              const name = String(r.room_name || '');
+              const locMatch = loc.match(/(?:ตึก|อาคาร|building)\s*([1-9])/i);
+              if (locMatch) return locMatch[1];
+              const nameMatch = name.match(/(?:ห้อง\s*)?([1-9])\d{2}/i);
+              if (nameMatch) return nameMatch[1];
+              if (loc.includes('1')) return '1';
+              if (loc.includes('2')) return '2';
+              if (loc.includes('3')) return '3';
+              return '1';
+            }
+            const b1Names = rooms.filter(r => getBuildingNumHelper(r) === '1').map(r => r.room_name).join(' • ');
+            const b2Names = rooms.filter(r => getBuildingNumHelper(r) === '2').map(r => r.room_name).join(' • ');
+            const b3Names = rooms.filter(r => getBuildingNumHelper(r) === '3').map(r => r.room_name).join(' • ');
+          %>
+
           <div class="building-cards-grid" style="margin-bottom: 1.5rem;">
             <div class="building-card" <%- canBook ? 'onclick="startBookingFlow(null, 1)"' : 'style="cursor: default;"' %>>
               <div class="building-card-img-wrap">
@@ -605,7 +624,7 @@
               </div>
               <div class="building-card-body">
                 <div class="building-card-title">ตึก 1</div>
-                <div class="building-card-rooms">ห้อง 101 &bull; ห้อง 102</div>
+                <div class="building-card-rooms"><%= b1Names || 'ไม่มีห้องประชุม' %></div>
               </div>
             </div>
 
@@ -615,7 +634,7 @@
               </div>
               <div class="building-card-body">
                 <div class="building-card-title">ตึก 2</div>
-                <div class="building-card-rooms">ห้อง 201 &bull; ห้อง 202</div>
+                <div class="building-card-rooms"><%= b2Names || 'ไม่มีห้องประชุม' %></div>
               </div>
             </div>
 
@@ -625,7 +644,7 @@
               </div>
               <div class="building-card-body">
                 <div class="building-card-title">ตึก 3</div>
-                <div class="building-card-rooms">ห้อง 301 &bull; ห้อง 302</div>
+                <div class="building-card-rooms"><%= b3Names || 'ไม่มีห้องประชุม' %></div>
               </div>
             </div>
           </div>
@@ -661,7 +680,7 @@
                 </div>
                 <div class="building-card-body">
                   <div class="building-card-title">ตึก 1</div>
-                  <div class="building-card-rooms">ห้อง 101 &bull; ห้อง 102</div>
+                  <div class="building-card-rooms"><%= b1Names || 'ไม่มีห้องประชุม' %></div>
                 </div>
               </div>
 
@@ -671,7 +690,7 @@
                 </div>
                 <div class="building-card-body">
                   <div class="building-card-title">ตึก 2</div>
-                  <div class="building-card-rooms">ห้อง 201 &bull; ห้อง 202</div>
+                  <div class="building-card-rooms"><%= b2Names || 'ไม่มีห้องประชุม' %></div>
                 </div>
               </div>
 
@@ -681,7 +700,7 @@
                 </div>
                 <div class="building-card-body">
                   <div class="building-card-title">ตึก 3</div>
-                  <div class="building-card-rooms">ห้อง 301 &bull; ห้อง 302</div>
+                  <div class="building-card-rooms"><%= b3Names || 'ไม่มีห้องประชุม' %></div>
                 </div>
               </div>
             </div>
@@ -700,12 +719,8 @@
             </div>
             <div class="visual-rooms-grid" id="visualRoomsGrid">
               <% rooms.forEach(room => { 
-                let bNum = '1';
-                if (room.location && room.location.includes('2')) bNum = '2';
-                else if (room.location && room.location.includes('3')) bNum = '3';
-                else if (room.room_name && (room.room_name.includes('201') || room.room_name.includes('202'))) bNum = '2';
-                else if (room.room_name && (room.room_name.includes('301') || room.room_name.includes('302'))) bNum = '3';
-                const bImg = `/images/building${bNum}.jpg`;
+                let bNum = getBuildingNumHelper(room);
+                const bImg = `/images/building${['1','2','3'].includes(bNum) ? bNum : '1'}.jpg`;
               %>
                 <div class="visual-room-card" data-building="<%= bNum %>" data-room-id="<%= room.room_id %>" data-capacity="<%= room.capacity %>" onclick="selectBookingRoom('<%= room.room_id %>')">
                   <div class="visual-room-img-wrap">
@@ -1598,10 +1613,12 @@
 
       const headerText = document.getElementById('activeBuildingHeaderText');
       if (headerText) {
-        headerText.innerText = `ข้อมูลห้องประชุม - ตึก ${buildingNumber} (ห้อง ${buildingNumber}01 และ ห้อง ${buildingNumber}02)`;
+        const matched = ROOMS.filter(r => getBuildingFromRoom(r) === String(buildingNumber)).map(r => r.room_name);
+        const sub = matched.length > 0 ? ` (${matched.join(', ')})` : '';
+        headerText.innerText = `ข้อมูลห้องประชุม - ตึก ${buildingNumber}${sub}`;
       }
 
-      // แสดงเฉพาะห้องของตึกที่เลือก (ตึกละ 2 ห้อง)
+      // แสดงเฉพาะห้องของตึกที่เลือก
       document.querySelectorAll('.casual-room-card').forEach(card => {
         const cardBuilding = card.getAttribute('data-building');
         if (cardBuilding === String(buildingNumber)) {
@@ -1620,10 +1637,15 @@
     // ฟังก์ชันช่วยหาเลขตึกจากข้อมูลห้อง
     function getBuildingFromRoom(room) {
       if (!room) return '1';
-      if (room.location && room.location.includes('2')) return '2';
-      if (room.location && room.location.includes('3')) return '3';
-      if (room.room_name && (room.room_name.includes('201') || room.room_name.includes('202'))) return '2';
-      if (room.room_name && (room.room_name.includes('301') || room.room_name.includes('302'))) return '3';
+      const loc = String(room.location || '');
+      const name = String(room.room_name || '');
+      const locMatch = loc.match(/(?:ตึก|อาคาร|building)\s*([1-9])/i);
+      if (locMatch) return locMatch[1];
+      const nameMatch = name.match(/(?:ห้อง\s*)?([1-9])\d{2}/i);
+      if (nameMatch) return nameMatch[1];
+      if (loc.includes('1')) return '1';
+      if (loc.includes('2')) return '2';
+      if (loc.includes('3')) return '3';
       return '1';
     }
 

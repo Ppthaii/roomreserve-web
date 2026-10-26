@@ -81,26 +81,95 @@
       <!-- ฟอร์มเพิ่มห้องประชุมใหม่ (Toggleable) -->
       <div id="modal-add-room" style="display: none; background: #f8fafc; border: 1px solid var(--border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
         <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;">เพิ่มห้องประชุมใหม่</h3>
-        <form action="/app/rooms/create" method="POST" style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 0.75rem;">
-          <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.75rem;">ชื่อห้องประชุม *</label>
-            <input type="text" name="room_name" class="form-control" placeholder="เช่น ห้องสัมมนาเธียเตอร์ (Room 401)" required>
+        <form action="/app/rooms/create" method="POST" onsubmit="return syncLocation('add');">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1.5fr 1.5fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">ชื่อห้องประชุม *</label>
+              <input type="text" name="room_name" class="form-control" placeholder="เช่น ห้องสัมมนาเธียเตอร์ (Room 401)" required>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">ความจุ (ที่นั่ง) *</label>
+              <input type="number" name="capacity" class="form-control" placeholder="50" min="1" required>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">อาคาร / ตึก (Building) *</label>
+              <select name="building" id="add_building" class="form-control" required onchange="onBuildingSelectChange('add')" style="font-weight: 600;">
+                <option value="ตึก 1">ตึก 1 (อาคาร 1)</option>
+                <option value="ตึก 2">ตึก 2 (อาคาร 2)</option>
+                <option value="ตึก 3">ตึก 3 (อาคาร 3)</option>
+                <option value="ตึก 4">ตึก 4 (อาคาร 4)</option>
+                <option value="CUSTOM">ตึกอื่นๆ (ระบุเอง)...</option>
+              </select>
+              <input type="text" name="custom_building" id="add_custom_building" class="form-control" placeholder="ระบุชื่อตึก เช่น อาคารเรียนรวม" style="display: none; margin-top: 0.35rem;" oninput="updateLocationPreview('add')">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">ชั้น / รายละเอียดห้อง (ถ้ามี)</label>
+              <input type="text" name="floor_detail" id="add_floor_detail" class="form-control" placeholder="เช่น ชั้น 2, ห้องมุม" oninput="updateLocationPreview('add')">
+            </div>
           </div>
-          <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.75rem;">ความจุ (ที่นั่ง) *</label>
-            <input type="number" name="capacity" class="form-control" placeholder="50" min="1" required>
+
+          <div style="margin-bottom: 0.75rem;">
+            <div id="add_location_preview" style="font-size: 0.75rem; color: #2563eb; background: #eff6ff; padding: 0.35rem 0.65rem; border-radius: 6px; display: inline-block;">
+              📍 รูปแบบสถานที่ตั้งที่จะบันทึก: <strong>ตึก 1</strong>
+            </div>
+            <input type="hidden" name="location" id="add_location" value="ตึก 1">
           </div>
-          <div class="form-group" style="margin: 0;">
-            <label style="font-size: 0.75rem;">สถานที่ตั้ง (Location) *</label>
-            <input type="text" name="location" class="form-control" placeholder="ชั้น 4 อาคารเรียนรวม" required>
-          </div>
-          <div class="form-group" style="grid-column: span 3; margin: 0;">
-            <label style="font-size: 0.75rem;">อุปกรณ์ประจำห้อง</label>
+
+          <div class="form-group" style="margin: 0 0 0.75rem 0;">
+            <label style="font-size: 0.75rem; font-weight: 700;">อุปกรณ์ประจำห้อง</label>
             <input type="text" name="equipment_description" class="form-control" placeholder="เช่น โปรเจกเตอร์ 2 ตัว, เครื่องเสียงชุดใหญ่, ไมค์ลอย 4 ตัว, โพเดียม">
           </div>
-          <div style="grid-column: span 3; display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
             <button type="submit" class="btn btn-primary btn-sm">บันทึกเพิ่มห้อง</button>
             <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-add-room')">ยกเลิก</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ฟอร์มแก้ไขข้อมูลห้อง (Toggleable) -->
+      <div id="modal-edit-room" style="display: none; background: #fff; border: 2px solid #2563eb; padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 10px 25px -5px rgba(37,99,235,0.1);">
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: #2563eb;">✏️ แก้ไขข้อมูลห้องประชุม</h3>
+        <form id="editRoomForm" action="" method="POST" onsubmit="return syncLocation('edit');">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1.5fr 1.5fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">ชื่อห้องประชุม *</label>
+              <input type="text" name="room_name" id="edit_room_name" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">ความจุ (ที่นั่ง) *</label>
+              <input type="number" name="capacity" id="edit_capacity" class="form-control" min="1" required>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">อาคาร / ตึก (Building) *</label>
+              <select name="building" id="edit_building" class="form-control" required onchange="onBuildingSelectChange('edit')" style="font-weight: 600;">
+                <option value="ตึก 1">ตึก 1 (อาคาร 1)</option>
+                <option value="ตึก 2">ตึก 2 (อาคาร 2)</option>
+                <option value="ตึก 3">ตึก 3 (อาคาร 3)</option>
+                <option value="ตึก 4">ตึก 4 (อาคาร 4)</option>
+                <option value="CUSTOM">ตึกอื่นๆ (ระบุเอง)...</option>
+              </select>
+              <input type="text" name="custom_building" id="edit_custom_building" class="form-control" placeholder="ระบุชื่อตึก เช่น อาคารเรียนรวม" style="display: none; margin-top: 0.35rem;" oninput="updateLocationPreview('edit')">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 0.75rem; font-weight: 700;">ชั้น / รายละเอียดห้อง (ถ้ามี)</label>
+              <input type="text" name="floor_detail" id="edit_floor_detail" class="form-control" placeholder="เช่น ชั้น 2, ห้องมุม" oninput="updateLocationPreview('edit')">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <div id="edit_location_preview" style="font-size: 0.75rem; color: #2563eb; background: #eff6ff; padding: 0.35rem 0.65rem; border-radius: 6px; display: inline-block;">
+              📍 รูปแบบสถานที่ตั้งที่จะบันทึก: <strong>ตึก 1</strong>
+            </div>
+            <input type="hidden" name="location" id="edit_location">
+          </div>
+
+          <div class="form-group" style="margin: 0 0 0.75rem 0;">
+            <label style="font-size: 0.75rem; font-weight: 700;">อุปกรณ์ประจำห้อง</label>
+            <input type="text" name="equipment_description" id="edit_equipment_description" class="form-control">
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary btn-sm">บันทึกการแก้ไข</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="toggleModal('modal-edit-room')">ยกเลิก</button>
           </div>
         </form>
       </div>
@@ -144,11 +213,23 @@
                 </td>
                 <% if (canManageRooms) { %>
                   <td>
-                    <form action="/app/rooms/<%= r.room_id %>/toggle" method="POST" style="display:inline;">
-                      <button class="btn <%= r.is_active ? 'btn-danger' : 'btn-success' %> btn-sm">
-                        <%= r.is_active ? 'ปิดปรับปรุง' : 'เปิดใช้งาน' %>
+                    <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+                      <button type="button" class="btn btn-outline btn-sm" onclick='openEditRoomModal(<%- JSON.stringify(r) %>)' style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #2563eb; border-color: #bfdbfe;">
+                        ✏️ แก้ไข
                       </button>
-                    </form>
+                      <form action="/app/rooms/<%= r.room_id %>/toggle" method="POST" style="display:inline; margin: 0;">
+                        <button class="btn <%= r.is_active ? 'btn-danger' : 'btn-success' %> btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;">
+                          <%= r.is_active ? 'ปิดปรับปรุง' : 'เปิดใช้งาน' %>
+                        </button>
+                      </form>
+                      <% if (Number(r.total_completed_bookings) === 0 && Number(r.active_bookings) === 0) { %>
+                        <form action="/app/rooms/<%= r.room_id %>/delete" method="POST" style="display:inline; margin: 0;" onsubmit="return confirm('ยืนยันลบห้อง <%= r.room_name %> ออกจากระบบ?');">
+                          <button class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.55rem; color: #dc2626; border-color: #fca5a5; background: #fff5f5;">
+                            🗑️ ลบ
+                          </button>
+                        </form>
+                      <% } %>
+                    </div>
                   </td>
                 <% } %>
               </tr>
@@ -162,7 +243,95 @@
   <script>
     function toggleModal(id) {
       const el = document.getElementById(id);
-      el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+      if (el) {
+        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+        if (el.style.display === 'block') {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+
+    function onBuildingSelectChange(prefix) {
+      const select = document.getElementById(`${prefix}_building`);
+      const customInput = document.getElementById(`${prefix}_custom_building`);
+      if (select && customInput) {
+        if (select.value === 'CUSTOM') {
+          customInput.style.display = 'block';
+          customInput.focus();
+        } else {
+          customInput.style.display = 'none';
+        }
+      }
+      updateLocationPreview(prefix);
+    }
+
+    function updateLocationPreview(prefix) {
+      const select = document.getElementById(`${prefix}_building`);
+      const customInput = document.getElementById(`${prefix}_custom_building`);
+      const floorInput = document.getElementById(`${prefix}_floor_detail`);
+      const preview = document.getElementById(`${prefix}_location_preview`);
+      const hiddenLocation = document.getElementById(`${prefix}_location`);
+
+      if (!select) return;
+
+      let bName = select.value === 'CUSTOM' ? (customInput?.value?.trim() || 'ตึกระบุเอง') : select.value;
+      const floor = floorInput?.value?.trim() || '';
+      const finalLoc = floor ? `${bName} ${floor}` : bName;
+
+      if (preview) {
+        preview.innerHTML = `📍 รูปแบบสถานที่ตั้งที่จะบันทึก: <strong>${finalLoc}</strong>`;
+      }
+      if (hiddenLocation) {
+        hiddenLocation.value = finalLoc;
+      }
+    }
+
+    function syncLocation(prefix) {
+      updateLocationPreview(prefix);
+      return true;
+    }
+
+    function openEditRoomModal(room) {
+      const modal = document.getElementById('modal-edit-room');
+      const form = document.getElementById('editRoomForm');
+      if (!modal || !form || !room) return;
+
+      form.action = `/app/rooms/${room.room_id}/edit`;
+      document.getElementById('edit_room_name').value = room.room_name;
+      document.getElementById('edit_capacity').value = room.capacity;
+      document.getElementById('edit_equipment_description').value = room.equipment_description || '';
+
+      const loc = room.location || '';
+      const select = document.getElementById('edit_building');
+      const customInput = document.getElementById('edit_custom_building');
+      const floorInput = document.getElementById('edit_floor_detail');
+
+      if (loc.includes('ตึก 1') || loc.includes('อาคาร 1')) {
+        select.value = 'ตึก 1';
+        floorInput.value = loc.replace(/ตึก\s*1|อาคาร\s*1/g, '').trim();
+        customInput.style.display = 'none';
+      } else if (loc.includes('ตึก 2') || loc.includes('อาคาร 2')) {
+        select.value = 'ตึก 2';
+        floorInput.value = loc.replace(/ตึก\s*2|อาคาร\s*2/g, '').trim();
+        customInput.style.display = 'none';
+      } else if (loc.includes('ตึก 3') || loc.includes('อาคาร 3')) {
+        select.value = 'ตึก 3';
+        floorInput.value = loc.replace(/ตึก\s*3|อาคาร\s*3/g, '').trim();
+        customInput.style.display = 'none';
+      } else if (loc.includes('ตึก 4') || loc.includes('อาคาร 4')) {
+        select.value = 'ตึก 4';
+        floorInput.value = loc.replace(/ตึก\s*4|อาคาร\s*4/g, '').trim();
+        customInput.style.display = 'none';
+      } else {
+        select.value = 'CUSTOM';
+        customInput.style.display = 'block';
+        customInput.value = loc;
+        floorInput.value = '';
+      }
+
+      updateLocationPreview('edit');
+      modal.style.display = 'block';
+      modal.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   </script>
 </body>

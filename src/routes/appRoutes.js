@@ -15,7 +15,9 @@ router.get('/', requireAuth, requirePermission('room.view_schedule'), bookingCon
 // หน้าจัดการห้องประชุม (Rooms Management)
 router.get('/rooms', requireAuth, requirePermission('room.view_schedule'), roomController.getRoomsPage);
 router.post('/rooms/create', requireAuth, requirePermission('room.manage'), roomController.createRoom);
+router.post('/rooms/:id/edit', requireAuth, requirePermission('room.manage'), roomController.updateRoom);
 router.post('/rooms/:id/toggle', requireAuth, requirePermission('room.manage'), roomController.toggleRoom);
+router.post('/rooms/:id/delete', requireAuth, requirePermission('room.manage'), roomController.deleteRoom);
 
 // ยื่นจองห้อง (Requester) - มี Transaction + Row Lock กัน Race Condition
 router.post('/bookings', 
