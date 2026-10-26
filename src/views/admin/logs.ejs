@@ -15,7 +15,10 @@
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/images/icon-192.png">
 
+  <link rel="stylesheet" href="/vendor/flatpickr/flatpickr.min.css">
   <link rel="stylesheet" href="/style.css">
+  <script src="/vendor/flatpickr/flatpickr.min.js"></script>
+  <script src="/vendor/flatpickr/th.js"></script>
   <script src="/theme.js"></script>
   <script src="/session-guard.js"></script>
 </head>
@@ -86,13 +89,13 @@
             <option value="DENIED" <%= filterStatus === 'DENIED' ? 'selected' : '' %>>DENIED (403)</option>
           </select>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.25rem;">
-          <label style="font-size: 0.75rem; color: var(--muted); margin: 0;">จาก:</label>
-          <input type="date" name="from" class="form-control" value="<%= filterFrom %>" title="ตั้งแต่วันที่">
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); margin: 0; white-space: nowrap;">จาก:</label>
+          <input type="text" id="logDateFrom" name="from" class="form-control" value="<%= filterFrom %>" placeholder="วว/ดด/ปปปป" style="width: 140px; cursor: pointer;" title="ตั้งแต่วันที่">
         </div>
-        <div style="display: flex; align-items: center; gap: 0.25rem;">
-          <label style="font-size: 0.75rem; color: var(--muted); margin: 0;">ถึง:</label>
-          <input type="date" name="to" class="form-control" value="<%= filterTo %>" title="ถึงวันที่">
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); margin: 0; white-space: nowrap;">ถึง:</label>
+          <input type="text" id="logDateTo" name="to" class="form-control" value="<%= filterTo %>" placeholder="วว/ดด/ปปปป" style="width: 140px; cursor: pointer;" title="ถึงวันที่">
         </div>
         <button type="submit" class="btn btn-primary btn-sm">กรองข้อมูล</button>
         <a href="/admin/logs" class="btn btn-outline btn-sm">รีเซ็ต</a>
@@ -148,5 +151,21 @@
       </div>
     </div>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof flatpickr !== 'undefined') {
+        const fpConfig = {
+          locale: (typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.th) ? flatpickr.l10ns.th : 'default',
+          altInput: true,
+          altFormat: "d/m/Y",
+          dateFormat: "Y-m-d",
+          allowInput: true,
+          disableMobile: true
+        };
+        flatpickr('#logDateFrom', fpConfig);
+        flatpickr('#logDateTo', fpConfig);
+      }
+    });
+  </script>
 </body>
 </html>
