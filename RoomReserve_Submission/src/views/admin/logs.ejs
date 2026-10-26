@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <%- include('../partials/head') %>
+  <link rel="stylesheet" href="/vendor/flatpickr/flatpickr.min.css">
+  <script src="/vendor/flatpickr/flatpickr.min.js"></script>
+  <script src="/vendor/flatpickr/th.js"></script>
+  <script src="/session-guard.js"></script>
+</head>
+<body>
+  <%- include('../partials/navbar', { active: 'logs' }) %>
+
+  <div class="container">
+    <div class="card">
+      <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">บันทึกประวัติความปลอดภัยและการทำงาน (Audit Logs)</h2>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        ข้อมูลถูกจัดเก็บถาวรลงตารางใน PostgreSQL (Zero Credential Exposure - ไม่เก็บรหัสผ่านหรือ Session Token)
+      </p>
+
+      <!-- แถบค้นหาและกรองข้อมูล (Filter Form: รองรับการกรองตามคำค้นหา, Action, Status, และช่วงเวลา From - To) -->
+      <form action="/admin/logs" method="GET" class="admin-filter-bar" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; align-items: center; border: 1px solid var(--border);">
+        <div style="flex: 1; min-width: 180px;">
+          <input type="text" name="search" class="form-control" placeholder="ค้นหา Username, Resource..." value="<%= search %>">
+        </div>
+        <div>
+          <select name="action" class="form-control">
+            <option value="">-- ทุกการกระทำ (All Actions) --</option>
+            <% actions.forEach(act => { %>
+              <option value="<%= act %>" <%= filterAction === act ? 'selected' : '' %>><%= act %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <select name="status" class="form-control">
+            <option value="">-- ทุกสถานะ (All Status) --</option>
+            <option value="SUCCESS" <%= filterStatus === 'SUCCESS' ? 'selected' : '' %>>SUCCESS</option>
+            <option value="FAILED" <%= filterStatus === 'FAILED' ? 'selected' : '' %>>FAILED</option>
+            <option value="DENIED" <%= filterStatus === 'DENIED' ? 'selected' : '' %>>DENIED (403)</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); margin: 0; white-space: nowrap;">จาก:</label>
+          <input type="text" id="logDateFrom" name="from" class="form-control" value="<%= filterFrom %>" placeholder="วว/ดด/ปปปป" style="width: 140px; cursor: pointer;" title="ตั้งแต่วันที่">
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); margin: 0; white-space: nowrap;">ถึง:</label>
+          <input type="text" id="logDateTo" name="to" class="form-control" value="<%= filterTo %>" placeholder="วว/ดด/ปปปป" style="width: 140px; cursor: pointer;" title="ถึงวันที่">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">กรองข้อมูล</button>
+        <a href="/admin/logs" class="btn btn-outline btn-sm">รีเซ็ต</a>
+        <a href="/admin/logs/export?search=<%= encodeURIComponent(search) %>&action=<%= encodeURIComponent(filterAction) %>&status=<%= encodeURIComponent(filterStatus) %>&from=<%= encodeURIComponent(filterFrom) %>&to=<%= encodeURIComponent(filterTo) %>" class="btn btn-success btn-sm" style="margin-left: auto;">Export เป็นไฟล์ CSV (Excel)</a>
+      </form>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>วันเวลา (Timestamp)</th>
+              <th>ผู้กระทำ (User)</th>
+              <th>เหตุการณ์ (Action)</th>
+              <th>เป้าหมาย (Resource)</th>
+              <th>สถานะ</th>
+              <th>รายละเอียด (Details)</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (logs.length === 0) { %>
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--muted); padding: 2rem;">ไม่พบบันทึกประวัติที่ตรงกับเงื่อนไข</td>
+              </tr>
+            <% } else { %>
+              <% logs.forEach(l => { %>
+                <tr>
+                  <td style="font-size: 0.8rem; white-space: nowrap;">
+                    <%= new Date(l.created_at).toLocaleString('th-TH', { calendar: 'gregory' }) %>
+                  </td>
+                  <td>
+                    <strong><%= l.username %></strong>
+                    <% if (l.role_name) { %><br><small style="color: var(--muted);"><%= l.role_name %></small><% } %>
+                  </td>
+                  <td><code><%= l.action %></code></td>
+                  <td><%= l.resource %> (<%= l.resource_id || '-' %>)</td>
+                  <td>
+                    <% if (l.status === 'SUCCESS') { %>
+                      <span class="status-badge status-COMPLETED">SUCCESS</span>
+                    <% } else if (l.status === 'DENIED') { %>
+                      <span class="status-badge status-REJECTED">DENIED (403)</span>
+                    <% } else { %>
+                      <span class="status-badge status-BLOCKED"><%= l.status %></span>
+                    <% } %>
+                  </td>
+                  <td style="font-size: 0.85rem; max-width: 300px;"><%= l.details || '-' %></td>
+                  <td style="font-size: 0.8rem; color: var(--muted);"><%= l.ip_address %></td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof flatpickr !== 'undefined') {
+        const fpConfig = {
+          locale: (typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.th) ? flatpickr.l10ns.th : 'default',
+          altInput: true,
+          altFormat: "d/m/Y",
+          dateFormat: "Y-m-d",
+          allowInput: true,
+          disableMobile: true
+        };
+
+        let fpTo = null;
+        const fpFrom = flatpickr('#logDateFrom', {
+          ...fpConfig,
+          onChange: function(selectedDates, dateStr) {
+            if (fpTo) {
+              if (selectedDates && selectedDates.length > 0) {
+                fpTo.set('minDate', selectedDates[0]);
+                // ถ้าวันที่ในช่อง "ถึง" ที่เคยเลือกไว้น้อยกว่าวันที่ "จาก" ให้ปรับให้ตรงกับ "จาก" ทันที
+                if (fpTo.selectedDates.length > 0 && fpTo.selectedDates[0] < selectedDates[0]) {
+                  fpTo.setDate(selectedDates[0], true);
+                }
+              } else {
+                fpTo.set('minDate', null);
+              }
+            }
+          }
+        });
+
+        fpTo = flatpickr('#logDateTo', {
+          ...fpConfig,
+          onOpen: function(selectedDates, dateStr) {
+            // เมื่อเปิดปฏิทินช่อง "ถึง" ตรวจสอบและล็อค minDate ตามช่อง "จาก" ทันที ไม่ให้กดย้อนหลังได้
+            if (fpFrom && fpFrom.selectedDates && fpFrom.selectedDates.length > 0) {
+              fpTo.set('minDate', fpFrom.selectedDates[0]);
+            }
+          },
+          onChange: function(selectedDates, dateStr) {
+            if (fpFrom) {
+              if (selectedDates && selectedDates.length > 0) {
+                fpFrom.set('maxDate', selectedDates[0]);
+                // ถ้าวันที่ในช่อง "จาก" มากกว่าวันที่ "ถึง" ให้ปรับให้ตรงกับ "ถึง" ทันที
+                if (fpFrom.selectedDates.length > 0 && fpFrom.selectedDates[0] > selectedDates[0]) {
+                  fpFrom.setDate(selectedDates[0], true);
+                }
+              } else {
+                fpFrom.set('maxDate', null);
+              }
+            }
+          }
+        });
+
+        // ซิงค์ค่าเริ่มต้นทันทีเมื่อโหลดหน้า (กรณีมี filterFrom หรือ filterTo ส่งมาจาก Server)
+        if (fpFrom && fpFrom.selectedDates && fpFrom.selectedDates.length > 0) {
+          fpTo.set('minDate', fpFrom.selectedDates[0]);
+        }
+        if (fpTo && fpTo.selectedDates && fpTo.selectedDates.length > 0) {
+          fpFrom.set('maxDate', fpTo.selectedDates[0]);
+        }
+
+        // ป้องกันการ Submit ฟอร์มกรณีพิมพ์วันที่ในช่อง "ถึง" น้อยกว่า "จาก"
+        const filterForm = document.querySelector('.admin-filter-bar');
+        if (filterForm) {
+          filterForm.addEventListener('submit', function(e) {
+            const fromEl = document.getElementById('logDateFrom');
+            const toEl = document.getElementById('logDateTo');
+            if (fromEl && toEl && fromEl.value && toEl.value && fromEl.value > toEl.value) {
+              e.preventDefault();
+              alert('วันที่ "ถึง" ต้องไม่น้อยกว่าวันที่ "จาก"');
+            }
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>

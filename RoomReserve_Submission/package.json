@@ -1,0 +1,22 @@
+{
+  "name": "room-reserve",
+  "version": "1.0.0",
+  "description": "RoomReserve (SmartSpace) - ระบบบริหารจัดการจองห้องประชุมและทรัพยากรส่วนกลาง",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch-path=src src/app.js",
+    "seed": "node database/seed.js",
+    "test": "node test/smoke.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "flatpickr": "^4.6.13",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.16.0"
+  }
+}

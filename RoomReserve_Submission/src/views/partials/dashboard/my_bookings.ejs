@@ -1,0 +1,144 @@
+<div id="req-view-mybookings" class="req-subview" style="display: none;">
+          <div class="card my-bookings-card" style="margin-top: 0.5rem;">
+            <%
+              const pendingCount = myBookings.filter(b => b.status === 'PENDING_APPROVAL').length;
+              const approvedCount = myBookings.filter(b => b.status === 'APPROVED').length;
+              const inUseCount = myBookings.filter(b => b.status === 'IN_USE').length;
+              const activeCount = pendingCount + approvedCount + inUseCount;
+              const completedCount = myBookings.filter(b => b.status === 'COMPLETED').length;
+              const rejectCount = myBookings.filter(b => ['REJECTED', 'CANCELLED'].includes(b.status)).length;
+              const finishedCount = completedCount + rejectCount;
+            %>
+            
+            <!-- Header: จัดวางหัวข้อการ์ดและ Segmented Filter Bar สไตล์โมเดิร์น -->
+            <div class="my-bookings-header">
+              <div class="my-bookings-title-area">
+                <div class="my-bookings-heading">
+                  <h3 class="my-bookings-title">รายการคำขอของฉัน</h3>
+                  <span class="my-bookings-total-pill">
+                    <span id="myBookingsTotalCount"><%= myBookings.length %></span> รายการ
+                  </span>
+                </div>
+                <div class="my-bookings-subtitle">
+                  แสดงประวัติและสถานะการพิจารณาคำขอจองห้องประชุมของคุณ
+                </div>
+              </div>
+
+              <% if (myBookings.length > 0) { %>
+                <!-- Modern Segmented Control Bar -->
+                <div class="segmented-control-container" role="tablist" aria-label="กรองสถานะคำขอ">
+                  <button type="button" class="segmented-item active" data-category="PENDING" onclick="filterMyBookings('PENDING', this)" title="รายการที่รอหัวหน้างานอนุมัติ">
+                    <span class="segmented-label">กำลังดำเนินการ</span>
+                    <span class="segmented-badge <%= pendingCount > 0 ? 'badge-pending' : '' %>"><%= pendingCount %></span>
+                  </button>
+                  <button type="button" class="segmented-item" data-category="APPROVED" onclick="filterMyBookings('APPROVED', this)" title="อนุมัติแล้ว และพร้อมใช้งาน">
+                    <span class="segmented-label">อนุมัติแล้ว</span>
+                    <span class="segmented-badge <%= approvedCount > 0 ? 'badge-approved' : '' %>"><%= approvedCount %></span>
+                  </button>
+                  <button type="button" class="segmented-item" data-category="FINISHED" onclick="filterMyBookings('FINISHED', this)" title="ประวัติที่สิ้นสุดแล้ว (เสร็จสิ้น/ยกเลิก/ปฏิเสธ)">
+                    <span class="segmented-label">เสร็จสิ้น</span>
+                    <span class="segmented-badge"><%= finishedCount %></span>
+                  </button>
+                </div>
+              <% } %>
+            </div>
+
+            <% if (myBookings.length === 0) { %>
+              <div class="empty-state">
+                <div class="empty-state-icon" style="opacity: 0.4;">—</div>
+                <div class="empty-state-title">ยังไม่มีรายการจองห้องประชุม</div>
+                <div class="empty-state-desc">คุณยังไม่ได้ทำรายการจองห้องใดๆ สามารถเริ่มจองห้องได้ทันทีที่แท็บ "จองห้อง"</div>
+                <button type="button" class="btn btn-primary" onclick="switchRequesterView('booking')" style="margin-top: 1rem;">
+                  เริ่มจองห้องตอนนี้
+                </button>
+              </div>
+            <% } else { %>
+              <div class="table-responsive">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 28%;">ห้องประชุม & วันที่/เวลา</th>
+                      <th style="width: 36%;">หัวข้อการประชุม</th>
+                      <th style="width: 22%;">สถานะ</th>
+                      <th style="width: 14%; text-align: center;">จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% myBookings.forEach(b => { 
+                      const bDate = new Date(b.start_time).toLocaleDateString('th-TH', { calendar: 'gregory' });
+                      const bStartTime = new Date(b.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                      const bEndTime = new Date(b.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                      
+                      let groupCategory = 'REJECT';
+                      let isFinished = false;
+                      if (b.status === 'PENDING_APPROVAL') groupCategory = 'PENDING';
+                      else if (b.status === 'APPROVED') groupCategory = 'APPROVED';
+                      else if (b.status === 'IN_USE') groupCategory = 'IN_USE';
+                      else if (b.status === 'COMPLETED') { groupCategory = 'COMPLETED'; isFinished = true; }
+                      else if (['REJECTED', 'CANCELLED'].includes(b.status)) { groupCategory = 'REJECT'; isFinished = true; }
+                    %>
+                      <tr class="my-booking-row" data-category="<%= groupCategory %>" data-finished="<%= isFinished ? 'true' : 'false' %>">
+                        <td>
+                          <div style="font-weight: 700; color: var(--dark); font-size: 0.95rem;">
+                            <%= b.room_name || ('ห้อง ' + b.room_id) %>
+                          </div>
+                          <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem;">
+                            <%= bDate %> &bull; <%= bStartTime %> - <%= bEndTime %> น.
+                          </div>
+                        </td>
+                        <td>
+                          <div style="font-weight: 700; color: var(--dark); font-size: 0.92rem;"><%= b.title %></div>
+                          <% if (b.purpose) { %>
+                            <div style="font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem;"><%= b.purpose %></div>
+                          <% } %>
+                          <% if (b.attachment_id) { %>
+                            <button type="button" class="btn btn-outline btn-xs" onclick="openFilePreview('<%= b.attachment_id %>', '<%= b.file_name %>')" style="margin-top: 0.35rem; font-size: 0.72rem; padding: 2px 7px; display: inline-flex; align-items: center; gap: 0.25rem;">
+                              ดูเอกสารแนบ
+                            </button>
+                          <% } %>
+                        </td>
+                        <td>
+                          <span class="status-badge status-<%= b.status %>"><%= b.status %></span>
+                          <% if (b.status === 'REJECTED') { %>
+                            <div style="color: var(--danger); font-size: 0.78rem; margin-top: 0.25rem; font-weight: 500;">
+                              ไม่อนุมัติ: <%= b.approver_comment || 'ไม่มีการระบุเหตุผล' %>
+                            </div>
+                          <% } else if (b.status === 'CANCELLED') { %>
+                            <div style="color: var(--muted); font-size: 0.78rem; margin-top: 0.2rem;">
+                              ยกเลิกแล้ว
+                            </div>
+                          <% } else if (b.status === 'IN_USE') { %>
+                            <div style="color: var(--primary); font-size: 0.78rem; margin-top: 0.2rem; font-weight: 600;">
+                              เจ้าหน้าที่ส่งมอบห้องแล้ว
+                            </div>
+                          <% } else if (b.status === 'COMPLETED' && b.facility_comment) { %>
+                            <div style="color: var(--muted); font-size: 0.78rem; margin-top: 0.2rem;">
+                              <%= b.facility_comment %>
+                            </div>
+                          <% } %>
+                        </td>
+                        <td style="text-align: center;">
+                          <% if (b.status === 'PENDING_APPROVAL') { %>
+                            <form action="/app/bookings/<%= b.booking_id %>/cancel" method="POST" onsubmit="return confirm('ยืนยันยกเลิกคำขอจองห้องนี้?');" style="display:inline;">
+                              <button class="btn btn-danger btn-xs" style="padding: 0.25rem 0.6rem;">ยกเลิก</button>
+                            </form>
+                          <% } else { %>
+                            <span style="color: var(--muted); font-size: 0.8rem;">-</span>
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                    <tr id="myBookingsEmptyFilterRow" style="display: none;">
+                      <td colspan="4" style="text-align: center; padding: 3rem 1.5rem; color: var(--muted);">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;">
+                          <div id="myBookingsEmptyTitle" style="font-weight: 600; color: var(--slate); font-size: 0.95rem;">ไม่มีรายการคำขอที่กำลังดำเนินการ</div>
+                          <div id="myBookingsEmptyDesc" style="font-size: 0.82rem; color: var(--muted);">ไม่มีคำขอที่อยู่ระหว่างรอการอนุมัติในขณะนี้</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            <% } %>
+          </div>
+        </div>

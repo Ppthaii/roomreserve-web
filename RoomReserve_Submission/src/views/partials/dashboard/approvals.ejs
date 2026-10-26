@@ -1,0 +1,118 @@
+<div id="req-view-approvals" class="req-subview" style="display: none;">
+ <div class="card" style="margin-bottom: 1rem; border-left: 4px solid #f59e0b;">
+ <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+ คิวงานรอการพิจารณาอนุมัติ (<%= pendingApprovals.length %>)
+ </h3>
+ <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
+ ตรวจสอบรายละเอียดคำขอ อุปกรณ์ที่ต้องการ และเอกสารแนบเพื่อพิจารณาอนุมัติ
+ </p>
+ </div>
+ <div class="card" style="border-left: 4px solid var(--primary);">
+ <div class="card-title">คำขอที่รอการพิจารณาอนุมัติ (<%= pendingApprovals.length %>)</div>
+ 
+ <% if (pendingApprovals.length === 0) { %>
+ <div style="text-align: center; padding: 2.5rem; color: var(--muted);">
+ ไม่มีรายการรออนุมัติในขณะนี้ ทุกคำขอได้รับการจัดการแล้ว
+ </div>
+ <% } else { %>
+ <div style="display: grid; gap: 1rem;">
+ <% pendingApprovals.forEach(p => { %>
+ <div class="approval-item-card">
+ <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
+ <div>
+ <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 0.25rem;">
+ <%= p.title %>
+ </h4>
+ <p style="color: var(--slate); font-size: 0.85rem; margin-bottom: 0.35rem;">
+ <strong>ห้อง:</strong> <%= p.room_name %> | <strong>ผู้ขอ:</strong> <%= p.requester_name %> (<%= p.department || 'ไม่ระบุ' %>)
+ </p>
+ <p style="color: var(--muted); font-size: 0.8rem;">
+ <strong>วันเวลา:</strong> <%= new Date(p.start_time).toLocaleDateString('th-TH', { calendar: 'gregory' }) %> 
+ (<%= new Date(p.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> - 
+ <%= new Date(p.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %>)
+ </p>
+ <% if (p.purpose) { %>
+ <div class="approval-purpose-box">
+ <strong>รายละเอียด/อุปกรณ์เสริม:</strong> <%= p.purpose %>
+ </div>
+ <% } %>
+
+ <% 
+ const pStart = new Date(p.start_time);
+ const pEnd = new Date(p.end_time);
+ const collidingPending = pendingApprovals.filter(other => 
+ other.booking_id !== p.booking_id && 
+ other.room_id === p.room_id && 
+ new Date(other.start_time) < pEnd && 
+ new Date(other.end_time) > pStart
+ );
+ %>
+ <% if (collidingPending.length > 0) { %>
+ <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 6px; padding: 0.45rem 0.65rem; margin-top: 0.5rem; font-size: 0.78rem; color: #a16207; display: flex; align-items: center; gap: 0.35rem;">
+ <span> <strong>มีคำขอจองชนช่วงเวลานี้อีก <%= collidingPending.length %> รายการ:</strong> หากอนุมัติรายการนี้ คิวอื่นที่จองเข้ามาตรงกันจะถูกปฏิเสธอัตโนมัติ ("มีผู้จองห้องก่อนแล้ว")</span>
+ </div>
+ <% } %>
+ </div>
+
+ <% if (p.attachment_id) { %>
+ <button type="button" class="btn btn-outline btn-sm" onclick="openFilePreview('<%= p.attachment_id %>', '<%= p.file_name %>')">
+ ตรวจเอกสารแนบ
+ </button>
+ <% } %>
+ </div>
+
+ <div style="display: flex; gap: 0.75rem; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.75rem;">
+ <form action="/app/bookings/<%= p.booking_id %>/review" method="POST" style="flex: 1;"
+ <% if (collidingPending.length > 0) { %>
+ onsubmit="return confirm('ยืนยันอนุมัติคำขอนี้? ระบบจะทำการปฏิเสธคำขอที่จองชนกันอีก <%= collidingPending.length %> รายการให้อัตโนมัติ (พร้อมระบุเหตุผล: มีผู้จองห้องก่อนแล้ว)');"
+ <% } %>
+ >
+ <input type="hidden" name="action" value="APPROVE">
+ <button class="btn btn-success" style="width: 100%; font-size: 0.85rem;">
+ อนุมัติการจอง (Approve)
+ </button>
+ </form>
+ <button type="button" class="btn btn-danger btn-open-reject" 
+ style="flex: 1; font-size: 0.85rem;"
+ data-booking-id="<%= p.booking_id %>"
+ data-title="<%= p.title %>"
+ data-requester="<%= p.requester_name %>">
+ ปฏิเสธ (Reject)
+ </button>
+ </div>
+ </div>
+ <% }) %>
+ </div>
+ <% } %>
+
+ <!-- Safety Rollback Box -->
+ <% 
+ const approvedList = dayBookings.filter(b => b.status === 'APPROVED');
+ %>
+ <% if (approvedList.length > 0) { %>
+ <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border);">
+ <h4 class="rollback-section-title" style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">
+ Safety Rollback (ยกเลิกการอนุมัติก่อน Check-in)
+ </h4>
+ <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 0.75rem;">
+ กรณีเปลี่ยนใจหรือกดผิด สามารถกดยกเลิกการอนุมัติเพื่อดึงคำขอกลับมาพิจารณาใหม่ได้
+ </p>
+ <div style="display: grid; gap: 0.5rem;">
+ <% approvedList.forEach(item => { %>
+ <div class="rollback-item-card">
+ <div>
+ <strong><%= item.title %></strong> (<%= item.room_name %>)<br>
+ <small style="color: var(--muted);"><%= item.requester_name %></small>
+ </div>
+ <form action="/app/bookings/<%= item.booking_id %>/revoke" method="POST" onsubmit="return confirm('ยืนยันดึงคำขอนี้กลับมาเป็น PENDING_APPROVAL?');">
+ <button class="btn btn-outline btn-sm rollback-revoke-btn" style="font-size: 0.75rem;">
+ ดึงสถานะกลับ
+ </button>
+ </form>
+ </div>
+ <% }) %>
+ </div>
+ </div>
+ <% } %>
+ </div>
+ </div>

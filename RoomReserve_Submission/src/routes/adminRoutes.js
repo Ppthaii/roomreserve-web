@@ -1,0 +1,35 @@
+const express = require('express');
+const router = express.Router();
+const adminController = require('../controllers/adminController');
+const { requireAuth, requirePermission } = require('../middlewares/auth');
+
+router.get('/', requireAuth, async (req, res) => {
+  const perms = res.locals.userPermissions || [];
+  const isAdmin = req.session.roleName === 'admin';
+
+  if (isAdmin || perms.includes('acl.manage')) return res.redirect('/admin/acl');
+  if (isAdmin || perms.includes('user.manage')) return res.redirect('/admin/users');
+  if (isAdmin || perms.includes('log.read')) return res.redirect('/admin/logs');
+  return res.redirect('/app');
+});
+
+router.get('/acl', requireAuth, requirePermission('acl.manage'), adminController.getAclMatrix);
+router.post('/acl', requireAuth, requirePermission('acl.manage'), adminController.updateAclMatrix);
+router.post('/acl/toggle', requireAuth, requirePermission('acl.manage'), adminController.togglePermission);
+router.post('/roles/create', requireAuth, requirePermission('acl.manage'), adminController.createRole);
+router.post('/roles/:id/update', requireAuth, requirePermission('acl.manage'), adminController.updateRole);
+router.post('/roles/:id/delete', requireAuth, requirePermission('acl.manage'), adminController.deleteRole);
+router.post('/permissions/create', requireAuth, requirePermission('acl.manage'), adminController.createPermission);
+router.post('/permissions/:id/update', requireAuth, requirePermission('acl.manage'), adminController.updatePermission);
+router.post('/permissions/:id/delete', requireAuth, requirePermission('acl.manage'), adminController.deletePermission);
+
+router.get('/logs', requireAuth, requirePermission('log.read'), adminController.getAuditLogs);
+router.get('/logs/export', requireAuth, requirePermission('log.read'), adminController.exportAuditLogs);
+
+router.get('/users', requireAuth, requirePermission('user.manage'), adminController.getUsers);
+router.post('/users/create', requireAuth, requirePermission('user.manage'), adminController.createUser);
+router.post('/users/:id/toggle', requireAuth, requirePermission('user.manage'), adminController.toggleUserStatus);
+router.post('/users/:id/role', requireAuth, requirePermission('user.manage'), adminController.updateUserRole);
+router.post('/users/:id/delete', requireAuth, requirePermission('user.manage'), adminController.deleteUser);
+
+module.exports = router;

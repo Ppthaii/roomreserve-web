@@ -1,0 +1,72 @@
+<%
+ const activeNav = typeof active !== 'undefined' ? active : '';
+ const navPerms = (locals.userPermissions && Array.isArray(locals.userPermissions)) ? locals.userPermissions : [];
+ const isNavAdmin = user.roleName === 'admin';
+ const navCanManageRooms = navPerms.includes('room.manage') || isNavAdmin;
+ const navCanManageAcl = navPerms.includes('acl.manage') || isNavAdmin;
+ const navCanManageUsers = navPerms.includes('user.manage') || isNavAdmin;
+ const navCanViewLogs = navPerms.includes('log.read') || isNavAdmin;
+%>
+<nav class="navbar">
+ <a href="/app" class="nav-brand">RoomReserve</a>
+ <div class="nav-links">
+ <a href="/app" style="font-weight: 700; color: #1d4ed8;">&larr; กลับหน้าแรก</a>
+ <a href="/app">ตารางปฏิทิน & คิวงาน</a>
+ <% if (navCanManageRooms) { %>
+ <a href="/app/rooms" <%- activeNav === 'rooms' ? 'class="active" style="color: #4f46e5; font-weight: 700;"' : '' %>>จัดการห้อง</a>
+ <% } %>
+ <% if (navCanManageAcl) { %>
+ <a href="/admin/acl" <%- activeNav === 'acl' ? 'class="active" style="color: #4f46e5; font-weight: 700;"' : '' %>>ตารางสิทธิ์ (Dynamic ACL)</a>
+ <% } %>
+ <% if (navCanViewLogs) { %>
+ <a href="/admin/logs" <%- activeNav === 'logs' ? 'class="active" style="color: #4f46e5; font-weight: 700;"' : '' %>>Audit Logs</a>
+ <% } %>
+ <% if (navCanManageUsers) { %>
+ <a href="/admin/users" <%- activeNav === 'users' ? 'class="active" style="color: #4f46e5; font-weight: 700;"' : '' %>>ผู้ใช้งาน</a>
+ <% } %>
+ <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="สลับโหมดมืด/สว่าง">โหมดมืด</button>
+ <!-- User Badge with Dropdown & Direct Profile / Logout -->
+ <div class="nav-user-dropdown-container" style="position: relative; display: inline-flex; align-items: center;">
+ <div class="user-badge" onclick="toggleNavUserMenu(event)" role="button" tabindex="0" title="คลิกเพื่อจัดการบัญชีและออกจากระบบ" style="cursor: pointer;">
+ <span><%= user.username %></span>
+ <span class="role-pill"><%= user.roleName %></span>
+ </div>
+ <div id="navUserMenuDropdown" class="nav-user-menu-dropdown" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); min-width: 210px; z-index: 9999; padding: 0.85rem; text-align: left;">
+ <div style="padding-bottom: 0.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+ <div style="font-weight: 700; font-size: 0.9rem; color: var(--dark);"><%= user.fullName || user.username %></div>
+ <div style="font-size: 0.75rem; color: var(--muted);">@<%= user.username %> &bull; <%= user.roleName %></div>
+ </div>
+ <a href="/app?view=profile" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.65rem; border-radius: 6px; color: var(--dark); text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; background: var(--bg); border: 1px solid var(--border);">
+ ดูโปรไฟล์ / สลับบทบาท
+ </a>
+ <form action="/logout" method="POST" style="margin: 0;">
+ <button type="submit" class="btn btn-danger btn-sm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-weight: 700; padding: 0.45rem;">
+ ออกจากระบบ
+ </button>
+ </form>
+ </div>
+ </div>
+ <form action="/logout" method="POST" style="margin: 0;">
+ <button type="submit" class="btn btn-outline btn-sm">ออกจากระบบ</button>
+ </form>
+ </div>
+</nav>
+<script>
+ function toggleNavUserMenu(e) {
+ if (e) e.stopPropagation();
+ const dropdown = document.getElementById('navUserMenuDropdown');
+ if (!dropdown) return;
+ const isVisible = dropdown.style.display !== 'none';
+ dropdown.style.display = isVisible ? 'none' : 'block';
+ }
+ document.addEventListener('click', function(e) {
+ const dropdown = document.getElementById('navUserMenuDropdown');
+ if (dropdown && dropdown.style.display !== 'none') {
+ const container = document.querySelector('.nav-user-dropdown-container');
+ if (container && !container.contains(e.target)) {
+ dropdown.style.display = 'none';
+ }
+ }
+ });
+</script>
+
