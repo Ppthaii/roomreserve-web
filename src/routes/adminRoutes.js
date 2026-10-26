@@ -31,7 +31,9 @@ router.get('/logs/export', requireAuth, requirePermission('log.read'), adminCont
 
 // 4. จัดการบัญชีผู้ใช้งาน
 router.get('/users', requireAuth, requirePermission('user.manage'), adminController.getUsers);
+router.post('/users/create', requireAuth, requirePermission('user.manage'), adminController.createUser);
 router.post('/users/:id/toggle', requireAuth, requirePermission('user.manage'), adminController.toggleUserStatus);
 router.post('/users/:id/role', requireAuth, requirePermission('user.manage'), adminController.updateUserRole);
+router.post('/users/:id/delete', requireAuth, requirePermission('user.manage'), adminController.deleteUser);
 
 module.exports = router;

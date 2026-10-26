@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
 const { logAudit } = require('../middlewares/auth');
 
@@ -642,6 +643,124 @@ async function updateUserRole(req, res, next) {
   }
 }
 
+// 7. สร้างผู้ใช้งานใหม่ (User Creation)
+async function createUser(req, res, next) {
+  try {
+    const { username, password, full_name, department, role_id } = req.body;
+    const cleanUsername = String(username || '').trim().toLowerCase();
+
+    if (!cleanUsername || !password || !full_name || !role_id) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('กรุณากรอกข้อมูล Username, Password, ชื่อ-นามสกุล และบทบาทให้ครบถ้วน')}`);
+    }
+
+    // ตรวจสอบว่า Username มีอยู่ในระบบแล้วหรือไม่
+    const existUser = await pool.query('SELECT user_id FROM users WHERE username = $1', [cleanUsername]);
+    if (existUser.rowCount > 0) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('ชื่อผู้ใช้งาน (Username) นี้มีอยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น')}`);
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const insertRes = await pool.query(`
+      INSERT INTO users (username, password_hash, full_name, department, role_id, is_active)
+      VALUES ($1, $2, $3, $4, $5, TRUE)
+      RETURNING *
+    `, [cleanUsername, passwordHash, full_name.trim(), department ? department.trim() : null, role_id]);
+
+    const newUser = insertRes.rows[0];
+
+    await logAudit({
+      userId: req.session.userId,
+      username: req.session.username,
+      roleName: req.session.roleName,
+      action: 'USER_CREATE',
+      resource: 'USER',
+      resourceId: String(newUser.user_id),
+      status: 'SUCCESS',
+      details: `สร้างผู้ใช้งานใหม่: "${newUser.username}" (${newUser.full_name})`,
+      ip: req.ip,
+      ua: req.get('user-agent')
+    });
+
+    res.redirect(`/admin/users?success=${encodeURIComponent(`สร้างผู้ใช้งาน "${newUser.username}" สำเร็จและพร้อมใช้งานทันที`)}`);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// 8. ลบผู้ใช้งาน (User Deletion - พร้อม Transaction จัดการประวัติที่เกี่ยวข้องอย่างปลอดภัย)
+async function deleteUser(req, res, next) {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+
+    if (Number(id) === req.session.userId) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่สามารถลบบัญชีที่กำลังล็อกอินใช้งานอยู่ได้')}`);
+    }
+
+    const targetUserRes = await pool.query('SELECT * FROM users WHERE user_id = $1', [id]);
+    if (targetUserRes.rowCount === 0) {
+      return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่พบผู้ใช้งานนี้')}`);
+    }
+    const targetUser = targetUserRes.rows[0];
+
+    // ป้องกันการลบ Admin คนสุดท้ายในระบบ
+    const adminRoleRes = await pool.query("SELECT role_id FROM roles WHERE role_name = 'admin'");
+    const adminRoleId = adminRoleRes.rows[0]?.role_id;
+
+    if (targetUser.role_id === adminRoleId) {
+      const activeAdminsCount = await pool.query(
+        'SELECT COUNT(*) FROM users WHERE role_id = $1', [adminRoleId]
+      );
+      if (Number(activeAdminsCount.rows[0].count) <= 1) {
+        return res.redirect(`/admin/users?error=${encodeURIComponent('ไม่สามารถลบ Admin คนสุดท้ายในระบบได้ เพื่อป้องกันระบบถูกล็อก')}`);
+      }
+    }
+
+    await client.query('BEGIN');
+
+    // 1. ลบ attachments ของ bookings ที่ user นี้สร้าง
+    await client.query(`
+      DELETE FROM booking_attachments
+      WHERE booking_id IN (SELECT booking_id FROM room_bookings WHERE user_id = $1)
+    `, [id]);
+
+    // 2. ปลดความสัมพันธ์ใน room_bookings ที่ user นี้เป็น approver หรือ facility officer
+    await client.query('UPDATE room_bookings SET approver_id = NULL WHERE approver_id = $1', [id]);
+    await client.query('UPDATE room_bookings SET facility_officer_id = NULL WHERE facility_officer_id = $1', [id]);
+
+    // 3. ลบ bookings ที่ user นี้เป็นผู้ขอ
+    const delBookings = await client.query('DELETE FROM room_bookings WHERE user_id = $1', [id]);
+
+    // 4. ลบ attachments ที่ user นี้อัปโหลด (ถ้ามีหลงเหลือ)
+    await client.query('DELETE FROM booking_attachments WHERE uploaded_by = $1', [id]);
+
+    // 5. ลบ user
+    await client.query('DELETE FROM users WHERE user_id = $1', [id]);
+
+    await client.query('COMMIT');
+
+    await logAudit({
+      userId: req.session.userId,
+      username: req.session.username,
+      roleName: req.session.roleName,
+      action: 'USER_DELETE',
+      resource: 'USER',
+      resourceId: id,
+      status: 'SUCCESS',
+      details: `ลบผู้ใช้งาน "${targetUser.username}" (${targetUser.full_name}) พร้อมล้างรายการจองที่เกี่ยวข้อง ${delBookings.rowCount} รายการ`,
+      ip: req.ip,
+      ua: req.get('user-agent')
+    });
+
+    res.redirect(`/admin/users?success=${encodeURIComponent(`ลบผู้ใช้งาน "${targetUser.username}" ออกจากระบบเรียบร้อยแล้ว`)}`);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   getAclMatrix,
   updateAclMatrix,
@@ -656,5 +775,7 @@ module.exports = {
   exportAuditLogs,
   getUsers,
   toggleUserStatus,
-  updateUserRole
+  updateUserRole,
+  createUser,
+  deleteUser
 };
