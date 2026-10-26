@@ -26,7 +26,7 @@
                         <strong>ห้อง:</strong> <%= t.room_name %> &bull; <strong>ผู้ขอ:</strong> <%= t.requester_name %>
                       </div>
                       <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem;">
-                        ⏰ <%= new Date(t.start_time).toLocaleDateString('th-TH') %> 
+                        ⏰ <%= new Date(t.start_time).toLocaleDateString('th-TH', { calendar: 'gregory' }) %> 
                         (<%= new Date(t.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> - 
                         <%= new Date(t.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> น.)
                       </div>

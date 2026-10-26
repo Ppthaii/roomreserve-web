@@ -65,7 +65,7 @@
                   </thead>
                   <tbody>
                     <% myBookings.forEach(b => { 
-                      const bDate = new Date(b.start_time).toLocaleDateString('th-TH');
+                      const bDate = new Date(b.start_time).toLocaleDateString('th-TH', { calendar: 'gregory' });
                       const bStartTime = new Date(b.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
                       const bEndTime = new Date(b.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
                       

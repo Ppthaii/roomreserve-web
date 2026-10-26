@@ -499,7 +499,7 @@ async function exportAuditLogs(req, res, next) {
     let csv = '\uFEFFLog ID,Timestamp,Username,Role,Action,Resource,Resource ID,Status,Details,IP Address\n';
 
     logsRes.rows.forEach(r => {
-      const timeStr = new Date(r.created_at).toLocaleString('th-TH');
+      const timeStr = new Date(r.created_at).toLocaleString('th-TH', { calendar: 'gregory' });
       const cleanDetails = (r.details || '').replace(/"/g, '""');
       csv += `"${r.log_id}","${timeStr}","${r.username || ''}","${r.role_name || ''}","${r.action}","${r.resource}","${r.resource_id || ''}","${r.status}","${cleanDetails}","${r.ip_address || ''}"\n`;
     });

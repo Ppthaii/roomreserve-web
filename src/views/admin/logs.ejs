@@ -73,7 +73,7 @@
               <% logs.forEach(l => { %>
                 <tr>
                   <td style="font-size: 0.8rem; white-space: nowrap;">
-                    <%= new Date(l.created_at).toLocaleString('th-TH') %>
+                    <%= new Date(l.created_at).toLocaleString('th-TH', { calendar: 'gregory' }) %>
                   </td>
                   <td>
                     <strong><%= l.username %></strong>

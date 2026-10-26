@@ -27,7 +27,7 @@
                         <strong>ห้อง:</strong> <%= p.room_name %> | <strong>ผู้ขอ:</strong> <%= p.requester_name %> (<%= p.department || 'ไม่ระบุ' %>)
                       </p>
                       <p style="color: var(--muted); font-size: 0.8rem;">
-                        <strong>วันเวลา:</strong> <%= new Date(p.start_time).toLocaleDateString('th-TH') %> 
+                        <strong>วันเวลา:</strong> <%= new Date(p.start_time).toLocaleDateString('th-TH', { calendar: 'gregory' }) %> 
                         (<%= new Date(p.start_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %> - 
                         <%= new Date(p.end_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) %>)
                       </p>
