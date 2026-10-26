@@ -358,27 +358,29 @@
           
           <!-- 1. Deep Blue Gradient Header -->
           <div class="hero-blue-header">
-            <div class="hero-top-row">
-              <div class="hero-brand-wrap">
-                <div class="hero-brand-logo">RR</div>
-                <div>
-                  <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em;">RoomReserve</div>
-                  <div style="font-size: 0.75rem; opacity: 0.85;">Smart Meeting Space</div>
+            <div class="hero-inner">
+              <div class="hero-top-row">
+                <div class="hero-brand-wrap">
+                  <div class="hero-brand-logo">RR</div>
+                  <div>
+                    <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em;">RoomReserve</div>
+                    <div style="font-size: 0.75rem; opacity: 0.85;">Smart Meeting Space</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="hero-user-capsule" style="margin-top: 1.25rem;">
-              <div class="hero-avatar">
-                <%= user.fullName ? user.fullName.charAt(0) : 'U' %>
-              </div>
-              <div style="flex: 1;">
-                <div style="font-size: 1.25rem; font-weight: 800; line-height: 1.25;"><%= user.fullName %></div>
-                <div style="font-size: 0.82rem; opacity: 0.85; margin-top: 0.25rem;">
-                  <span>สังกัด: <%= user.department || 'สำนักงานใหญ่' %></span>
-                  <% if (user.roleName !== 'requester') { %>
-                    &bull; <span class="role-pill" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.7rem; padding: 2px 7px;"><%= user.roleDisplay %></span>
-                  <% } %>
+              <div class="hero-user-capsule" style="margin-top: 1.25rem;">
+                <div class="hero-avatar">
+                  <%= user.fullName ? user.fullName.charAt(0) : 'U' %>
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-size: 1.25rem; font-weight: 800; line-height: 1.25;"><%= user.fullName %></div>
+                  <div style="font-size: 0.82rem; opacity: 0.85; margin-top: 0.25rem;">
+                    <span>สังกัด: <%= user.department || 'สำนักงานใหญ่' %></span>
+                    <% if (user.roleName !== 'requester') { %>
+                      &bull; <span class="role-pill" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.7rem; padding: 2px 7px;"><%= user.roleDisplay %></span>
+                    <% } %>
+                  </div>
                 </div>
               </div>
             </div>
