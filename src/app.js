@@ -31,15 +31,41 @@ app.get('/__dev_ping', (req, res) => {
   res.json({ bootTime: SERVER_BOOT_TIME });
 });
 
-// Session Configuration (Session-based Auth ตามที่อาจารย์สอน)
+// Dynamic ACL Matrix Version Endpoint สำหรับ Live ACL Sync
+app.get('/api/acl-version', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.json({ version: global.ACL_VERSION || 1 });
+});
+
+// Session Health Check Endpoint สำหรับ Client Heartbeat
+app.get('/api/session-status', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({
+      authenticated: false,
+      error: 'SESSION_EXPIRED',
+      redirect: '/login?error=expired'
+    });
+  }
+  res.json({
+    authenticated: true,
+    userId: req.session.userId,
+    username: req.session.username,
+    maxAge: req.session.cookie?.maxAge || 0
+  });
+});
+
+// Session Configuration (Session-based Auth with Inactivity Expiration)
+const SESSION_TIMEOUT_MS = parseInt(process.env.SESSION_TIMEOUT_MS, 10) || (30 * 60 * 1000); // ค่าเริ่มต้น 30 นาที
 app.use(session({
   secret: process.env.SESSION_SECRET || 'roomreserve_secret_2026',
   resave: false,
   saveUninitialized: false,
+  rolling: true, // รีเฟรชอายุ Session อัตโนมัติเมื่อผู้ใช้มีการใช้งานอย่างต่อเนื่อง
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 วัน
+    maxAge: SESSION_TIMEOUT_MS
   }
 }));
 
@@ -64,7 +90,9 @@ app.get('/login', (req, res) => {
   if (req.session.userId) return res.redirect('/app');
   let errorMsg = req.query.error || '';
   if (errorMsg === 'unauthorized') {
-    errorMsg = 'เซสชันหมดอายุ หรือกรุณาเข้าสู่ระบบก่อนทำรายการ';
+    errorMsg = 'กรุณาเข้าสู่ระบบก่อนทำรายการ';
+  } else if (errorMsg === 'expired') {
+    errorMsg = '⚠️ เซสชันการใช้งานของคุณหมดอายุ เพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง';
   }
   res.render('login', {
     title: 'เข้าสู่ระบบ | RoomReserve',

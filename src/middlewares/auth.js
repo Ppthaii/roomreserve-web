@@ -4,9 +4,12 @@ const pool = require('../config/db');
 function requireAuth(req, res, next) {
   if (!req.session || !req.session.userId) {
     if (req.xhr || req.headers.accept?.includes('json') || req.originalUrl.startsWith('/api/')) {
-      return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบก่อนทำรายการ' });
+      return res.status(401).json({
+        error: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',
+        redirect: '/login?error=expired'
+      });
     }
-    return res.redirect('/login?error=unauthorized');
+    return res.redirect('/login?error=expired');
   }
   next();
 }

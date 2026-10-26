@@ -72,6 +72,7 @@ async function updateAclMatrix(req, res, next) {
     }
 
     await client.query('COMMIT');
+    global.ACL_VERSION = Date.now();
 
     await logAudit({
       userId: req.session.userId,
@@ -147,6 +148,7 @@ async function togglePermission(req, res, next) {
       ua: req.get('user-agent')
     });
 
+    global.ACL_VERSION = Date.now();
     res.json({ success: true, granted, message: 'อัปเดตสิทธิ์สำเร็จทันที' });
   } catch (err) {
     res.status(500).json({ error: err.message });

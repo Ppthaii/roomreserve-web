@@ -238,25 +238,26 @@ body {
 }
 
 .nav-brand-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #0f172a;
-  border: 2px solid rgba(37, 99, 235, 0.4);
-  display: flex;
+  font-weight: 900;
+  font-size: 1.35rem;
+  color: #2563eb;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  color: #3b82f6;
-  font-size: 0.95rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  border: none;
+  box-shadow: none;
   flex-shrink: 0;
+  margin-right: 0.1rem;
 }
 
 [data-theme="dark"] .nav-brand-logo {
-  border-color: rgba(96, 165, 250, 0.4);
   color: #60a5fa;
-  background: #1e293b;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .nav-brand-text {
@@ -2497,89 +2498,150 @@ body {
   color: #f8fafc;
 }
 
-/* 1. Visual Room Selection Box */
+/* 1. Visual Room Selection Box - Vertical Card matching Building Cards */
 .visual-rooms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 0.85rem;
-  margin-top: 0.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .visual-rooms-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .visual-rooms-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .visual-room-card {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.75rem;
   background: var(--card-bg);
-  border: 2px solid var(--border);
-  border-radius: 14px;
+  border: 3.5px solid var(--border);
+  border-radius: 22px;
+  overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
   user-select: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
 .visual-room-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.1);
   border-color: #93c5fd;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
 }
 
 .visual-room-card.selected {
   border-color: #2563eb;
-  background: #eff6ff;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2), 0 14px 28px -4px rgba(37, 99, 235, 0.25);
+  transform: translateY(-3px);
+  background: var(--card-bg);
 }
 
 [data-theme="dark"] .visual-room-card.selected {
-  background: #1e293b;
   border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25), 0 14px 28px -4px rgba(0, 0, 0, 0.5);
 }
 
-.visual-room-img {
-  width: 58px;
-  height: 58px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.visual-room-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.visual-room-name {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--dark);
-}
-
-.visual-room-sub {
-  font-size: 0.75rem;
-  color: var(--muted);
-  margin-top: 0.2rem;
-}
-
-.visual-room-radio {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
+.visual-room-img-wrap {
+  width: 100%;
+  height: 180px;
+  background: #f1f5f9;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: transparent;
-  transition: all 0.2s;
-  flex-shrink: 0;
 }
 
-.visual-room-card.selected .visual-room-radio {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #ffffff;
+.visual-room-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
+}
+
+.visual-room-card:hover .visual-room-img {
+  transform: scale(1.03);
+}
+
+.visual-room-body {
+  padding: 1.15rem 1rem;
+  text-align: center;
+  background: var(--card-bg);
+  border-top: 2px solid var(--border);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.visual-room-card.selected .visual-room-body {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+[data-theme="dark"] .visual-room-card.selected .visual-room-body {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.visual-room-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--dark);
+  letter-spacing: -0.01em;
+}
+
+.visual-room-card.selected .visual-room-name {
+  color: #2563eb;
+}
+
+[data-theme="dark"] .visual-room-card.selected .visual-room-name {
+  color: #60a5fa;
+}
+
+.visual-room-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.visual-room-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .visual-room-badge {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+.visual-room-card.selected .visual-room-badge {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+[data-theme="dark"] .visual-room-card.selected .visual-room-badge {
+  background: #1e3a8a;
+  color: #93c5fd;
 }
 
 /* 2. Unified Navbar & Clickable User Badge */
@@ -2598,28 +2660,44 @@ body {
 }
 
 .user-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   background: #f1f5f9;
-  padding: 0.4rem 0.85rem;
+  padding: 0.3rem 0.65rem 0.3rem 0.85rem;
   border-radius: 9999px;
   font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .user-badge:hover {
   background: #e2e8f0;
+  color: #1e293b;
   transform: translateY(-1px);
+}
+
+.user-badge .role-pill {
+  background: #4f46e5;
+  color: #ffffff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .user-badge.active {
   background: #2563eb !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .user-badge.active .role-pill {
@@ -2629,16 +2707,27 @@ body {
 
 [data-theme="dark"] .user-badge {
   background: #1e293b;
-  color: #f8fafc;
+  color: #cbd5e1;
 }
 
 [data-theme="dark"] .user-badge:hover {
   background: #334155;
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .user-badge .role-pill {
+  background: #6366f1;
+  color: #ffffff;
 }
 
 [data-theme="dark"] .user-badge.active {
   background: #3b82f6 !important;
   color: #ffffff !important;
+}
+
+[data-theme="dark"] .user-badge.active .role-pill {
+  background: #ffffff !important;
+  color: #1e40af !important;
 }
 
 [data-theme="dark"] .quick-booking-card {

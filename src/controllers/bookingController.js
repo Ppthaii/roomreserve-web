@@ -40,7 +40,7 @@ async function getDashboard(req, res, next) {
         FROM room_bookings rb
         JOIN rooms r ON rb.room_id = r.room_id
         LEFT JOIN booking_attachments ba ON rb.booking_id = ba.booking_id
-        WHERE rb.user_id = $1
+        WHERE rb.user_id = $1 AND rb.status != 'BLOCKED'
         ORDER BY rb.created_at DESC
         LIMIT 25
       `, [req.session.userId]),
@@ -48,10 +48,11 @@ async function getDashboard(req, res, next) {
       // ดึงสิทธิ์สดๆ (Dynamic ACL Permissions)
       pool.query(`
         SELECT p.permission_code
-        FROM role_permissions rp
+        FROM users u
+        JOIN role_permissions rp ON rp.role_id = u.role_id
         JOIN permissions p ON rp.permission_id = p.permission_id
-        WHERE rp.role_id = $1
-      `, [req.session.roleId]),
+        WHERE u.user_id = $1 AND u.is_active = TRUE
+      `, [req.session.userId]),
 
       // ดึงรายการรออนุมัติ (ใช้ Index status, start_time)
       pool.query(`
