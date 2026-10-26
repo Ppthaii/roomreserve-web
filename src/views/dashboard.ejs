@@ -2062,15 +2062,24 @@
         headerLabel.innerText = `ห้องประชุมในตึก ${buildingNumber}:`;
       }
 
+      let visibleCount = 0;
       let firstMatchRoomId = null;
       document.querySelectorAll('.visual-room-card').forEach(c => {
         const b = c.getAttribute('data-building');
         const isMatch = b === String(buildingNumber);
         c.style.display = isMatch ? 'flex' : 'none';
-        if (isMatch && !firstMatchRoomId) {
-          firstMatchRoomId = c.getAttribute('data-room-id');
+        if (isMatch) {
+          visibleCount++;
+          if (!firstMatchRoomId) {
+            firstMatchRoomId = c.getAttribute('data-room-id');
+          }
         }
       });
+
+      const roomsGrid = document.getElementById('visualRoomsGrid');
+      if (roomsGrid) {
+        roomsGrid.setAttribute('data-count', String(visibleCount));
+      }
 
       const hiddenInput = document.getElementById('form_room_id');
       const currentSelected = hiddenInput ? hiddenInput.value : null;

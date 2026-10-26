@@ -2506,14 +2506,33 @@ body {
   margin-top: 0.75rem;
 }
 
+/* ปรับสัดส่วนให้เต็มความกว้างพอดีกับช่องตึกด้านบน เมื่อมีห้องน้อยกว่า 3 ห้อง */
+.visual-rooms-grid[data-count="1"] {
+  grid-template-columns: 1fr;
+}
+
+.visual-rooms-grid[data-count="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.visual-rooms-grid[data-count="3"] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 @media (max-width: 900px) {
-  .visual-rooms-grid {
+  .visual-rooms-grid,
+  .visual-rooms-grid[data-count="1"],
+  .visual-rooms-grid[data-count="2"],
+  .visual-rooms-grid[data-count="3"] {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
 
 @media (max-width: 600px) {
-  .visual-rooms-grid {
+  .visual-rooms-grid,
+  .visual-rooms-grid[data-count="1"],
+  .visual-rooms-grid[data-count="2"],
+  .visual-rooms-grid[data-count="3"] {
     grid-template-columns: 1fr;
   }
 }
