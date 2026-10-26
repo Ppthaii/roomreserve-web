@@ -14,7 +14,7 @@ const CATEGORY_DEFINITIONS = {
     key: 'admin',
     name: 'การจัดการระบบและความปลอดภัย',
     enName: 'System Administration & Security',
-    icon: '⚙️',
+    icon: '',
     color: '#4f46e5',
     badgeClass: 'cat-badge-admin',
     order: 1
@@ -23,7 +23,7 @@ const CATEGORY_DEFINITIONS = {
     key: 'room',
     name: 'การจัดการห้องประชุมและทรัพยากร',
     enName: 'Room & Resource Management',
-    icon: '🏢',
+    icon: '',
     color: '#0284c7',
     badgeClass: 'cat-badge-room',
     order: 2
@@ -32,7 +32,7 @@ const CATEGORY_DEFINITIONS = {
     key: 'booking',
     name: 'การจองห้องและการอนุมัติ',
     enName: 'Room Bookings & Approvals',
-    icon: '📅',
+    icon: '',
     color: '#059669',
     badgeClass: 'cat-badge-booking',
     order: 3
@@ -41,7 +41,7 @@ const CATEGORY_DEFINITIONS = {
     key: 'facility',
     name: 'การดูแลสถานที่และปฏิบัติการ',
     enName: 'Facilities & Operations',
-    icon: '🛠️',
+    icon: '',
     color: '#d97706',
     badgeClass: 'cat-badge-facility',
     order: 4
@@ -50,7 +50,7 @@ const CATEGORY_DEFINITIONS = {
     key: 'file',
     name: 'เอกสารและไฟล์แนบ',
     enName: 'Files & Documents',
-    icon: '📎',
+    icon: '',
     color: '#7c3aed',
     badgeClass: 'cat-badge-file',
     order: 5
@@ -59,7 +59,7 @@ const CATEGORY_DEFINITIONS = {
     key: 'general',
     name: 'สิทธิ์ทั่วไป / สิทธิ์เพิ่มเติม',
     enName: 'General & Custom Permissions',
-    icon: '📌',
+    icon: '',
     color: '#475569',
     badgeClass: 'cat-badge-general',
     order: 6
@@ -85,7 +85,7 @@ async function getAclMatrix(req, res, next) {
           key: catKey,
           name: `หมวดหมู่ ${catKey}`,
           enName: catKey,
-          icon: '🏷️',
+          icon: '',
           color: '#64748b',
           badgeClass: 'cat-badge-general',
           order: 99

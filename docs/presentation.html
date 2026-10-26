@@ -1,1002 +1,1002 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RoomReserve (SmartSpace) — สไลด์นำเสนอโครงงาน 30 คะแนน</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #090d16;
-      --card-bg: rgba(22, 30, 49, 0.85);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #3b82f6;
-      --primary-glow: rgba(59, 130, 246, 0.35);
-      --accent: #6366f1;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-    }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>RoomReserve (SmartSpace) — สไลด์นำเสนอโครงงาน 30 คะแนน</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+ <style>
+ :root {
+ --bg-dark: #090d16;
+ --card-bg: rgba(22, 30, 49, 0.85);
+ --card-border: rgba(255, 255, 255, 0.08);
+ --primary: #3b82f6;
+ --primary-glow: rgba(59, 130, 246, 0.35);
+ --accent: #6366f1;
+ --success: #10b981;
+ --warning: #f59e0b;
+ --danger: #ef4444;
+ --text-main: #f8fafc;
+ --text-muted: #94a3b8;
+ }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+ * {
+ box-sizing: border-box;
+ margin: 0;
+ padding: 0;
+ }
 
-    body {
-      font-family: 'Sarabun', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow-x: hidden;
-      padding: 1rem;
-    }
+ body {
+ font-family: 'Sarabun', sans-serif;
+ background: var(--bg-dark);
+ color: var(--text-main);
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ overflow-x: hidden;
+ padding: 1rem;
+ }
 
-    /* Presentation Slide Frame (16:9 Aspect Ratio) */
-    .slide-viewport {
-      width: 100%;
-      max-width: 1180px;
-      aspect-ratio: 16 / 9;
-      background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 45%),
-                  radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.1), transparent 50%),
-                  #0c1220;
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px var(--primary-glow);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      padding: 2.5rem 3rem;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
+ /* Presentation Slide Frame (16:9 Aspect Ratio) */
+ .slide-viewport {
+ width: 100%;
+ max-width: 1180px;
+ aspect-ratio: 16 / 9;
+ background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 45%),
+ radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.1), transparent 50%),
+ #0c1220;
+ border: 1px solid var(--card-border);
+ border-radius: 18px;
+ box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px var(--primary-glow);
+ position: relative;
+ display: flex;
+ flex-direction: column;
+ padding: 2.5rem 3rem;
+ overflow: hidden;
+ transition: all 0.3s ease;
+ }
 
-    /* Header Bar */
-    .slide-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 0.85rem;
-    }
+ /* Header Bar */
+ .slide-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 1.5rem;
+ border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+ padding-bottom: 0.85rem;
+ }
 
-    .slide-badge {
-      font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--primary);
-      background: rgba(59, 130, 246, 0.12);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      padding: 0.3rem 0.8rem;
-      border-radius: 9999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
+ .slide-badge {
+ font-family: 'Chakra Petch', sans-serif;
+ font-size: 0.8rem;
+ font-weight: 700;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ color: var(--primary);
+ background: rgba(59, 130, 246, 0.12);
+ border: 1px solid rgba(59, 130, 246, 0.3);
+ padding: 0.3rem 0.8rem;
+ border-radius: 9999px;
+ display: inline-flex;
+ align-items: center;
+ gap: 0.4rem;
+ }
 
-    .slide-number {
-      font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
+ .slide-number {
+ font-family: 'Chakra Petch', sans-serif;
+ font-size: 0.9rem;
+ color: var(--text-muted);
+ font-weight: 600;
+ }
 
-    .slide-title {
-      font-family: 'Chakra Petch', sans-serif;
-      font-size: 1.85rem;
-      font-weight: 800;
-      line-height: 1.25;
-      background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.35rem;
-    }
+ .slide-title {
+ font-family: 'Chakra Petch', sans-serif;
+ font-size: 1.85rem;
+ font-weight: 800;
+ line-height: 1.25;
+ background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ margin-bottom: 0.35rem;
+ }
 
-    .slide-subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin-bottom: 1.25rem;
-    }
+ .slide-subtitle {
+ font-size: 0.95rem;
+ color: var(--text-muted);
+ margin-bottom: 1.25rem;
+ }
 
-    .slide-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 1rem;
-    }
+ .slide-body {
+ flex: 1;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ gap: 1rem;
+ }
 
-    /* Grid Layouts */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.25rem;
-      width: 100%;
-    }
+ /* Grid Layouts */
+ .grid-2 {
+ display: grid;
+ grid-template-columns: repeat(2, 1fr);
+ gap: 1.25rem;
+ width: 100%;
+ }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      width: 100%;
-    }
+ .grid-3 {
+ display: grid;
+ grid-template-columns: repeat(3, 1fr);
+ gap: 1rem;
+ width: 100%;
+ }
 
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.85rem;
-      width: 100%;
-    }
+ .grid-4 {
+ display: grid;
+ grid-template-columns: repeat(4, 1fr);
+ gap: 0.85rem;
+ width: 100%;
+ }
 
-    /* Cards */
-    .glass-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 1.15rem 1.25rem;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(8px);
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
+ /* Cards */
+ .glass-card {
+ background: var(--card-bg);
+ border: 1px solid var(--card-border);
+ border-radius: 12px;
+ padding: 1.15rem 1.25rem;
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+ backdrop-filter: blur(8px);
+ transition: transform 0.2s ease, border-color 0.2s ease;
+ }
 
-    .glass-card:hover {
-      border-color: rgba(59, 130, 246, 0.4);
-      transform: translateY(-2px);
-    }
+ .glass-card:hover {
+ border-color: rgba(59, 130, 246, 0.4);
+ transform: translateY(-2px);
+ }
 
-    .card-icon {
-      font-size: 1.4rem;
-      margin-bottom: 0.5rem;
-      display: inline-block;
-    }
+ .card-icon {
+ font-size: 1.4rem;
+ margin-bottom: 0.5rem;
+ display: inline-block;
+ }
 
-    .card-heading {
-      font-family: 'Chakra Petch', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.4rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
+ .card-heading {
+ font-family: 'Chakra Petch', sans-serif;
+ font-size: 1.05rem;
+ font-weight: 700;
+ color: #fff;
+ margin-bottom: 0.4rem;
+ display: flex;
+ align-items: center;
+ gap: 0.4rem;
+ }
 
-    .card-text {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
+ .card-text {
+ font-size: 0.88rem;
+ color: var(--text-muted);
+ line-height: 1.5;
+ }
 
-    .card-text strong {
-      color: #e2e8f0;
-    }
+ .card-text strong {
+ color: #e2e8f0;
+ }
 
-    /* Code & Architecture Snippets */
-    .code-block {
-      background: #060911;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 0.85rem 1rem;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.82rem;
-      color: #38bdf8;
-      overflow-x: auto;
-      line-height: 1.45;
-    }
+ /* Code & Architecture Snippets */
+ .code-block {
+ background: #060911;
+ border: 1px solid rgba(255, 255, 255, 0.08);
+ border-radius: 8px;
+ padding: 0.85rem 1rem;
+ font-family: 'Courier New', Courier, monospace;
+ font-size: 0.82rem;
+ color: #38bdf8;
+ overflow-x: auto;
+ line-height: 1.45;
+ }
 
-    .pill {
-      display: inline-block;
-      padding: 0.2rem 0.55rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      margin-right: 0.25rem;
-    }
+ .pill {
+ display: inline-block;
+ padding: 0.2rem 0.55rem;
+ border-radius: 6px;
+ font-size: 0.75rem;
+ font-weight: 700;
+ margin-right: 0.25rem;
+ }
 
-    .pill-blue { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
-    .pill-green { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
-    .pill-amber { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
-    .pill-purple { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; }
-    .pill-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+ .pill-blue { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+ .pill-green { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+ .pill-amber { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+ .pill-purple { background: rgba(99, 102, 241, 0.2); color: #c7d2fe; }
+ .pill-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
 
-    /* Navigation Controller */
-    .controls-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      max-width: 1180px;
-      margin-top: 1rem;
-      padding: 0 0.5rem;
-    }
+ /* Navigation Controller */
+ .controls-bar {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ width: 100%;
+ max-width: 1180px;
+ margin-top: 1rem;
+ padding: 0 0.5rem;
+ }
 
-    .nav-btn {
-      background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #fff;
-      padding: 0.6rem 1.25rem;
-      border-radius: 8px;
-      font-family: 'Chakra Petch', sans-serif;
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s ease;
-    }
+ .nav-btn {
+ background: #1e293b;
+ border: 1px solid rgba(255, 255, 255, 0.1);
+ color: #fff;
+ padding: 0.6rem 1.25rem;
+ border-radius: 8px;
+ font-family: 'Chakra Petch', sans-serif;
+ font-size: 0.88rem;
+ font-weight: 700;
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ gap: 0.4rem;
+ transition: all 0.2s ease;
+ }
 
-    .nav-btn:hover {
-      background: var(--primary);
-      border-color: var(--primary);
-      box-shadow: 0 0 15px var(--primary-glow);
-    }
+ .nav-btn:hover {
+ background: var(--primary);
+ border-color: var(--primary);
+ box-shadow: 0 0 15px var(--primary-glow);
+ }
 
-    .nav-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
+ .nav-btn:disabled {
+ opacity: 0.3;
+ cursor: not-allowed;
+ pointer-events: none;
+ }
 
-    .print-tip {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-    }
+ .print-tip {
+ font-size: 0.82rem;
+ color: var(--text-muted);
+ }
 
-    /* Print Style: Formats perfectly to 16:9 PDF per slide */
-    @media print {
-      body {
-        background: #fff !important;
-        color: #000 !important;
-        padding: 0 !important;
-      }
-      .controls-bar, .print-tip {
-        display: none !important;
-      }
-      .slide-viewport {
-        page-break-after: always;
-        break-after: page;
-        box-shadow: none !important;
-        border: none !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: none !important;
-        aspect-ratio: auto !important;
-        border-radius: 0 !important;
-        background: #0c1220 !important;
-        color: #fff !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .slide-viewport:not(.active-slide) {
-        display: none !important;
-      }
-    }
+ /* Print Style: Formats perfectly to 16:9 PDF per slide */
+ @media print {
+ body {
+ background: #fff !important;
+ color: #000 !important;
+ padding: 0 !important;
+ }
+ .controls-bar, .print-tip {
+ display: none !important;
+ }
+ .slide-viewport {
+ page-break-after: always;
+ break-after: page;
+ box-shadow: none !important;
+ border: none !important;
+ width: 100vw !important;
+ height: 100vh !important;
+ max-width: none !important;
+ aspect-ratio: auto !important;
+ border-radius: 0 !important;
+ background: #0c1220 !important;
+ color: #fff !important;
+ -webkit-print-color-adjust: exact;
+ print-color-adjust: exact;
+ }
+ .slide-viewport:not(.active-slide) {
+ display: none !important;
+ }
+ }
 
-    /* Dynamic Slide Visibility */
-    .slide-page {
-      display: none;
-      width: 100%;
-      height: 100%;
-      flex-direction: column;
-    }
+ /* Dynamic Slide Visibility */
+ .slide-page {
+ display: none;
+ width: 100%;
+ height: 100%;
+ flex-direction: column;
+ }
 
-    .slide-page.active-slide {
-      display: flex;
-    }
-  </style>
+ .slide-page.active-slide {
+ display: flex;
+ }
+ </style>
 </head>
 <body>
 
-  <!-- Slide Container -->
-  <div class="slide-viewport" id="slideViewport">
+ <!-- Slide Container -->
+ <div class="slide-viewport" id="slideViewport">
 
-    <!-- ================= SLIDE 1: COVER ================= -->
-    <div class="slide-page active-slide" data-slide="1">
-      <div class="slide-header">
-        <span class="slide-badge">🏆 โครงงานพัฒนาเว็บแอปพลิเคชัน สำหรับบริหารจัดการระบบงาน (30 คะแนน)</span>
-        <span class="slide-number">01 / 18</span>
-      </div>
-      <div class="slide-body" style="text-align: center; align-items: center; gap: 1.5rem;">
-        <div style="font-size: 3.5rem; margin-bottom: -0.5rem;">🏛️</div>
-        <h1 style="font-family: 'Chakra Petch', sans-serif; font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg, #60a5fa 0%, #ffffff 50%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-          RoomReserve (SmartSpace)
-        </h1>
-        <p style="font-size: 1.2rem; color: #93c5fd; max-width: 800px; line-height: 1.6; font-weight: 500;">
-          ระบบบริหารจัดการจองห้องประชุมและทรัพยากรส่วนกลางอัจฉริยะ<br>
-          พร้อม Dynamic ACL Matrix และ Concurrency Double-Booking Guard ระดับ Database Engine
-        </p>
-        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem;">
-          <span class="pill pill-blue">Node.js & Express.js</span>
-          <span class="pill pill-green">PostgreSQL 16 (GIST Engine)</span>
-          <span class="pill pill-purple">Dynamic ACL Matrix (Zero Downtime)</span>
-          <span class="pill pill-amber">Server-Side Magic Bytes</span>
-          <span class="pill pill-blue">Persistent Session (Anti-Fixation)</span>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 1: COVER ================= -->
+ <div class="slide-page active-slide" data-slide="1">
+ <div class="slide-header">
+ <span class="slide-badge"> โครงงานพัฒนาเว็บแอปพลิเคชัน สำหรับบริหารจัดการระบบงาน (30 คะแนน)</span>
+ <span class="slide-number">01 / 18</span>
+ </div>
+ <div class="slide-body" style="text-align: center; align-items: center; gap: 1.5rem;">
+ 
+ <h1 style="font-family: 'Chakra Petch', sans-serif; font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg, #60a5fa 0%, #ffffff 50%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+ RoomReserve (SmartSpace)
+ </h1>
+ <p style="font-size: 1.2rem; color: #93c5fd; max-width: 800px; line-height: 1.6; font-weight: 500;">
+ ระบบบริหารจัดการจองห้องประชุมและทรัพยากรส่วนกลางอัจฉริยะ<br>
+ พร้อม Dynamic ACL Matrix และ Concurrency Double-Booking Guard ระดับ Database Engine
+ </p>
+ <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem;">
+ <span class="pill pill-blue">Node.js & Express.js</span>
+ <span class="pill pill-green">PostgreSQL 16 (GIST Engine)</span>
+ <span class="pill pill-purple">Dynamic ACL Matrix (Zero Downtime)</span>
+ <span class="pill pill-amber">Server-Side Magic Bytes</span>
+ <span class="pill pill-blue">Persistent Session (Anti-Fixation)</span>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 2: PROBLEM STATEMENT ================= -->
-    <div class="slide-page" data-slide="2">
-      <div class="slide-header">
-        <span class="slide-badge">⚠️ ปัญหาและที่มาของโครงการ</span>
-        <span class="slide-number">02 / 18</span>
-      </div>
-      <h2 class="slide-title">ที่มาและความสำคัญของปัญหา (Problem Statement)</h2>
-      <p class="slide-subtitle">ช่องโหว่และข้อผิดพลาดสำคัญในระบบจองห้องประชุมแบบดั้งเดิมที่ต้องได้รับการแก้ไข</p>
-      <div class="slide-body">
-        <div class="grid-2">
-          <div class="glass-card" style="border-left: 4px solid var(--danger);">
-            <div class="card-icon">⚡</div>
-            <div class="card-heading">1. Double-Booking & Race Condition</div>
-            <p class="card-text">
-              การตรวจสอบเวลาว่างด้วย SELECT แล้วค่อย INSERT ผ่านแอปพลิเคชัน มีช่องโหว่เสี้ยววินาที ทำให้ผู้ใช้ 2 คนกดจองเวลาเดียวกันพร้อมกันแล้วทะลุเข้าฐานข้อมูลทั้งคู่ (ชนกันจริง)
-            </p>
-          </div>
-          <div class="glass-card" style="border-left: 4px solid var(--warning);">
-            <div class="card-icon">🛡️</div>
-            <div class="card-heading">2. Broken Access Control (ตรวจเฉพาะหน้าบ้าน)</div>
-            <p class="card-text">
-              ระบบส่วนใหญ่ซ่อนเฉพาะปุ่มบนหน้าเว็บ หากผู้ใช้ยิง HTTP POST ตรงๆ ไปยัง Endpoint หลังบ้าน จะสามารถแอบอนุมัติคำขอ หรือดูข้อมูลของผู้อื่นได้ (ขาด Server-side Enforcement)
-            </p>
-          </div>
-          <div class="glass-card" style="border-left: 4px solid var(--primary);">
-            <div class="card-icon">📁</div>
-            <div class="card-heading">3. Fake File & Storage Vulnerability</div>
-            <p class="card-text">
-              ตรวจสอบไฟล์แนบเฉพาะนามสกุล (.pdf) ทำให้ผู้ไม่หวังดีเปลี่ยนชื่อไวรัสหรือ Script (.exe/.sh) เป็น .pdf แล้วอัปโหลดขึ้นเซิร์ฟเวอร์ และเปิดดูผ่าน URL ตรงๆ ได้
-            </p>
-          </div>
-          <div class="glass-card" style="border-left: 4px solid var(--accent);">
-            <div class="card-icon">📜</div>
-            <div class="card-heading">4. Hard-coded Roles & ขาด Audit Trail</div>
-            <p class="card-text">
-              หากต้องการแก้สิทธิ์ต้องแก้โค้ดและ Restart Server ส่งผลกระทบต่อทั้งองค์กร อีกทั้งไม่มีบันทึกหลักฐานการใช้งาน (Audit Logs) ทำให้ไม่สามารถตรวจสอบย้อนหลังได้เมื่อมีข้อพิพาท
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 2: PROBLEM STATEMENT ================= -->
+ <div class="slide-page" data-slide="2">
+ <div class="slide-header">
+ <span class="slide-badge"> ปัญหาและที่มาของโครงการ</span>
+ <span class="slide-number">02 / 18</span>
+ </div>
+ <h2 class="slide-title">ที่มาและความสำคัญของปัญหา (Problem Statement)</h2>
+ <p class="slide-subtitle">ช่องโหว่และข้อผิดพลาดสำคัญในระบบจองห้องประชุมแบบดั้งเดิมที่ต้องได้รับการแก้ไข</p>
+ <div class="slide-body">
+ <div class="grid-2">
+ <div class="glass-card" style="border-left: 4px solid var(--danger);">
+ 
+ <div class="card-heading">1. Double-Booking & Race Condition</div>
+ <p class="card-text">
+ การตรวจสอบเวลาว่างด้วย SELECT แล้วค่อย INSERT ผ่านแอปพลิเคชัน มีช่องโหว่เสี้ยววินาที ทำให้ผู้ใช้ 2 คนกดจองเวลาเดียวกันพร้อมกันแล้วทะลุเข้าฐานข้อมูลทั้งคู่ (ชนกันจริง)
+ </p>
+ </div>
+ <div class="glass-card" style="border-left: 4px solid var(--warning);">
+ 
+ <div class="card-heading">2. Broken Access Control (ตรวจเฉพาะหน้าบ้าน)</div>
+ <p class="card-text">
+ ระบบส่วนใหญ่ซ่อนเฉพาะปุ่มบนหน้าเว็บ หากผู้ใช้ยิง HTTP POST ตรงๆ ไปยัง Endpoint หลังบ้าน จะสามารถแอบอนุมัติคำขอ หรือดูข้อมูลของผู้อื่นได้ (ขาด Server-side Enforcement)
+ </p>
+ </div>
+ <div class="glass-card" style="border-left: 4px solid var(--primary);">
+ 
+ <div class="card-heading">3. Fake File & Storage Vulnerability</div>
+ <p class="card-text">
+ ตรวจสอบไฟล์แนบเฉพาะนามสกุล (.pdf) ทำให้ผู้ไม่หวังดีเปลี่ยนชื่อไวรัสหรือ Script (.exe/.sh) เป็น .pdf แล้วอัปโหลดขึ้นเซิร์ฟเวอร์ และเปิดดูผ่าน URL ตรงๆ ได้
+ </p>
+ </div>
+ <div class="glass-card" style="border-left: 4px solid var(--accent);">
+ 
+ <div class="card-heading">4. Hard-coded Roles & ขาด Audit Trail</div>
+ <p class="card-text">
+ หากต้องการแก้สิทธิ์ต้องแก้โค้ดและ Restart Server ส่งผลกระทบต่อทั้งองค์กร อีกทั้งไม่มีบันทึกหลักฐานการใช้งาน (Audit Logs) ทำให้ไม่สามารถตรวจสอบย้อนหลังได้เมื่อมีข้อพิพาท
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 3: SYSTEM OVERVIEW & OBJECTIVES ================= -->
-    <div class="slide-page" data-slide="3">
-      <div class="slide-header">
-        <span class="slide-badge">🎯 วัตถุประสงค์และภาพรวม</span>
-        <span class="slide-number">03 / 18</span>
-      </div>
-      <h2 class="slide-title">ภาพรวมระบบและวัตถุประสงค์ (System Overview)</h2>
-      <p class="slide-subtitle">วิสัยทัศน์และการออกแบบ RoomReserve เพื่อแก้ปัญหาอย่างเป็นระบบและปลอดภัย</p>
-      <div class="slide-body">
-        <div class="grid-3">
-          <div class="glass-card">
-            <div class="card-icon">🔒</div>
-            <div class="card-heading">Enterprise Security</div>
-            <p class="card-text">
-              แยก Logical Route <strong>/app</strong>, <strong>/admin</strong>, <strong>/api</strong> ชัดเจน ตรวจสอบสิทธิ์ที่ Middleware ฝั่ง Server ทุกเส้นทาง ป้องกัน Session Fixation, Brute Force และ IDOR
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-icon">⚡</div>
-            <div class="card-heading">Zero Double-Booking</div>
-            <p class="card-text">
-              ควบคุม Concurrency ในระดับ Database Engine ด้วย <strong>PostgreSQL Exclusion Constraint (GIST)</strong> ป้องกันการจองชนกันอย่างเด็ดขาด 100% แม้ยื่นพร้อมกันระดับ Millisecond
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-icon">🎛️</div>
-            <div class="card-heading">Dynamic ACL Matrix</div>
-            <p class="card-text">
-              ปรับเปลี่ยนสิทธิ์ 14 รายการผ่านหน้าจอผู้ดูแลระบบได้ทันที <strong>โดยไม่ต้อง Restart Server</strong> พร้อมระบบ Live Version Sync ไปยัง Client ทุกเครื่องแบบ Real-time
-            </p>
-          </div>
-        </div>
-        <div class="glass-card" style="margin-top: 0.5rem; background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.3);">
-          <div class="card-heading" style="color: #60a5fa;">💡 คุณค่าสำคัญต่อองค์กร (Core Value)</div>
-          <p class="card-text" style="color: #cbd5e1;">
-            เปลี่ยนกระบวนการจองห้องประชุมแบบกระดาษหรือแชตไลน์ ให้กลายเป็นระบบดิจิทัลที่มีวงจรอนุมัติ (Workflow) ชัดเจน มีการตรวจรับส่งมอบห้องหน้างาน และบันทึกประวัติความปลอดภัยครบถ้วนตามมาตรฐานสากล
-          </p>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 3: SYSTEM OVERVIEW & OBJECTIVES ================= -->
+ <div class="slide-page" data-slide="3">
+ <div class="slide-header">
+ <span class="slide-badge"> วัตถุประสงค์และภาพรวม</span>
+ <span class="slide-number">03 / 18</span>
+ </div>
+ <h2 class="slide-title">ภาพรวมระบบและวัตถุประสงค์ (System Overview)</h2>
+ <p class="slide-subtitle">วิสัยทัศน์และการออกแบบ RoomReserve เพื่อแก้ปัญหาอย่างเป็นระบบและปลอดภัย</p>
+ <div class="slide-body">
+ <div class="grid-3">
+ <div class="glass-card">
+ 
+ <div class="card-heading">Enterprise Security</div>
+ <p class="card-text">
+ แยก Logical Route <strong>/app</strong>, <strong>/admin</strong>, <strong>/api</strong> ชัดเจน ตรวจสอบสิทธิ์ที่ Middleware ฝั่ง Server ทุกเส้นทาง ป้องกัน Session Fixation, Brute Force และ IDOR
+ </p>
+ </div>
+ <div class="glass-card">
+ 
+ <div class="card-heading">Zero Double-Booking</div>
+ <p class="card-text">
+ ควบคุม Concurrency ในระดับ Database Engine ด้วย <strong>PostgreSQL Exclusion Constraint (GIST)</strong> ป้องกันการจองชนกันอย่างเด็ดขาด 100% แม้ยื่นพร้อมกันระดับ Millisecond
+ </p>
+ </div>
+ <div class="glass-card">
+ 
+ <div class="card-heading">Dynamic ACL Matrix</div>
+ <p class="card-text">
+ ปรับเปลี่ยนสิทธิ์ 14 รายการผ่านหน้าจอผู้ดูแลระบบได้ทันที <strong>โดยไม่ต้อง Restart Server</strong> พร้อมระบบ Live Version Sync ไปยัง Client ทุกเครื่องแบบ Real-time
+ </p>
+ </div>
+ </div>
+ <div class="glass-card" style="margin-top: 0.5rem; background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.3);">
+ <div class="card-heading" style="color: #60a5fa;"> คุณค่าสำคัญต่อองค์กร (Core Value)</div>
+ <p class="card-text" style="color: #cbd5e1;">
+ เปลี่ยนกระบวนการจองห้องประชุมแบบกระดาษหรือแชตไลน์ ให้กลายเป็นระบบดิจิทัลที่มีวงจรอนุมัติ (Workflow) ชัดเจน มีการตรวจรับส่งมอบห้องหน้างาน และบันทึกประวัติความปลอดภัยครบถ้วนตามมาตรฐานสากล
+ </p>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 4: 4 ROLES & WORKFLOW ================= -->
-    <div class="slide-page" data-slide="4">
-      <div class="slide-header">
-        <span class="slide-badge">👥 4 บทบาท & วงจรสถานะ</span>
-        <span class="slide-number">04 / 18</span>
-      </div>
-      <h2 class="slide-title">4 Roles & Workflow State Machine</h2>
-      <p class="slide-subtitle">การแบ่งแยกหน้าที่ตามหลัก Separation of Duties และวงจรสถานะการทำงาน</p>
-      <div class="slide-body">
-        <div class="grid-4" style="margin-bottom: 0.75rem;">
-          <div class="glass-card" style="border-top: 3px solid #3b82f6;">
-            <div class="card-heading" style="font-size: 0.95rem;">👤 Requester</div>
-            <p class="card-text" style="font-size: 0.82rem;">
-              • ยื่นจองห้องประชุม<br>
-              • แนบไฟล์วาระการประชุม<br>
-              • ดูเฉพาะรายการตนเอง<br>
-              • ขอยกเลิกคำขอของตนเอง
-            </p>
-          </div>
-          <div class="glass-card" style="border-top: 3px solid #f59e0b;">
-            <div class="card-heading" style="font-size: 0.95rem;">👔 Approver</div>
-            <p class="card-text" style="font-size: 0.82rem;">
-              • ตรวจสอบคำขอที่รอดำเนินการ<br>
-              • อนุมัติ / ปฏิเสธพร้อมเหตุผล<br>
-              • <strong>Auto-Reject</strong> คิวที่จองเวลาชนกันอัตโนมัติ<br>
-              • Safety Rollback อนุมัติ
-            </p>
-          </div>
-          <div class="glass-card" style="border-top: 3px solid #10b981;">
-            <div class="card-heading" style="font-size: 0.95rem;">🛠️ Facility Officer</div>
-            <p class="card-text" style="font-size: 0.82rem;">
-              • บล็อกปิดซ่อมบำรุงล่วงหน้า<br>
-              • ส่งมอบห้อง (Check-in)<br>
-              • ตรวจรับห้องและปิดงาน (Check-out) พร้อมแนบรูปถ่าย
-            </p>
-          </div>
-          <div class="glass-card" style="border-top: 3px solid #6366f1;">
-            <div class="card-heading" style="font-size: 0.95rem;">👑 Admin</div>
-            <p class="card-text" style="font-size: 0.82rem;">
-              • คุม Dynamic ACL Matrix สด<br>
-              • จัดการผู้ใช้ / ระงับบัญชี<br>
-              • ตรวจสอบ Audit Log ส่วนกลาง<br>
-              • ป้องกันล็อกตัวเองออกจากระบบ
-            </p>
-          </div>
-        </div>
-        <div class="code-block" style="text-align: center; color: #a5f3fc; font-size: 0.78rem;">
-          [ยื่นจอง] ➔ PENDING_APPROVAL ➔ (อนุมัติ) ➔ APPROVED ➔ (ส่งมอบ) ➔ IN_USE ➔ (ตรวจรับ) ➔ COMPLETED<br>
-          ↳ (ปฏิเสธ/เวลาชนคิวอื่นที่อนุมัติ) ➔ REJECTED &nbsp;&nbsp;|&nbsp;&nbsp; ↳ (ยกเลิกก่อนเวลา) ➔ CANCELLED &nbsp;&nbsp;|&nbsp;&nbsp; [ปิดซ่อม] ➔ BLOCKED
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 4: 4 ROLES & WORKFLOW ================= -->
+ <div class="slide-page" data-slide="4">
+ <div class="slide-header">
+ <span class="slide-badge"> 4 บทบาท & วงจรสถานะ</span>
+ <span class="slide-number">04 / 18</span>
+ </div>
+ <h2 class="slide-title">4 Roles & Workflow State Machine</h2>
+ <p class="slide-subtitle">การแบ่งแยกหน้าที่ตามหลัก Separation of Duties และวงจรสถานะการทำงาน</p>
+ <div class="slide-body">
+ <div class="grid-4" style="margin-bottom: 0.75rem;">
+ <div class="glass-card" style="border-top: 3px solid #3b82f6;">
+ <div class="card-heading" style="font-size: 0.95rem;"> Requester</div>
+ <p class="card-text" style="font-size: 0.82rem;">
+ • ยื่นจองห้องประชุม<br>
+ • แนบไฟล์วาระการประชุม<br>
+ • ดูเฉพาะรายการตนเอง<br>
+ • ขอยกเลิกคำขอของตนเอง
+ </p>
+ </div>
+ <div class="glass-card" style="border-top: 3px solid #f59e0b;">
+ <div class="card-heading" style="font-size: 0.95rem;"> Approver</div>
+ <p class="card-text" style="font-size: 0.82rem;">
+ • ตรวจสอบคำขอที่รอดำเนินการ<br>
+ • อนุมัติ / ปฏิเสธพร้อมเหตุผล<br>
+ • <strong>Auto-Reject</strong> คิวที่จองเวลาชนกันอัตโนมัติ<br>
+ • Safety Rollback อนุมัติ
+ </p>
+ </div>
+ <div class="glass-card" style="border-top: 3px solid #10b981;">
+ <div class="card-heading" style="font-size: 0.95rem;"> Facility Officer</div>
+ <p class="card-text" style="font-size: 0.82rem;">
+ • บล็อกปิดซ่อมบำรุงล่วงหน้า<br>
+ • ส่งมอบห้อง (Check-in)<br>
+ • ตรวจรับห้องและปิดงาน (Check-out) พร้อมแนบรูปถ่าย
+ </p>
+ </div>
+ <div class="glass-card" style="border-top: 3px solid #6366f1;">
+ <div class="card-heading" style="font-size: 0.95rem;"> Admin</div>
+ <p class="card-text" style="font-size: 0.82rem;">
+ • คุม Dynamic ACL Matrix สด<br>
+ • จัดการผู้ใช้ / ระงับบัญชี<br>
+ • ตรวจสอบ Audit Log ส่วนกลาง<br>
+ • ป้องกันล็อกตัวเองออกจากระบบ
+ </p>
+ </div>
+ </div>
+ <div class="code-block" style="text-align: center; color: #a5f3fc; font-size: 0.78rem;">
+ [ยื่นจอง] PENDING_APPROVAL (อนุมัติ) APPROVED (ส่งมอบ) IN_USE (ตรวจรับ) COMPLETED<br>
+ ↳ (ปฏิเสธ/เวลาชนคิวอื่นที่อนุมัติ) REJECTED &nbsp;&nbsp;|&nbsp;&nbsp; ↳ (ยกเลิกก่อนเวลา) CANCELLED &nbsp;&nbsp;|&nbsp;&nbsp; [ปิดซ่อม] BLOCKED
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 5: SCOPE ================= -->
-    <div class="slide-page" data-slide="5">
-      <div class="slide-header">
-        <span class="slide-badge">📐 ขอบเขตของระบบ</span>
-        <span class="slide-number">05 / 18</span>
-      </div>
-      <h2 class="slide-title">ขอบเขตของระบบ (In-Scope vs Out-of-Scope)</h2>
-      <p class="slide-subtitle">การกำหนดขอบเขตฟังก์ชันการทำงานที่ชัดเจนเพื่อประสิทธิภาพและความปลอดภัยสูงสุด</p>
-      <div class="slide-body">
-        <div class="grid-2">
-          <div class="glass-card" style="border-left: 4px solid var(--success);">
-            <div class="card-heading" style="color: #6ee7b7;">✅ ขอบเขตภายในระบบ (In-Scope)</div>
-            <ul class="card-text" style="padding-left: 1.25rem; line-height: 1.7;">
-              <li>ระบบยืนยันตัวตน Bcrypt Cost 12 + Persistent PostgreSQL Session Store</li>
-              <li>ระบบป้องกัน Brute Force Login Lockout (8 ครั้งใน 10 นาที)</li>
-              <li>Dynamic RBAC 14 Permissions พร้อมตารางสิทธิ์ Dynamic Matrix UI</li>
-              <li>Database Engine Exclusion Constraint ป้องกัน Double-Booking</li>
-              <li>ระบบ Auto-Reject คิวที่เวลาชนกันอัตโนมัติเมื่อมีการอนุมัติรายการใดรายการหนึ่ง</li>
-              <li>การตรวจ Magic Bytes ของไฟล์แนบจริงฝั่ง Server + Anti-IDOR Stream</li>
-              <li>บันทึกประวัติความปลอดภัยและการทำงาน (Security Audit Logging)</li>
-            </ul>
-          </div>
-          <div class="glass-card" style="border-left: 4px solid var(--text-muted);">
-            <div class="card-heading" style="color: #cbd5e1;">⏸️ ขอบเขตนอกระบบสำหรับอนาคต (Out-of-Scope)</div>
-            <ul class="card-text" style="padding-left: 1.25rem; line-height: 1.7;">
-              <li>ระบบชำระเงินค่าเช่าห้อง (เนื่องจากเป็นระบบบริหารจัดการภายในองค์กร)</li>
-              <li>การเชื่อมต่อระบบปฏิทินบุคคลภายนอก (เช่น Google Calendar / Office 365)</li>
-              <li>การควบคุมสวิตช์ไฟหรือกลอนประตูดิจิทัลฮาร์ดแวร์จริง (IoT Hardware)</li>
-              <li>การส่ง SMS แจ้งเตือน (เลือกใช้ In-App Notifications และ Audit Logs แทน)</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 5: SCOPE ================= -->
+ <div class="slide-page" data-slide="5">
+ <div class="slide-header">
+ <span class="slide-badge"> ขอบเขตของระบบ</span>
+ <span class="slide-number">05 / 18</span>
+ </div>
+ <h2 class="slide-title">ขอบเขตของระบบ (In-Scope vs Out-of-Scope)</h2>
+ <p class="slide-subtitle">การกำหนดขอบเขตฟังก์ชันการทำงานที่ชัดเจนเพื่อประสิทธิภาพและความปลอดภัยสูงสุด</p>
+ <div class="slide-body">
+ <div class="grid-2">
+ <div class="glass-card" style="border-left: 4px solid var(--success);">
+ <div class="card-heading" style="color: #6ee7b7;"> ขอบเขตภายในระบบ (In-Scope)</div>
+ <ul class="card-text" style="padding-left: 1.25rem; line-height: 1.7;">
+ <li>ระบบยืนยันตัวตน Bcrypt Cost 12 + Persistent PostgreSQL Session Store</li>
+ <li>ระบบป้องกัน Brute Force Login Lockout (8 ครั้งใน 10 นาที)</li>
+ <li>Dynamic RBAC 14 Permissions พร้อมตารางสิทธิ์ Dynamic Matrix UI</li>
+ <li>Database Engine Exclusion Constraint ป้องกัน Double-Booking</li>
+ <li>ระบบ Auto-Reject คิวที่เวลาชนกันอัตโนมัติเมื่อมีการอนุมัติรายการใดรายการหนึ่ง</li>
+ <li>การตรวจ Magic Bytes ของไฟล์แนบจริงฝั่ง Server + Anti-IDOR Stream</li>
+ <li>บันทึกประวัติความปลอดภัยและการทำงาน (Security Audit Logging)</li>
+ </ul>
+ </div>
+ <div class="glass-card" style="border-left: 4px solid var(--text-muted);">
+ <div class="card-heading" style="color: #cbd5e1;">⏸ ขอบเขตนอกระบบสำหรับอนาคต (Out-of-Scope)</div>
+ <ul class="card-text" style="padding-left: 1.25rem; line-height: 1.7;">
+ <li>ระบบชำระเงินค่าเช่าห้อง (เนื่องจากเป็นระบบบริหารจัดการภายในองค์กร)</li>
+ <li>การเชื่อมต่อระบบปฏิทินบุคคลภายนอก (เช่น Google Calendar / Office 365)</li>
+ <li>การควบคุมสวิตช์ไฟหรือกลอนประตูดิจิทัลฮาร์ดแวร์จริง (IoT Hardware)</li>
+ <li>การส่ง SMS แจ้งเตือน (เลือกใช้ In-App Notifications และ Audit Logs แทน)</li>
+ </ul>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 6: ROUTE ARCHITECTURE ================= -->
-    <div class="slide-page" data-slide="6">
-      <div class="slide-header">
-        <span class="slide-badge">🏗️ สถาปัตยกรรม Route</span>
-        <span class="slide-number">06 / 18</span>
-      </div>
-      <h2 class="slide-title">Route Architecture & Logical Separation</h2>
-      <p class="slide-subtitle">การแยกแยะเลเยอร์การทำงานอย่างเป็นระเบียบตามหลักสถาปัตยกรรม MVC</p>
-      <div class="slide-body">
-        <div class="grid-3">
-          <div class="glass-card">
-            <div class="card-heading">🌐 Web Application UI</div>
-            <p class="card-text">
-              <strong>/app</strong> — หน้าจอหลักผู้ใช้ (EJS)<br>
-              <strong>/app/rooms</strong> — หน้าจัดการข้อมูลห้อง<br>
-              <strong>/app/files/:id</strong> — เปิดดูไฟล์แนบ<br>
-              <em>เรนเดอร์แบบ SSR คลีนและรวดเร็ว</em>
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">👑 Web Admin Console</div>
-            <p class="card-text">
-              <strong>/admin/acl</strong> — Dynamic ACL Matrix<br>
-              <strong>/admin/users</strong> — จัดการบัญชีผู้ใช้<br>
-              <strong>/admin/logs</strong> — ดู Audit Logs ทั้งหมด<br>
-              <em>ล็อกสิทธิ์เฉพาะผู้มีสิทธิ์บริหาร</em>
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">⚡ RESTful JSON API</div>
-            <p class="card-text">
-              <strong>/api/acl-version</strong> — ตรวจสอบสิทธิ์สด<br>
-              <strong>/api/session-status</strong> — ตรวจสถานะล็อกอิน<br>
-              <strong>/api/admin/users</strong> — จัดการผู้ใช้ (Zero Leak)<br>
-              <strong>/api/admin/roles</strong> — อัปเดตสิทธิ์ ACL
-            </p>
-          </div>
-        </div>
-        <div class="code-block">
-          router.use('/app', requireAuth, appRoutes);<br>
-          router.use('/admin', requireAuth, adminRoutes);<br>
-          router.use('/api/admin', requireAuth, requirePermission('user.manage'), apiAdminRoutes);
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 6: ROUTE ARCHITECTURE ================= -->
+ <div class="slide-page" data-slide="6">
+ <div class="slide-header">
+ <span class="slide-badge"> สถาปัตยกรรม Route</span>
+ <span class="slide-number">06 / 18</span>
+ </div>
+ <h2 class="slide-title">Route Architecture & Logical Separation</h2>
+ <p class="slide-subtitle">การแยกแยะเลเยอร์การทำงานอย่างเป็นระเบียบตามหลักสถาปัตยกรรม MVC</p>
+ <div class="slide-body">
+ <div class="grid-3">
+ <div class="glass-card">
+ <div class="card-heading"> Web Application UI</div>
+ <p class="card-text">
+ <strong>/app</strong> — หน้าจอหลักผู้ใช้ (EJS)<br>
+ <strong>/app/rooms</strong> — หน้าจัดการข้อมูลห้อง<br>
+ <strong>/app/files/:id</strong> — เปิดดูไฟล์แนบ<br>
+ <em>เรนเดอร์แบบ SSR คลีนและรวดเร็ว</em>
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Web Admin Console</div>
+ <p class="card-text">
+ <strong>/admin/acl</strong> — Dynamic ACL Matrix<br>
+ <strong>/admin/users</strong> — จัดการบัญชีผู้ใช้<br>
+ <strong>/admin/logs</strong> — ดู Audit Logs ทั้งหมด<br>
+ <em>ล็อกสิทธิ์เฉพาะผู้มีสิทธิ์บริหาร</em>
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> RESTful JSON API</div>
+ <p class="card-text">
+ <strong>/api/acl-version</strong> — ตรวจสอบสิทธิ์สด<br>
+ <strong>/api/session-status</strong> — ตรวจสถานะล็อกอิน<br>
+ <strong>/api/admin/users</strong> — จัดการผู้ใช้ (Zero Leak)<br>
+ <strong>/api/admin/roles</strong> — อัปเดตสิทธิ์ ACL
+ </p>
+ </div>
+ </div>
+ <div class="code-block">
+ router.use('/app', requireAuth, appRoutes);<br>
+ router.use('/admin', requireAuth, adminRoutes);<br>
+ router.use('/api/admin', requireAuth, requirePermission('user.manage'), apiAdminRoutes);
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 7: MIDDLEWARE PIPELINE ================= -->
-    <div class="slide-page" data-slide="7">
-      <div class="slide-header">
-        <span class="slide-badge">🛡️ กลไกความปลอดภัย</span>
-        <span class="slide-number">07 / 18</span>
-      </div>
-      <h2 class="slide-title">Middleware Pipeline (Request Lifecycle)</h2>
-      <p class="slide-subtitle">ลำดับการตรวจสอบความปลอดภัยฝั่ง Server ในทุกคำขอก่อนถึง Controller</p>
-      <div class="slide-body">
-        <div class="glass-card" style="background: rgba(15, 23, 42, 0.95);">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; font-family: 'Chakra Petch', sans-serif;">
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">1. trust proxy</div>
-            <span>➔</span>
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">2. Body Parser</div>
-            <span>➔</span>
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">3. pg-session (DB)</div>
-            <span>➔</span>
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">4. Live ACL Check</div>
-            <span>➔</span>
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">5. requireAuth</div>
-          </div>
-          <div style="display: flex; justify-content: center; margin: 0.5rem 0;">⬇️</div>
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; font-family: 'Chakra Petch', sans-serif;">
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">6. requirePermission</div>
-            <span>➔</span>
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">7. verifyFileSignature</div>
-            <span>➔</span>
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">8. Controller Logic</div>
-            <span>➔</span>
-            <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">9. Error Handler</div>
-          </div>
-        </div>
-        <p class="card-text" style="font-size: 0.85rem; color: #94a3b8; text-align: center;">
-          🔒 <strong>Zero Bypass Principle:</strong> ทุกคำขอต้องผ่านการตรวจสอบตามลำดับอย่างเข้มงวด ป้องกันการลักลอบเรียกใช้งานฟังก์ชันโดยไม่ได้รับอนุญาต
-        </p>
-      </div>
-    </div>
+ <!-- ================= SLIDE 7: MIDDLEWARE PIPELINE ================= -->
+ <div class="slide-page" data-slide="7">
+ <div class="slide-header">
+ <span class="slide-badge"> กลไกความปลอดภัย</span>
+ <span class="slide-number">07 / 18</span>
+ </div>
+ <h2 class="slide-title">Middleware Pipeline (Request Lifecycle)</h2>
+ <p class="slide-subtitle">ลำดับการตรวจสอบความปลอดภัยฝั่ง Server ในทุกคำขอก่อนถึง Controller</p>
+ <div class="slide-body">
+ <div class="glass-card" style="background: rgba(15, 23, 42, 0.95);">
+ <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; font-family: 'Chakra Petch', sans-serif;">
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">1. trust proxy</div>
+ <span></span>
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">2. Body Parser</div>
+ <span></span>
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">3. pg-session (DB)</div>
+ <span></span>
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">4. Live ACL Check</div>
+ <span></span>
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">5. requireAuth</div>
+ </div>
+ <div style="display: flex; justify-content: center; margin: 0.5rem 0;">⬇</div>
+ <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; font-family: 'Chakra Petch', sans-serif;">
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">6. requirePermission</div>
+ <span></span>
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">7. verifyFileSignature</div>
+ <span></span>
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">8. Controller Logic</div>
+ <span></span>
+ <div style="background: #1e293b; padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid #334155;">9. Error Handler</div>
+ </div>
+ </div>
+ <p class="card-text" style="font-size: 0.85rem; color: #94a3b8; text-align: center;">
+ <strong>Zero Bypass Principle:</strong> ทุกคำขอต้องผ่านการตรวจสอบตามลำดับอย่างเข้มงวด ป้องกันการลักลอบเรียกใช้งานฟังก์ชันโดยไม่ได้รับอนุญาต
+ </p>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 8: AUTH & SESSION ================= -->
-    <div class="slide-page" data-slide="8">
-      <div class="slide-header">
-        <span class="slide-badge">🔑 ยืนยันตัวตน & เซสชัน</span>
-        <span class="slide-number">08 / 18</span>
-      </div>
-      <h2 class="slide-title">Authentication & Session Management</h2>
-      <p class="slide-subtitle">มาตรฐานความปลอดภัยระดับองค์กร: การป้องกัน Brute Force, Fixation และ Credential Leakage</p>
-      <div class="slide-body">
-        <div class="grid-2">
-          <div class="glass-card">
-            <div class="card-heading">🔐 Bcrypt Cost 12 & Zero Leak</div>
-            <p class="card-text">
-              • รหัสผ่านเข้ารหัสด้วย <strong>Bcrypt Salt Rounds = 12</strong><br>
-              • ป้องกัน Rainbow Table และพจนานุกรมถอดรหัส<br>
-              • <strong>Zero Credential Leakage:</strong> ตัด field <code>password_hash</code> ออกจาก JSON Response และ Audit Log ทุกจุด
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">💾 PostgreSQL Session Store</div>
-            <p class="card-text">
-              • บันทึกลงตาราง <strong>user_sessions</strong> ผ่าน connect-pg-simple<br>
-              • เซสชันไม่หลุดเมื่อรีสตาร์ตเซิร์ฟเวอร์<br>
-              • กำหนด Session Timeout 30 นาที พร้อม Rolling Refresh เมื่อมีการใช้งานต่อเนื่อง
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">🔄 Session Regeneration</div>
-            <p class="card-text">
-              • เมื่อยืนยันตัวตนผ่าน จะสั่ง <code>req.session.regenerate()</code> ทันที<br>
-              • สร้าง Session ID ใหม่ ป้องกัน <strong>Session Fixation Attack</strong>
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">🚫 Brute Force Lockout Guard</div>
-            <p class="card-text">
-              • ตรวจจับการพยายามล็อกอินผิดพลาดเกิน <strong>8 ครั้งใน 10 นาที</strong><br>
-              • ระงับการเข้าใช้งานชั่วคราว 10 นาทีทันที พร้อมบันทึก Security Audit Log
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 8: AUTH & SESSION ================= -->
+ <div class="slide-page" data-slide="8">
+ <div class="slide-header">
+ <span class="slide-badge"> ยืนยันตัวตน & เซสชัน</span>
+ <span class="slide-number">08 / 18</span>
+ </div>
+ <h2 class="slide-title">Authentication & Session Management</h2>
+ <p class="slide-subtitle">มาตรฐานความปลอดภัยระดับองค์กร: การป้องกัน Brute Force, Fixation และ Credential Leakage</p>
+ <div class="slide-body">
+ <div class="grid-2">
+ <div class="glass-card">
+ <div class="card-heading"> Bcrypt Cost 12 & Zero Leak</div>
+ <p class="card-text">
+ • รหัสผ่านเข้ารหัสด้วย <strong>Bcrypt Salt Rounds = 12</strong><br>
+ • ป้องกัน Rainbow Table และพจนานุกรมถอดรหัส<br>
+ • <strong>Zero Credential Leakage:</strong> ตัด field <code>password_hash</code> ออกจาก JSON Response และ Audit Log ทุกจุด
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> PostgreSQL Session Store</div>
+ <p class="card-text">
+ • บันทึกลงตาราง <strong>user_sessions</strong> ผ่าน connect-pg-simple<br>
+ • เซสชันไม่หลุดเมื่อรีสตาร์ตเซิร์ฟเวอร์<br>
+ • กำหนด Session Timeout 30 นาที พร้อม Rolling Refresh เมื่อมีการใช้งานต่อเนื่อง
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Session Regeneration</div>
+ <p class="card-text">
+ • เมื่อยืนยันตัวตนผ่าน จะสั่ง <code>req.session.regenerate()</code> ทันที<br>
+ • สร้าง Session ID ใหม่ ป้องกัน <strong>Session Fixation Attack</strong>
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Brute Force Lockout Guard</div>
+ <p class="card-text">
+ • ตรวจจับการพยายามล็อกอินผิดพลาดเกิน <strong>8 ครั้งใน 10 นาที</strong><br>
+ • ระงับการเข้าใช้งานชั่วคราว 10 นาทีทันที พร้อมบันทึก Security Audit Log
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 9: DATABASE SCHEMA & ER ================= -->
-    <div class="slide-page" data-slide="9">
-      <div class="slide-header">
-        <span class="slide-badge">🗄️ โครงสร้างฐานข้อมูล</span>
-        <span class="slide-number">09 / 18</span>
-      </div>
-      <h2 class="slide-title">Database Schema & Exclusion Constraint</h2>
-      <p class="slide-subtitle">การออกแบบ 8 ตารางฐานข้อมูล PostgreSQL ผสานกลไก Concurrency Guard ระดับ Engine</p>
-      <div class="slide-body">
-        <div class="grid-3" style="font-size: 0.8rem;">
-          <div class="glass-card">
-            <strong>1. roles</strong> (role_id, role_name)<br>
-            <strong>2. permissions</strong> (permission_id, code)<br>
-            <strong>3. role_permissions</strong> (M:N ACL Matrix)
-          </div>
-          <div class="glass-card">
-            <strong>4. users</strong> (user_id, role_id, is_active)<br>
-            <strong>5. rooms</strong> (room_id, capacity, is_active)<br>
-            <strong>6. user_sessions</strong> (sid, sess, expire)
-          </div>
-          <div class="glass-card">
-            <strong>7. room_bookings</strong> (ช่วงเวลา, สถานะ)<br>
-            <strong>8. booking_attachments</strong> (UUID Storage)<br>
-            <strong>9. audit_logs</strong> (บันทึกเหตุการณ์ความปลอดภัย)
-          </div>
-        </div>
-        <div class="code-block">
-          -- Exclusion Constraint ระดับ Database Engine ป้องกัน Double-Booking:<br>
-          CONSTRAINT no_overlapping_active_bookings EXCLUDE USING gist (<br>
-          &nbsp;&nbsp;room_id WITH =,<br>
-          &nbsp;&nbsp;tsrange(start_time, end_time) WITH &&<br>
-          ) WHERE (status IN ('APPROVED', 'IN_USE', 'BLOCKED'));
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 9: DATABASE SCHEMA & ER ================= -->
+ <div class="slide-page" data-slide="9">
+ <div class="slide-header">
+ <span class="slide-badge"> โครงสร้างฐานข้อมูล</span>
+ <span class="slide-number">09 / 18</span>
+ </div>
+ <h2 class="slide-title">Database Schema & Exclusion Constraint</h2>
+ <p class="slide-subtitle">การออกแบบ 8 ตารางฐานข้อมูล PostgreSQL ผสานกลไก Concurrency Guard ระดับ Engine</p>
+ <div class="slide-body">
+ <div class="grid-3" style="font-size: 0.8rem;">
+ <div class="glass-card">
+ <strong>1. roles</strong> (role_id, role_name)<br>
+ <strong>2. permissions</strong> (permission_id, code)<br>
+ <strong>3. role_permissions</strong> (M:N ACL Matrix)
+ </div>
+ <div class="glass-card">
+ <strong>4. users</strong> (user_id, role_id, is_active)<br>
+ <strong>5. rooms</strong> (room_id, capacity, is_active)<br>
+ <strong>6. user_sessions</strong> (sid, sess, expire)
+ </div>
+ <div class="glass-card">
+ <strong>7. room_bookings</strong> (ช่วงเวลา, สถานะ)<br>
+ <strong>8. booking_attachments</strong> (UUID Storage)<br>
+ <strong>9. audit_logs</strong> (บันทึกเหตุการณ์ความปลอดภัย)
+ </div>
+ </div>
+ <div class="code-block">
+ -- Exclusion Constraint ระดับ Database Engine ป้องกัน Double-Booking:<br>
+ CONSTRAINT no_overlapping_active_bookings EXCLUDE USING gist (<br>
+ &nbsp;&nbsp;room_id WITH =,<br>
+ &nbsp;&nbsp;tsrange(start_time, end_time) WITH &&<br>
+ ) WHERE (status IN ('APPROVED', 'IN_USE', 'BLOCKED'));
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 10: DYNAMIC ACL ARCHITECTURE ================= -->
-    <div class="slide-page" data-slide="10">
-      <div class="slide-header">
-        <span class="slide-badge">🎛️ ระบบสิทธิ์การใช้งาน</span>
-        <span class="slide-number">10 / 18</span>
-      </div>
-      <h2 class="slide-title">Dynamic ACL & RBAC Architecture</h2>
-      <p class="slide-subtitle">สถาปัตยกรรมการจัดการสิทธิ์แบบยืดหยุ่น ไร้การฮาร์ดโค้ดในระดับ Controller</p>
-      <div class="slide-body">
-        <div class="grid-2">
-          <div class="glass-card">
-            <div class="card-heading">🎯 Granular Permissions (14 สิทธิ์)</div>
-            <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
-              • <strong>หมวดการจอง:</strong> booking.create, booking.read_own, booking.cancel_own<br>
-              • <strong>หมวดอนุมัติ:</strong> booking.approve<br>
-              • <strong>หมวดหน้างาน:</strong> facility.checkin, facility.checkout, room.block_schedule<br>
-              • <strong>หมวดห้องประชุม:</strong> room.manage, room.view_schedule<br>
-              • <strong>หมวดบริหารระบบ:</strong> acl.manage, user.manage, audit.view, file.view
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">⚡ Dynamic Check on Request</div>
-            <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
-              • สิทธิ์ถูกผูกผ่านตาราง <strong>role_permissions</strong> ใน Database<br>
-              • ฟังก์ชัน <code>requirePermission(code)</code> ดึงสิทธิ์ล่าสุดของ User แบบ Real-time<br>
-              • หากไม่มีสิทธิ์ จะดีดออกด้วย HTTP 403 Forbidden ทันที พร้อมบันทึก Audit Log สถานะ DENIED
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 10: DYNAMIC ACL ARCHITECTURE ================= -->
+ <div class="slide-page" data-slide="10">
+ <div class="slide-header">
+ <span class="slide-badge"> ระบบสิทธิ์การใช้งาน</span>
+ <span class="slide-number">10 / 18</span>
+ </div>
+ <h2 class="slide-title">Dynamic ACL & RBAC Architecture</h2>
+ <p class="slide-subtitle">สถาปัตยกรรมการจัดการสิทธิ์แบบยืดหยุ่น ไร้การฮาร์ดโค้ดในระดับ Controller</p>
+ <div class="slide-body">
+ <div class="grid-2">
+ <div class="glass-card">
+ <div class="card-heading"> Granular Permissions (14 สิทธิ์)</div>
+ <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
+ • <strong>หมวดการจอง:</strong> booking.create, booking.read_own, booking.cancel_own<br>
+ • <strong>หมวดอนุมัติ:</strong> booking.approve<br>
+ • <strong>หมวดหน้างาน:</strong> facility.checkin, facility.checkout, room.block_schedule<br>
+ • <strong>หมวดห้องประชุม:</strong> room.manage, room.view_schedule<br>
+ • <strong>หมวดบริหารระบบ:</strong> acl.manage, user.manage, audit.view, file.view
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Dynamic Check on Request</div>
+ <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
+ • สิทธิ์ถูกผูกผ่านตาราง <strong>role_permissions</strong> ใน Database<br>
+ • ฟังก์ชัน <code>requirePermission(code)</code> ดึงสิทธิ์ล่าสุดของ User แบบ Real-time<br>
+ • หากไม่มีสิทธิ์ จะดีดออกด้วย HTTP 403 Forbidden ทันที พร้อมบันทึก Audit Log สถานะ DENIED
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 11: DYNAMIC ACL UI ================= -->
-    <div class="slide-page" data-slide="11">
-      <div class="slide-header">
-        <span class="slide-badge">🖥️ หน้าจอจัดการสิทธิ์สด</span>
-        <span class="slide-number">11 / 18</span>
-      </div>
-      <h2 class="slide-title">Dynamic ACL Matrix UI (Zero Downtime)</h2>
-      <p class="slide-subtitle">ปรับเปลี่ยนหน้าที่ของแต่ละตำแหน่งได้ทันทีผ่านหน้าเว็บ โดยไม่ต้อง Restart Server</p>
-      <div class="slide-body">
-        <div class="grid-3">
-          <div class="glass-card">
-            <div class="card-heading">🗂️ 2D Matrix Grid</div>
-            <p class="card-text">
-              ตาราง 2 มิติแสดงความสัมพันธ์ระหว่าง 4 Roles กับ 14 Permissions จัดกลุ่มตามโมดูลอย่างเป็นระเบียบ
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">⚡ Instant AJAX Toggle</div>
-            <p class="card-text">
-              คลิก Checkbox เพื่อเปิดหรือปิดสิทธิ์ ระบบยิง AJAX อัปเดตตารางฐานข้อมูลทันทีในเสี้ยววินาที
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">🔄 Live Client Sync</div>
-            <p class="card-text">
-              มี Endpoint <code>/api/acl-version</code> ตรวจสอบเวอร์ชัน ทำให้หน้าจอผู้ใช้ปรับเปลี่ยนตามสิทธิ์ใหม่ได้แบบ Real-time
-            </p>
-          </div>
-        </div>
-        <div class="code-block" style="text-align: center; color: #86efac;">
-          ✅ พิสูจน์ได้ในการสาธิตสด: ปลดสิทธิ์ booking.create ของ Requester ➔ ปุ่มจองห้องบนหน้าเว็บหายทันที ➔ ยิง API โดน 403
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 11: DYNAMIC ACL UI ================= -->
+ <div class="slide-page" data-slide="11">
+ <div class="slide-header">
+ <span class="slide-badge"> หน้าจอจัดการสิทธิ์สด</span>
+ <span class="slide-number">11 / 18</span>
+ </div>
+ <h2 class="slide-title">Dynamic ACL Matrix UI (Zero Downtime)</h2>
+ <p class="slide-subtitle">ปรับเปลี่ยนหน้าที่ของแต่ละตำแหน่งได้ทันทีผ่านหน้าเว็บ โดยไม่ต้อง Restart Server</p>
+ <div class="slide-body">
+ <div class="grid-3">
+ <div class="glass-card">
+ <div class="card-heading"> 2D Matrix Grid</div>
+ <p class="card-text">
+ ตาราง 2 มิติแสดงความสัมพันธ์ระหว่าง 4 Roles กับ 14 Permissions จัดกลุ่มตามโมดูลอย่างเป็นระเบียบ
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Instant AJAX Toggle</div>
+ <p class="card-text">
+ คลิก Checkbox เพื่อเปิดหรือปิดสิทธิ์ ระบบยิง AJAX อัปเดตตารางฐานข้อมูลทันทีในเสี้ยววินาที
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Live Client Sync</div>
+ <p class="card-text">
+ มี Endpoint <code>/api/acl-version</code> ตรวจสอบเวอร์ชัน ทำให้หน้าจอผู้ใช้ปรับเปลี่ยนตามสิทธิ์ใหม่ได้แบบ Real-time
+ </p>
+ </div>
+ </div>
+ <div class="code-block" style="text-align: center; color: #86efac;">
+ พิสูจน์ได้ในการสาธิตสด: ปลดสิทธิ์ booking.create ของ Requester ปุ่มจองห้องบนหน้าเว็บหายทันที ยิง API โดน 403
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 12: ACL SAFETY GUARDS ================= -->
-    <div class="slide-page" data-slide="12">
-      <div class="slide-header">
-        <span class="slide-badge">🛡️ กฎความปลอดภัยของสิทธิ์</span>
-        <span class="slide-number">12 / 18</span>
-      </div>
-      <h2 class="slide-title">ACL Safety Guards & Integrity Rules</h2>
-      <p class="slide-subtitle">กลไกป้องกันความผิดพลาดของผู้ดูแลระบบ (Fool-Proof Protection)</p>
-      <div class="slide-body">
-        <div class="grid-2">
-          <div class="glass-card" style="border-left: 4px solid var(--danger);">
-            <div class="card-heading">🚫 ห้ามลบบทบาทที่มีผู้ใช้งานอยู่</div>
-            <p class="card-text">
-              หาก Role นั้นยังมีบัญชีผู้ใช้สังกัดอยู่ ระบบจะปฏิเสธการลบทันที ป้องกันการเกิดบัญชีผู้ใช้ลอยเคว้ง (Orphan Users) ที่ไม่มีสิทธิ์ในระบบ
-            </p>
-          </div>
-          <div class="glass-card" style="border-left: 4px solid var(--warning);">
-            <div class="card-heading">🔒 ห้ามริบสิทธิ์จาก Admin คนสุดท้าย</div>
-            <p class="card-text">
-              ระบบมี Guard ป้องกันการปลดสิทธิ์ <code>acl.manage</code> จากผู้ดูแลระบบคนสุดท้าย เพื่อป้องกันอุบัติเหตุการล็อกตัวเองออกจากระบบ (Lockout Prevention)
-            </p>
-          </div>
-        </div>
-        <div class="glass-card" style="margin-top: 0.5rem; background: rgba(99, 102, 241, 0.08);">
-          <div class="card-heading" style="color: #a5b4fc;">🔗 Database Foreign Key Constraints</div>
-          <p class="card-text">
-            ใช้ <code>ON DELETE CASCADE</code> สำหรับตาราง role_permissions เพื่อล้างสิทธิ์อัตโนมัติ และใช้ <code>ON DELETE RESTRICT</code> สำหรับตารางข้อมูลหลัก ป้องกันข้อมูลสูญหาย
-          </p>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 12: ACL SAFETY GUARDS ================= -->
+ <div class="slide-page" data-slide="12">
+ <div class="slide-header">
+ <span class="slide-badge"> กฎความปลอดภัยของสิทธิ์</span>
+ <span class="slide-number">12 / 18</span>
+ </div>
+ <h2 class="slide-title">ACL Safety Guards & Integrity Rules</h2>
+ <p class="slide-subtitle">กลไกป้องกันความผิดพลาดของผู้ดูแลระบบ (Fool-Proof Protection)</p>
+ <div class="slide-body">
+ <div class="grid-2">
+ <div class="glass-card" style="border-left: 4px solid var(--danger);">
+ <div class="card-heading"> ห้ามลบบทบาทที่มีผู้ใช้งานอยู่</div>
+ <p class="card-text">
+ หาก Role นั้นยังมีบัญชีผู้ใช้สังกัดอยู่ ระบบจะปฏิเสธการลบทันที ป้องกันการเกิดบัญชีผู้ใช้ลอยเคว้ง (Orphan Users) ที่ไม่มีสิทธิ์ในระบบ
+ </p>
+ </div>
+ <div class="glass-card" style="border-left: 4px solid var(--warning);">
+ <div class="card-heading"> ห้ามริบสิทธิ์จาก Admin คนสุดท้าย</div>
+ <p class="card-text">
+ ระบบมี Guard ป้องกันการปลดสิทธิ์ <code>acl.manage</code> จากผู้ดูแลระบบคนสุดท้าย เพื่อป้องกันอุบัติเหตุการล็อกตัวเองออกจากระบบ (Lockout Prevention)
+ </p>
+ </div>
+ </div>
+ <div class="glass-card" style="margin-top: 0.5rem; background: rgba(99, 102, 241, 0.08);">
+ <div class="card-heading" style="color: #a5b4fc;"> Database Foreign Key Constraints</div>
+ <p class="card-text">
+ ใช้ <code>ON DELETE CASCADE</code> สำหรับตาราง role_permissions เพื่อล้างสิทธิ์อัตโนมัติ และใช้ <code>ON DELETE RESTRICT</code> สำหรับตารางข้อมูลหลัก ป้องกันข้อมูลสูญหาย
+ </p>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 13: SECURE FILE UPLOAD ================= -->
-    <div class="slide-page" data-slide="13">
-      <div class="slide-header">
-        <span class="slide-badge">📂 ความปลอดภัยของไฟล์แนบ</span>
-        <span class="slide-number">13 / 18</span>
-      </div>
-      <h2 class="slide-title">Secure File Upload & Magic Bytes Pipeline</h2>
-      <p class="slide-subtitle">การป้องกันการปลอมแปลงนามสกุลไฟล์และการเข้าถึงไฟล์โดยมิชอบ (Anti-IDOR)</p>
-      <div class="slide-body">
-        <div class="grid-3">
-          <div class="glass-card">
-            <div class="card-heading">🔍 Magic Bytes Guard</div>
-            <p class="card-text">
-              อ่าน 4–8 ไบต์แรกของไฟล์บนดิสก์ เช่น PDF ต้องขึ้นด้วย <code>%PDF</code> (0x25 0x50 0x44 0x46) หากเป็นไฟล์ปลอมจะ <strong>ลบไฟล์ทิ้งทันที</strong>
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">🗄️ Outside Public Root</div>
-            <p class="card-text">
-              เก็บไฟล์ไว้ที่ <code>uploads/</code> นอก Web Public Root และเปลี่ยนชื่อเป็น Random UUID ป้องกัน Path Traversal (../../)
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">🛡️ Anti-IDOR Stream</div>
-            <p class="card-text">
-              การเปิดดูไฟล์ต้องผ่าน Route <code>/app/files/:id</code> พร้อมเช็กสิทธิ์ <code>file.view</code> ในระบบ ห้ามเข้าถึงไฟล์โดยตรงผ่าน URL
-            </p>
-          </div>
-        </div>
-        <div class="code-block">
-          if (!isValidMagicBytes) {<br>
-          &nbsp;&nbsp;fs.unlinkSync(filePath); // ลบไฟล์อันตรายทิ้งทันที<br>
-          &nbsp;&nbsp;await logAudit({ action: 'FILE_REJECTED', status: 'DENIED', details: 'Magic bytes mismatch' });<br>
-          &nbsp;&nbsp;return res.status(400).send('ตรวจพบลายเซ็นไฟล์ไม่ถูกต้อง');<br>
-          }
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 13: SECURE FILE UPLOAD ================= -->
+ <div class="slide-page" data-slide="13">
+ <div class="slide-header">
+ <span class="slide-badge"> ความปลอดภัยของไฟล์แนบ</span>
+ <span class="slide-number">13 / 18</span>
+ </div>
+ <h2 class="slide-title">Secure File Upload & Magic Bytes Pipeline</h2>
+ <p class="slide-subtitle">การป้องกันการปลอมแปลงนามสกุลไฟล์และการเข้าถึงไฟล์โดยมิชอบ (Anti-IDOR)</p>
+ <div class="slide-body">
+ <div class="grid-3">
+ <div class="glass-card">
+ <div class="card-heading"> Magic Bytes Guard</div>
+ <p class="card-text">
+ อ่าน 4–8 ไบต์แรกของไฟล์บนดิสก์ เช่น PDF ต้องขึ้นด้วย <code>%PDF</code> (0x25 0x50 0x44 0x46) หากเป็นไฟล์ปลอมจะ <strong>ลบไฟล์ทิ้งทันที</strong>
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Outside Public Root</div>
+ <p class="card-text">
+ เก็บไฟล์ไว้ที่ <code>uploads/</code> นอก Web Public Root และเปลี่ยนชื่อเป็น Random UUID ป้องกัน Path Traversal (../../)
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> Anti-IDOR Stream</div>
+ <p class="card-text">
+ การเปิดดูไฟล์ต้องผ่าน Route <code>/app/files/:id</code> พร้อมเช็กสิทธิ์ <code>file.view</code> ในระบบ ห้ามเข้าถึงไฟล์โดยตรงผ่าน URL
+ </p>
+ </div>
+ </div>
+ <div class="code-block">
+ if (!isValidMagicBytes) {<br>
+ &nbsp;&nbsp;fs.unlinkSync(filePath); // ลบไฟล์อันตรายทิ้งทันที<br>
+ &nbsp;&nbsp;await logAudit({ action: 'FILE_REJECTED', status: 'DENIED', details: 'Magic bytes mismatch' });<br>
+ &nbsp;&nbsp;return res.status(400).send('ตรวจพบลายเซ็นไฟล์ไม่ถูกต้อง');<br>
+ }
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 14: AUDIT LOGS ================= -->
-    <div class="slide-page" data-slide="14">
-      <div class="slide-header">
-        <span class="slide-badge">📜 บันทึกประวัติและตรวจสอบ</span>
-        <span class="slide-number">14 / 18</span>
-      </div>
-      <h2 class="slide-title">Comprehensive Audit Logging</h2>
-      <p class="slide-subtitle">การบันทึกประวัติความปลอดภัยและการทำงานที่โปร่งใส ตรวจสอบย้อนหลังได้ 100%</p>
-      <div class="slide-body">
-        <div class="grid-2">
-          <div class="glass-card">
-            <div class="card-heading">📋 ข้อมูลที่บันทึกลงใน audit_logs</div>
-            <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
-              • วันที่และเวลาประทับตรา (created_at)<br>
-              • ผู้กระทำ (user_id, username, role_name)<br>
-              • การกระทำ (action เช่น LOGIN_SUCCESS, BOOKING_CREATE, ACL_UPDATE)<br>
-              • แหล่งข้อมูลเป้าหมาย (resource, resource_id)<br>
-              • สถานะผลลัพธ์ (SUCCESS, FAILED, DENIED)<br>
-              • ข้อมูลเครือข่าย (ip_address, user_agent)
-            </p>
-          </div>
-          <div class="glass-card">
-            <div class="card-heading">🔒 มาตรการความปลอดภัยของ Log</div>
-            <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
-              • <strong>Append-Only:</strong> ไม่มี API หรือหน้าจอสำหรับแก้ไขหรือลบ Log<br>
-              • <strong>Zero Credential Leakage:</strong> ไม่มีการบันทึกรหัสผ่านหรือ hash ใดๆ<br>
-              • <strong>Fast Query Indexing:</strong> สร้าง B-tree Index บน created_at, action, username เพื่อค้นหาย้อนหลังได้อย่างรวดเร็ว
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 14: AUDIT LOGS ================= -->
+ <div class="slide-page" data-slide="14">
+ <div class="slide-header">
+ <span class="slide-badge"> บันทึกประวัติและตรวจสอบ</span>
+ <span class="slide-number">14 / 18</span>
+ </div>
+ <h2 class="slide-title">Comprehensive Audit Logging</h2>
+ <p class="slide-subtitle">การบันทึกประวัติความปลอดภัยและการทำงานที่โปร่งใส ตรวจสอบย้อนหลังได้ 100%</p>
+ <div class="slide-body">
+ <div class="grid-2">
+ <div class="glass-card">
+ <div class="card-heading"> ข้อมูลที่บันทึกลงใน audit_logs</div>
+ <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
+ • วันที่และเวลาประทับตรา (created_at)<br>
+ • ผู้กระทำ (user_id, username, role_name)<br>
+ • การกระทำ (action เช่น LOGIN_SUCCESS, BOOKING_CREATE, ACL_UPDATE)<br>
+ • แหล่งข้อมูลเป้าหมาย (resource, resource_id)<br>
+ • สถานะผลลัพธ์ (SUCCESS, FAILED, DENIED)<br>
+ • ข้อมูลเครือข่าย (ip_address, user_agent)
+ </p>
+ </div>
+ <div class="glass-card">
+ <div class="card-heading"> มาตรการความปลอดภัยของ Log</div>
+ <p class="card-text" style="font-size: 0.82rem; line-height: 1.6;">
+ • <strong>Append-Only:</strong> ไม่มี API หรือหน้าจอสำหรับแก้ไขหรือลบ Log<br>
+ • <strong>Zero Credential Leakage:</strong> ไม่มีการบันทึกรหัสผ่านหรือ hash ใดๆ<br>
+ • <strong>Fast Query Indexing:</strong> สร้าง B-tree Index บน created_at, action, username เพื่อค้นหาย้อนหลังได้อย่างรวดเร็ว
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 15: 14 AUTOMATED TEST CASES ================= -->
-    <div class="slide-page" data-slide="15">
-      <div class="slide-header">
-        <span class="slide-badge">🧪 การทดสอบอัตโนมัติ</span>
-        <span class="slide-number">15 / 18</span>
-      </div>
-      <h2 class="slide-title">14 Automated Test Cases (npm test)</h2>
-      <p class="slide-subtitle">ผลการทดสอบระบบแบบอัตโนมัติครอบคลุมทุกมิติความปลอดภัย — ผ่าน 100% (14/14 Tests)</p>
-      <div class="slide-body">
-        <div class="grid-2" style="font-size: 0.78rem;">
-          <div class="glass-card" style="line-height: 1.6;">
-            ✅ <strong>Test 1:</strong> Guest ยิง /api/admin/* ต้องได้ 401 Unauthorized<br>
-            ✅ <strong>Test 2:</strong> Login รหัสผิด ต้อง Redirect กลับพร้อมข้อความ Error<br>
-            ✅ <strong>Test 3:</strong> Requester ยิง /api/admin/* ต้องได้ 403 Forbidden<br>
-            ✅ <strong>Test 4:</strong> Requester เปิดหน้า /admin/acl ต้องได้ 403 Forbidden<br>
-            ✅ <strong>Test 5:</strong> Admin เข้า /api/admin/users ได้ 200 + Zero Credential Leak<br>
-            ✅ <strong>Test 6:</strong> Admin เปิดหน้า /admin/acl ได้ 200 + Render Dynamic Matrix<br>
-            ✅ <strong>Test 7:</strong> ผู้ใช้ที่ถูกระงับ (is_active=false) ต้องถูกบล็อกการล็อกอิน
-          </div>
-          <div class="glass-card" style="line-height: 1.6;">
-            ✅ <strong>Test 8:</strong> Session Regeneration on Login (Session ID เปลี่ยนใหม่)<br>
-            ✅ <strong>Test 9:</strong> Brute Force Lockout Guard (ระงับเมื่อล็อกอินผิดเกินกำหนด)<br>
-            ✅ <strong>Test 10:</strong> Dynamic ACL Live Sync Endpoint (/api/acl-version)<br>
-            ✅ <strong>Test 11:</strong> File Upload Magic Bytes ปฏิเสธไฟล์ปลอมแปลงทันที<br>
-            ✅ <strong>Test 12:</strong> File Upload Magic Bytes ยอมรับไฟล์ PDF แท้ (%PDF)<br>
-            ✅ <strong>Test 13:</strong> Exclusion Constraint ป้องกัน Double-Booking ชนกัน<br>
-            ✅ <strong>Test 14:</strong> Auto Collision Resolution (ปฏิเสธคิวชนอัตโนมัติเมื่ออนุมัติ)
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 15: 14 AUTOMATED TEST CASES ================= -->
+ <div class="slide-page" data-slide="15">
+ <div class="slide-header">
+ <span class="slide-badge"> การทดสอบอัตโนมัติ</span>
+ <span class="slide-number">15 / 18</span>
+ </div>
+ <h2 class="slide-title">14 Automated Test Cases (npm test)</h2>
+ <p class="slide-subtitle">ผลการทดสอบระบบแบบอัตโนมัติครอบคลุมทุกมิติความปลอดภัย — ผ่าน 100% (14/14 Tests)</p>
+ <div class="slide-body">
+ <div class="grid-2" style="font-size: 0.78rem;">
+ <div class="glass-card" style="line-height: 1.6;">
+ <strong>Test 1:</strong> Guest ยิง /api/admin/* ต้องได้ 401 Unauthorized<br>
+ <strong>Test 2:</strong> Login รหัสผิด ต้อง Redirect กลับพร้อมข้อความ Error<br>
+ <strong>Test 3:</strong> Requester ยิง /api/admin/* ต้องได้ 403 Forbidden<br>
+ <strong>Test 4:</strong> Requester เปิดหน้า /admin/acl ต้องได้ 403 Forbidden<br>
+ <strong>Test 5:</strong> Admin เข้า /api/admin/users ได้ 200 + Zero Credential Leak<br>
+ <strong>Test 6:</strong> Admin เปิดหน้า /admin/acl ได้ 200 + Render Dynamic Matrix<br>
+ <strong>Test 7:</strong> ผู้ใช้ที่ถูกระงับ (is_active=false) ต้องถูกบล็อกการล็อกอิน
+ </div>
+ <div class="glass-card" style="line-height: 1.6;">
+ <strong>Test 8:</strong> Session Regeneration on Login (Session ID เปลี่ยนใหม่)<br>
+ <strong>Test 9:</strong> Brute Force Lockout Guard (ระงับเมื่อล็อกอินผิดเกินกำหนด)<br>
+ <strong>Test 10:</strong> Dynamic ACL Live Sync Endpoint (/api/acl-version)<br>
+ <strong>Test 11:</strong> File Upload Magic Bytes ปฏิเสธไฟล์ปลอมแปลงทันที<br>
+ <strong>Test 12:</strong> File Upload Magic Bytes ยอมรับไฟล์ PDF แท้ (%PDF)<br>
+ <strong>Test 13:</strong> Exclusion Constraint ป้องกัน Double-Booking ชนกัน<br>
+ <strong>Test 14:</strong> Auto Collision Resolution (ปฏิเสธคิวชนอัตโนมัติเมื่ออนุมัติ)
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 16: CHALLENGES & LESSONS ================= -->
-    <div class="slide-page" data-slide="16">
-      <div class="slide-header">
-        <span class="slide-badge">💡 ปัญหาและบทเรียน</span>
-        <span class="slide-number">16 / 18</span>
-      </div>
-      <h2 class="slide-title">Challenges & Lessons Learned</h2>
-      <p class="slide-subtitle">ความท้าทายทางวิศวกรรมซอฟต์แวร์ที่แก้ไขสำเร็จ และแนวทางการพัฒนาต่อยอด</p>
-      <div class="slide-body">
-        <div class="grid-2">
-          <div class="glass-card" style="border-left: 4px solid var(--primary);">
-            <div class="card-heading">🛠️ ความท้าทายที่แก้ไขสำเร็จ</div>
-            <p class="card-text" style="line-height: 1.6;">
-              • <strong>Double-Booking:</strong> จัดการด้วย GIST Exclusion Constraint และ Pessimistic Row Lock (SELECT FOR UPDATE)<br>
-              • <strong>Session Loss on Reload:</strong> ใช้ connect-pg-simple บันทึกลง PostgreSQL ทำให้เซสชันคงอยู่ตลอดการพัฒนา<br>
-              • <strong>Fake File Injection:</strong> ใช้ Buffer Inspection อ่าน Magic Bytes ลึกถึงระดับไบต์จริงของไฟล์
-            </p>
-          </div>
-          <div class="glass-card" style="border-left: 4px solid var(--success);">
-            <div class="card-heading">🚀 การพัฒนาต่อยอดในอนาคต</div>
-            <p class="card-text" style="line-height: 1.6;">
-              • เชื่อมต่อ LINE Notify / Email แจ้งเตือนสถานะการอนุมัติแบบเรียลไทม์<br>
-              • ระบบสแกน QR Code หน้าห้องประชุมเพื่อ Check-in ทันทีผ่านสมาร์ตโฟน<br>
-              • เชื่อมต่อระบบ IoT เปิด/ปิดแอร์และไฟอัตโนมัติตามช่วงเวลาการจอง
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 16: CHALLENGES & LESSONS ================= -->
+ <div class="slide-page" data-slide="16">
+ <div class="slide-header">
+ <span class="slide-badge"> ปัญหาและบทเรียน</span>
+ <span class="slide-number">16 / 18</span>
+ </div>
+ <h2 class="slide-title">Challenges & Lessons Learned</h2>
+ <p class="slide-subtitle">ความท้าทายทางวิศวกรรมซอฟต์แวร์ที่แก้ไขสำเร็จ และแนวทางการพัฒนาต่อยอด</p>
+ <div class="slide-body">
+ <div class="grid-2">
+ <div class="glass-card" style="border-left: 4px solid var(--primary);">
+ <div class="card-heading"> ความท้าทายที่แก้ไขสำเร็จ</div>
+ <p class="card-text" style="line-height: 1.6;">
+ • <strong>Double-Booking:</strong> จัดการด้วย GIST Exclusion Constraint และ Pessimistic Row Lock (SELECT FOR UPDATE)<br>
+ • <strong>Session Loss on Reload:</strong> ใช้ connect-pg-simple บันทึกลง PostgreSQL ทำให้เซสชันคงอยู่ตลอดการพัฒนา<br>
+ • <strong>Fake File Injection:</strong> ใช้ Buffer Inspection อ่าน Magic Bytes ลึกถึงระดับไบต์จริงของไฟล์
+ </p>
+ </div>
+ <div class="glass-card" style="border-left: 4px solid var(--success);">
+ <div class="card-heading"> การพัฒนาต่อยอดในอนาคต</div>
+ <p class="card-text" style="line-height: 1.6;">
+ • เชื่อมต่อ LINE Notify / Email แจ้งเตือนสถานะการอนุมัติแบบเรียลไทม์<br>
+ • ระบบสแกน QR Code หน้าห้องประชุมเพื่อ Check-in ทันทีผ่านสมาร์ตโฟน<br>
+ • เชื่อมต่อระบบ IoT เปิด/ปิดแอร์และไฟอัตโนมัติตามช่วงเวลาการจอง
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 17: LIVE DEMO SCRIPT ================= -->
-    <div class="slide-page" data-slide="17">
-      <div class="slide-header">
-        <span class="slide-badge">🎬 ลำดับการสาธิตสด</span>
-        <span class="slide-number">17 / 18</span>
-      </div>
-      <h2 class="slide-title">Live Demo Guide (9 ขั้นตอนสาธิตสด 30/30)</h2>
-      <p class="slide-subtitle">ขั้นตอนการสาธิตสดต่อหน้าอาจารย์เพื่อยืนยันความถูกต้องของระบบครบทุกมิติ</p>
-      <div class="slide-body">
-        <div class="glass-card" style="font-size: 0.82rem; line-height: 1.6;">
-          <strong>1. รัน npm test:</strong> แสดงผลผ่าน 14/14 การทดสอบอัตโนมัติต่อหน้าอาจารย์<br>
-          <strong>2. สาธิต Brute Force:</strong> ใส่รหัสผิด 8 ครั้ง แสดงการดีดออกและระงับชั่วคราว 10 นาที<br>
-          <strong>3. สาธิต Requester:</strong> ล็อกอิน somchai ยื่นจองห้องผ่าน Mini Calendar Strip พร้อมแนบ PDF วาระประชุม<br>
-          <strong>4. สาธิตการจองชน (Pending):</strong> ล็อกอินอีกแท็บ ยื่นจองห้องเดียวกัน เวลาชนกัน (ระบบอนุญาตให้ยื่น Pending ได้)<br>
-          <strong>5. สาธิต Approver (Auto-Reject):</strong> ล็อกอิน manager อนุมัติคิวที่ 1 ➔ คิวที่ 2 ถูกปฏิเสธอัตโนมัติทันที<br>
-          <strong>6. สาธิต Facility:</strong> ล็อกอิน facility กด Check-in เริ่มใช้ห้อง ➔ กด Check-out ตรวจรับห้องพร้อมแนบรูปภาพ<br>
-          <strong>7. สาธิต Dynamic ACL:</strong> ล็อกอิน admin ปลดสิทธิ์ <code>booking.create</code> ของ Requester สดๆ หน้าเว็บ<br>
-          <strong>8. สาธิต Zero Downtime Effect:</strong> สลับกลับแท็บ Requester ปุ่มจองหายทันที ยิง API โดน 403 (ไม่ต้องรีสตาร์ตเซิร์ฟเวอร์)<br>
-          <strong>9. สาธิต Audit Log & Magic Bytes:</strong> แสดงหน้า Audit Log และทดสอบอัปโหลดไฟล์ปลอมแปลง ระบบปฏิเสธ 400 ทันที
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 17: LIVE DEMO SCRIPT ================= -->
+ <div class="slide-page" data-slide="17">
+ <div class="slide-header">
+ <span class="slide-badge"> ลำดับการสาธิตสด</span>
+ <span class="slide-number">17 / 18</span>
+ </div>
+ <h2 class="slide-title">Live Demo Guide (9 ขั้นตอนสาธิตสด 30/30)</h2>
+ <p class="slide-subtitle">ขั้นตอนการสาธิตสดต่อหน้าอาจารย์เพื่อยืนยันความถูกต้องของระบบครบทุกมิติ</p>
+ <div class="slide-body">
+ <div class="glass-card" style="font-size: 0.82rem; line-height: 1.6;">
+ <strong>1. รัน npm test:</strong> แสดงผลผ่าน 14/14 การทดสอบอัตโนมัติต่อหน้าอาจารย์<br>
+ <strong>2. สาธิต Brute Force:</strong> ใส่รหัสผิด 8 ครั้ง แสดงการดีดออกและระงับชั่วคราว 10 นาที<br>
+ <strong>3. สาธิต Requester:</strong> ล็อกอิน somchai ยื่นจองห้องผ่าน Mini Calendar Strip พร้อมแนบ PDF วาระประชุม<br>
+ <strong>4. สาธิตการจองชน (Pending):</strong> ล็อกอินอีกแท็บ ยื่นจองห้องเดียวกัน เวลาชนกัน (ระบบอนุญาตให้ยื่น Pending ได้)<br>
+ <strong>5. สาธิต Approver (Auto-Reject):</strong> ล็อกอิน manager อนุมัติคิวที่ 1 คิวที่ 2 ถูกปฏิเสธอัตโนมัติทันที<br>
+ <strong>6. สาธิต Facility:</strong> ล็อกอิน facility กด Check-in เริ่มใช้ห้อง กด Check-out ตรวจรับห้องพร้อมแนบรูปภาพ<br>
+ <strong>7. สาธิต Dynamic ACL:</strong> ล็อกอิน admin ปลดสิทธิ์ <code>booking.create</code> ของ Requester สดๆ หน้าเว็บ<br>
+ <strong>8. สาธิต Zero Downtime Effect:</strong> สลับกลับแท็บ Requester ปุ่มจองหายทันที ยิง API โดน 403 (ไม่ต้องรีสตาร์ตเซิร์ฟเวอร์)<br>
+ <strong>9. สาธิต Audit Log & Magic Bytes:</strong> แสดงหน้า Audit Log และทดสอบอัปโหลดไฟล์ปลอมแปลง ระบบปฏิเสธ 400 ทันที
+ </div>
+ </div>
+ </div>
 
-    <!-- ================= SLIDE 18: SUMMARY ================= -->
-    <div class="slide-page" data-slide="18">
-      <div class="slide-header">
-        <span class="slide-badge">🏁 สรุปและช่วงถาม-ตอบ</span>
-        <span class="slide-number">18 / 18</span>
-      </div>
-      <div class="slide-body" style="text-align: center; align-items: center; gap: 1.25rem;">
-        <h2 style="font-family: 'Chakra Petch', sans-serif; font-size: 2.3rem; font-weight: 800; color: #fff;">
-          สรุปผลโครงงาน RoomReserve (SmartSpace)
-        </h2>
-        <p style="font-size: 1.05rem; color: #93c5fd; max-width: 750px; line-height: 1.6;">
-          ระบบทำงานได้สมบูรณ์แบบตามเกณฑ์ประเมิน 30 คะแนนของอาจารย์ทุกข้อ<br>
-          ครอบคลุมทั้ง 4 Roles, Dynamic ACL, Database Concurrency, File Security, Audit Logs และ 14 Automated Tests
-        </p>
-        <div class="glass-card" style="max-width: 600px; width: 100%; text-align: left;">
-          <div style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.8;">
-            🌐 <strong>Live Production URL:</strong> พร้อมใช้งานบน Render<br>
-            📦 <strong>GitHub Repository:</strong> ซอร์สโค้ดพร้อมคู่มือติดตั้งฉบับสมบูรณ์<br>
-            🧪 <strong>Automated Tests:</strong> <code>npm test</code> (14/14 ผ่าน 100%)
-          </div>
-        </div>
-        <div style="font-family: 'Chakra Petch', sans-serif; font-size: 1.5rem; font-weight: 700; color: #60a5fa; margin-top: 0.5rem;">
-          Thank You &bull; Questions & Answers (Q&A)
-        </div>
-      </div>
-    </div>
+ <!-- ================= SLIDE 18: SUMMARY ================= -->
+ <div class="slide-page" data-slide="18">
+ <div class="slide-header">
+ <span class="slide-badge"> สรุปและช่วงถาม-ตอบ</span>
+ <span class="slide-number">18 / 18</span>
+ </div>
+ <div class="slide-body" style="text-align: center; align-items: center; gap: 1.25rem;">
+ <h2 style="font-family: 'Chakra Petch', sans-serif; font-size: 2.3rem; font-weight: 800; color: #fff;">
+ สรุปผลโครงงาน RoomReserve (SmartSpace)
+ </h2>
+ <p style="font-size: 1.05rem; color: #93c5fd; max-width: 750px; line-height: 1.6;">
+ ระบบทำงานได้สมบูรณ์แบบตามเกณฑ์ประเมิน 30 คะแนนของอาจารย์ทุกข้อ<br>
+ ครอบคลุมทั้ง 4 Roles, Dynamic ACL, Database Concurrency, File Security, Audit Logs และ 14 Automated Tests
+ </p>
+ <div class="glass-card" style="max-width: 600px; width: 100%; text-align: left;">
+ <div style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.8;">
+ <strong>Live Production URL:</strong> พร้อมใช้งานบน Render<br>
+ <strong>GitHub Repository:</strong> ซอร์สโค้ดพร้อมคู่มือติดตั้งฉบับสมบูรณ์<br>
+ <strong>Automated Tests:</strong> <code>npm test</code> (14/14 ผ่าน 100%)
+ </div>
+ </div>
+ <div style="font-family: 'Chakra Petch', sans-serif; font-size: 1.5rem; font-weight: 700; color: #60a5fa; margin-top: 0.5rem;">
+ Thank You &bull; Questions & Answers (Q&A)
+ </div>
+ </div>
+ </div>
 
-  </div> <!-- ปิด .slide-viewport -->
+ </div> <!-- ปิด .slide-viewport -->
 
-  <!-- Navigation Controls Bar -->
-  <div class="controls-bar">
-    <button type="button" class="nav-btn" id="prevBtn" onclick="navigateSlide(-1)">
-      &#8592; สไลด์ก่อนหน้า
-    </button>
-    <div class="print-tip">
-      กดปุ่มลูกศร <strong>&larr; / &rarr;</strong> บนแป้นพิมพ์เพื่อเลื่อนสไลด์ &bull; กด <strong>Ctrl + P</strong> เพื่อพิมพ์หรือเซฟเป็น PDF
-    </div>
-    <button type="button" class="nav-btn" id="nextBtn" onclick="navigateSlide(1)">
-      สไลด์ถัดไป &#8594;
-    </button>
-  </div>
+ <!-- Navigation Controls Bar -->
+ <div class="controls-bar">
+ <button type="button" class="nav-btn" id="prevBtn" onclick="navigateSlide(-1)">
+ &#8592; สไลด์ก่อนหน้า
+ </button>
+ <div class="print-tip">
+ กดปุ่มลูกศร <strong>&larr; / &rarr;</strong> บนแป้นพิมพ์เพื่อเลื่อนสไลด์ &bull; กด <strong>Ctrl + P</strong> เพื่อพิมพ์หรือเซฟเป็น PDF
+ </div>
+ <button type="button" class="nav-btn" id="nextBtn" onclick="navigateSlide(1)">
+ สไลด์ถัดไป &#8594;
+ </button>
+ </div>
 
-  <script>
-    let currentSlide = 1;
-    const totalSlides = 18;
+ <script>
+ let currentSlide = 1;
+ const totalSlides = 18;
 
-    function showSlide(num) {
-      if (num < 1) num = 1;
-      if (num > totalSlides) num = totalSlides;
-      currentSlide = num;
+ function showSlide(num) {
+ if (num < 1) num = 1;
+ if (num > totalSlides) num = totalSlides;
+ currentSlide = num;
 
-      document.querySelectorAll('.slide-page').forEach(page => {
-        const slideIdx = parseInt(page.getAttribute('data-slide'), 10);
-        if (slideIdx === currentSlide) {
-          page.classList.add('active-slide');
-        } else {
-          page.classList.remove('active-slide');
-        }
-      });
+ document.querySelectorAll('.slide-page').forEach(page => {
+ const slideIdx = parseInt(page.getAttribute('data-slide'), 10);
+ if (slideIdx === currentSlide) {
+ page.classList.add('active-slide');
+ } else {
+ page.classList.remove('active-slide');
+ }
+ });
 
-      document.getElementById('prevBtn').disabled = (currentSlide === 1);
-      document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
-    }
+ document.getElementById('prevBtn').disabled = (currentSlide === 1);
+ document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+ }
 
-    function navigateSlide(direction) {
-      showSlide(currentSlide + direction);
-    }
+ function navigateSlide(direction) {
+ showSlide(currentSlide + direction);
+ }
 
-    // Keyboard shortcuts: Left/Right arrow keys & Spacebar
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') {
-        navigateSlide(-1);
-      } else if (e.key === 'ArrowRight' || e.key === ' ') {
-        navigateSlide(1);
-      }
-    });
+ // Keyboard shortcuts: Left/Right arrow keys & Spacebar
+ document.addEventListener('keydown', (e) => {
+ if (e.key === 'ArrowLeft') {
+ navigateSlide(-1);
+ } else if (e.key === 'ArrowRight' || e.key === ' ') {
+ navigateSlide(1);
+ }
+ });
 
-    showSlide(1);
-  </script>
+ showSlide(1);
+ </script>
 </body>
 </html>
