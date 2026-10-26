@@ -164,10 +164,10 @@
 
       const room = ROOMS.find(r => Number(r.room_id) === roomId);
 
-      // ตรวจสอบว่าห้องถูกระงับการใช้งาน / ปิดปรับปรุงหรือไม่
+      // ตรวจสอบว่าห้องถูกระงับการใช้งานหรือไม่
       if (room && !room.is_active) {
         banner.className = 'conflict-status-banner is-conflict';
-        banner.innerHTML = '<span>ไม่สามารถจองได้: ห้องนี้ถูกระงับการใช้งาน (ปิดปรับปรุง)</span>';
+        banner.innerHTML = '<span>ไม่สามารถจองได้: ห้องนี้ถูกระงับการใช้งาน</span>';
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.5';
         submitBtn.style.cursor = 'not-allowed';
@@ -552,7 +552,7 @@
         const toast = document.getElementById('slotNoticeToast');
         const text = document.getElementById('slotNoticeText');
         if (toast && text) {
-          text.innerHTML = `<strong>เลือกไม่ได้:</strong> ห้องนี้ถูกระงับการใช้งาน (ปิดปรับปรุง)`;
+          text.innerHTML = `<strong>เลือกไม่ได้:</strong> ห้องนี้ถูกระงับการใช้งาน`;
           toast.style.display = 'flex';
           setTimeout(() => { toast.style.display = 'none'; }, 3000);
         }
@@ -564,7 +564,7 @@
         const toast = document.getElementById('slotNoticeToast');
         const text = document.getElementById('slotNoticeText');
         if (toast && text) {
-          text.innerHTML = `<strong>เลือกไม่ได้:</strong> ช่วงเวลา ${String(hour).padStart(2,'0')}:00 น. มีคิวจองหรือปิดปรับปรุง`;
+          text.innerHTML = `<strong>เลือกไม่ได้:</strong> ช่วงเวลา ${String(hour).padStart(2,'0')}:00 น. มีคิวจองหรือระงับการใช้งาน`;
           toast.style.display = 'flex';
           setTimeout(() => { toast.style.display = 'none'; }, 3000);
         }
@@ -588,7 +588,7 @@
           const toast = document.getElementById('slotNoticeToast');
           const text = document.getElementById('slotNoticeText');
           if (toast && text) {
-            text.innerHTML = `<strong>เลือกไม่ได้:</strong> ช่วงเวลาก่อน 18:00 น. มีคิวจองหรือปิดปรับปรุง`;
+            text.innerHTML = `<strong>เลือกไม่ได้:</strong> ช่วงเวลาก่อน 18:00 น. มีคิวจองหรือระงับการใช้งาน`;
             toast.style.display = 'flex';
             setTimeout(() => { toast.style.display = 'none'; }, 3000);
           }
@@ -665,7 +665,7 @@
 
         if (room && !room.is_active) {
           pill.classList.add('is-booked');
-          pill.title = 'ห้องนี้ถูกระงับการใช้งาน / ปิดปรับปรุง';
+          pill.title = 'ห้องนี้ถูกระงับการใช้งาน';
           return;
         }
 

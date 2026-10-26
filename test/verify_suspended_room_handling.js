@@ -16,11 +16,11 @@ assert.ok(dashboardJs.includes('if (room && !room.is_active)'), 'Must check room
 assert.ok(dashboardJs.includes('hour === 18'), 'Must handle 18:00 boundary in onTimeRangePillClick');
 
 // 2. Verify checkBookingConflict blocks suspended room and startH >= 18
-assert.ok(dashboardJs.includes('ไม่สามารถจองได้: ห้องนี้ถูกระงับการใช้งาน (ปิดปรับปรุง)'), 'Must set suspended conflict message');
+assert.ok(dashboardJs.includes('ไม่สามารถจองได้: ห้องนี้ถูกระงับการใช้งาน'), 'Must set suspended conflict message');
 assert.ok(dashboardJs.includes('startH >= 18'), 'Must block startH >= 18 in checkBookingConflict');
 
 // 3. Verify renderTimeRangePills marks suspended rooms
-assert.ok(dashboardJs.includes("pill.title = 'ห้องนี้ถูกระงับการใช้งาน / ปิดปรับปรุง';"), 'Must title suspended pills');
+assert.ok(dashboardJs.includes("pill.title = 'ห้องนี้ถูกระงับการใช้งาน';"), 'Must title suspended pills');
 assert.ok(dashboardJs.includes("18:00 น."), 'Must support 18:00 pill title');
 
 // 4. Verify visual room card displays suspended badge

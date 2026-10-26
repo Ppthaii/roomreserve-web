@@ -143,12 +143,12 @@ async function toggleRoom(req, res, next) {
       resource: 'ROOM',
       resourceId: id,
       status: 'SUCCESS',
-      details: `เปลี่ยนสถานะห้อง "${room.room_name}" เป็น ${room.is_active ? 'เปิดใช้งาน' : 'ปิดปรับปรุง'}`,
+      details: `เปลี่ยนสถานะห้อง "${room.room_name}" เป็น ${room.is_active ? 'เปิดใช้งาน' : 'ระงับใช้งาน'}`,
       ip: req.ip,
       ua: req.get('user-agent')
     });
 
-    res.redirect(`/app/rooms?success=${encodeURIComponent(`อัปเดตสถานะห้อง "${room.room_name}" เป็น ${room.is_active ? 'เปิดใช้งาน' : 'ปิดปรับปรุง'} เรียบร้อยแล้ว`)}`);
+    res.redirect(`/app/rooms?success=${encodeURIComponent(`อัปเดตสถานะห้อง "${room.room_name}" เป็น ${room.is_active ? 'เปิดใช้งาน' : 'ระงับใช้งาน'} เรียบร้อยแล้ว`)}`);
   } catch (err) {
     next(err);
   }

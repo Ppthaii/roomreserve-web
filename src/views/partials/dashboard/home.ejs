@@ -196,7 +196,7 @@
               const bRooms = rooms.filter(r => getBuildingNumHelper(r) === String(bNum));
               if (bRooms.length === 0) return 'ไม่มีห้องประชุม';
               const activeRooms = bRooms.filter(r => r.is_active);
-              if (activeRooms.length === 0) return 'ระงับการใช้งานทุกห้อง (ปิดปรับปรุง)';
+              if (activeRooms.length === 0) return 'ระงับการใช้งานทุกห้อง';
               return bRooms.map(r => r.room_name + (!r.is_active ? ' (ปิด)' : '')).join(' • ');
             }
             const b1Names = getBuildingRoomsText('1');
