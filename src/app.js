@@ -24,6 +24,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// สไลด์นำเสนอโครงงาน 30 คะแนน (Presentation Slide Deck)
+app.get('/slides', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/slides.html'));
+});
+
 // Dev Live Auto-Reload Ping Endpoint (ตรวจจับการรีสตาร์ตเพื่อสั่งเบราว์เซอร์รีเฟรชตัวเองทันที)
 const SERVER_BOOT_TIME = Date.now();
 app.get('/__dev_ping', (req, res) => {
@@ -158,6 +163,33 @@ app.get('/login', async (req, res) => {
 app.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
+
+    // ระบบป้องกัน Brute Force: ระงับการเข้าสู่ระบบหากล็อกอินผิดพลาดเกิน 8 ครั้งใน 10 นาที (Slide 8 Rubric)
+    const MAX_FAILED_ATTEMPTS = 8;
+    const lockCheck = await pool.query(`
+      SELECT COUNT(*) as failed_count
+      FROM audit_logs
+      WHERE action = 'LOGIN_FAILED'
+        AND (username = $1 OR ip_address = $2)
+        AND created_at > NOW() - INTERVAL '10 minutes'
+    `, [username || '', req.ip || '']);
+
+    if (parseInt(lockCheck.rows[0].failed_count, 10) >= MAX_FAILED_ATTEMPTS) {
+      await logAudit({
+        userId: null,
+        username: username,
+        roleName: null,
+        action: 'LOGIN_LOCKED',
+        resource: 'AUTH',
+        resourceId: username,
+        status: 'DENIED',
+        details: `พยายามเข้าสู่ระบบผิดพลาดเกิน ${MAX_FAILED_ATTEMPTS} ครั้งในรอบ 10 นาที (IP/Username ถูกล็อกชั่วคราว)`,
+        ip: req.ip,
+        ua: req.get('user-agent')
+      });
+      return res.redirect('/login?error=' + encodeURIComponent('คุณเข้าสู่ระบบผิดพลาดเกินกำหนด กรุณารอ 10 นาทีก่อนลองใหม่อีกครั้งเพื่อความปลอดภัย'));
+    }
+
     const userRes = await pool.query(`
       SELECT u.*, r.role_name, r.display_name as role_display
       FROM users u

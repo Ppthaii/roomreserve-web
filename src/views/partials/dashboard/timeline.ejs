@@ -8,12 +8,24 @@
           </p>
         </div>
         <div class="card">
-          <div class="card-title" style="margin-bottom: 0.5rem;">
-            แผนผังช่วงเวลาความว่างของห้องประชุม (30-Minute Time Slots)
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div>
+              <div class="card-title" style="margin-bottom: 0.25rem;">
+                แผนผังช่วงเวลาความว่างของห้องประชุม (30-Minute Time Slots)
+              </div>
+              <p style="font-size: 0.8rem; color: var(--muted); margin: 0;">
+                ตารางแสดงสถานะความว่างทุก 30 นาที &bull; วันที่ <%= formattedThaiDate %>
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <% if (!isToday) { %>
+                <button type="button" class="btn btn-outline btn-sm" onclick="changeBookingDate('<%= todayStr %>')" style="font-size: 0.78rem;">
+                  กลับสู่วันนี้
+                </button>
+              <% } %>
+              <input type="date" value="<%= selectedDate %>" min="<%= todayStr %>" onchange="changeBookingDate(this.value)" class="form-control" style="width: auto; font-size: 0.82rem; padding: 0.35rem 0.65rem;" title="เลือกวันที่ต้องการดูไทม์ไลน์">
+            </div>
           </div>
-          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem;">
-            ตารางแสดงสถานะความว่างทุก 30 นาที สำหรับผู้ดูแลระบบ
-          </p>
 
           <% 
             const timeSlots = [];

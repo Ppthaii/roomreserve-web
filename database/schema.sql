@@ -139,3 +139,14 @@ CREATE INDEX IF NOT EXISTS idx_room_bookings_room_time ON room_bookings(room_id,
 CREATE INDEX IF NOT EXISTS idx_room_bookings_user_created ON room_bookings(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_room_bookings_status_time ON room_bookings(status, start_time ASC);
 CREATE INDEX IF NOT EXISTS idx_room_bookings_start_time ON room_bookings(start_time ASC);
+
+-- 10. ตารางจัดเก็บ Session ฝั่ง Server (PostgreSQL Session Store via connect-pg-simple)
+-- ตามข้อกำหนด Slide 7-8: Session in DB ป้องกัน Session หายเมื่อรีสตาร์ต และรองรับ Inactivity Expiration
+CREATE TABLE IF NOT EXISTS "user_sessions" (
+  "sid" varchar NOT NULL COLLATE "default",
+  "sess" json NOT NULL,
+  "expire" timestamp(6) NOT NULL,
+  CONSTRAINT "user_sessions_pkey" PRIMARY KEY ("sid")
+);
+CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "user_sessions" ("expire");
+
