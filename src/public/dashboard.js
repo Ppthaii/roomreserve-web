@@ -489,6 +489,12 @@
       if (viewName === 'booking') {
         renderTimeRangePills();
         checkBookingConflict();
+      } else if (viewName === 'facility-block') {
+        if (typeof selectMaintBuilding === 'function') {
+          const activeMaintB = document.querySelector('#req-view-facility-block .building-card.active');
+          const bNum = activeMaintB ? activeMaintB.id.replace('btn-maint-building-', '') : '1';
+          selectMaintBuilding(Number(bNum) || 1);
+        }
       }
     }
 
@@ -843,6 +849,11 @@
       if (activeCalCard) {
         activeCalCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
+
+      // เริ่มต้นระบบบล็อกห้องซ่อมบำรุง (Maintenance Flow)
+      if (document.getElementById('btn-maint-building-1')) {
+        selectMaintBuilding(1);
+      }
     });
 
     // เปลี่ยนวันที่ใช้งานสำหรับปฏิทินจิ๋ว (คงค่าอาคารและสถานะวิวไว้)
@@ -850,12 +861,20 @@
       if (!newDate) return;
       const url = new URL(window.location.href);
       url.searchParams.set('date', newDate);
-      url.searchParams.set('view', 'booking');
+      
+      // ตรวจสอบว่ากำลังเปิดแท็บปิดซ่อมบำรุงอยู่หรือไม่
+      const isMaintView = document.getElementById('req-view-facility-block') && 
+                          document.getElementById('req-view-facility-block').style.display !== 'none';
+      if (isMaintView) {
+        url.searchParams.set('view', 'facility-block');
+      } else {
+        url.searchParams.set('view', 'booking');
+      }
       
       // รักษาอาคารที่เลือกไว้
       const activeBuilding = document.querySelector('.building-card.active');
       if (activeBuilding) {
-        const bNum = activeBuilding.id.replace('btn-building-', '');
+        const bNum = activeBuilding.id.replace('btn-building-', '').replace('btn-maint-building-', '');
         if (bNum) url.searchParams.set('building', bNum);
       }
       window.location.href = url.toString();
@@ -873,4 +892,276 @@
       const dd = String(cur.getDate()).padStart(2, '0');
       changeBookingDate(`${yyyy}-${mm}-${dd}`);
     }
+
+    // ================= Script สำหรับ Maintenance / Block Schedule Flow =================
+    let maintRangeStartHour = 9;
+    let maintRangeEndHour = 12;
+    let maintIsSettingEnd = false;
+
+    function selectMaintBuilding(buildingNumber, btn = null) {
+      document.querySelectorAll('#req-view-facility-block .building-card').forEach(b => b.classList.remove('active'));
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const targetBtn = document.getElementById(`btn-maint-building-${buildingNumber}`);
+        if (targetBtn) targetBtn.classList.add('active');
+      }
+
+      const roomsBox = document.getElementById('maintBuildingRoomsBox');
+      const headerLabel = document.getElementById('maintBuildingRoomsHeaderLabel');
+      if (roomsBox) roomsBox.style.display = 'block';
+      if (headerLabel) headerLabel.innerText = `ห้องประชุมในตึก ${buildingNumber}:`;
+
+      let visibleCount = 0;
+      let firstActiveRoomId = null;
+      let firstAnyRoomId = null;
+      document.querySelectorAll('.maint-visual-card').forEach(c => {
+        const b = c.getAttribute('data-building');
+        const isMatch = b === String(buildingNumber);
+        c.style.display = isMatch ? 'flex' : 'none';
+        if (isMatch) {
+          visibleCount++;
+          const rId = c.getAttribute('data-room-id');
+          if (!firstAnyRoomId) firstAnyRoomId = rId;
+          const rObj = ROOMS.find(r => Number(r.room_id) === Number(rId));
+          if (rObj && rObj.is_active && !firstActiveRoomId) {
+            firstActiveRoomId = rId;
+          }
+        }
+      });
+
+      const chosenRoomId = firstActiveRoomId || firstAnyRoomId;
+      const hiddenInput = document.getElementById('maint_form_room_id');
+      const currentSelected = hiddenInput ? hiddenInput.value : null;
+      const currentCard = currentSelected ? document.querySelector(`.maint-visual-card[data-room-id="${currentSelected}"]`) : null;
+      const isCurrentInBuilding = currentCard && currentCard.getAttribute('data-building') === String(buildingNumber);
+
+      if (!isCurrentInBuilding && chosenRoomId) {
+        selectMaintRoom(chosenRoomId);
+      } else if (currentSelected) {
+        selectMaintRoom(currentSelected);
+      }
+    }
+
+    function selectMaintRoom(roomId) {
+      const hiddenInput = document.getElementById('maint_form_room_id');
+      if (hiddenInput) hiddenInput.value = roomId;
+
+      document.querySelectorAll('.maint-visual-card').forEach(c => {
+        const match = c.getAttribute('data-room-id') === String(roomId);
+        c.classList.toggle('selected', match);
+      });
+
+      renderMaintTimeRangePills();
+      checkMaintConflict();
+    }
+
+    function onMaintTimeRangePillClick(hour) {
+      if (hour >= 18) {
+        const toast = document.getElementById('slotNoticeToast');
+        const text = document.getElementById('slotNoticeText');
+        if (toast && text) {
+          text.innerHTML = `<strong>เลือกไม่ได้:</strong> อาคารปิดให้บริการเวลา 18:00 น. ไม่สามารถเริ่มบล็อกที่ 18:00 ได้`;
+          toast.style.display = 'flex';
+          setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+        return;
+      }
+
+      const guidePill = document.getElementById('maintSlotGuidePill');
+
+      if (!maintIsSettingEnd || hour < maintRangeStartHour) {
+        maintRangeStartHour = hour;
+        maintRangeEndHour = hour + 1;
+        maintIsSettingEnd = true;
+        if (guidePill) {
+          guidePill.className = 'conflict-status-banner';
+          guidePill.style.background = '#fffbeb';
+          guidePill.style.color = '#b45309';
+          guidePill.style.borderColor = '#fde68a';
+          guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(maintRangeStartHour).padStart(2,'0')}:00 - ${String(maintRangeEndHour).padStart(2,'0')}:00 น. (แตะช่องอื่นเพื่อขยายเวลา)`;
+        }
+      } else if (hour === maintRangeStartHour && maintRangeEndHour === hour + 1) {
+        maintIsSettingEnd = false;
+      } else {
+        maintRangeEndHour = hour + 1;
+        maintIsSettingEnd = false;
+        if (guidePill) {
+          guidePill.className = 'conflict-status-banner';
+          guidePill.style.background = '#fffbeb';
+          guidePill.style.color = '#b45309';
+          guidePill.style.borderColor = '#fde68a';
+          guidePill.innerText = `ช่วงเวลาปิดซ่อม: ${String(maintRangeStartHour).padStart(2,'0')}:00 - ${String(maintRangeEndHour).padStart(2,'0')}:00 น. (${maintRangeEndHour - maintRangeStartHour} ชม.)`;
+        }
+      }
+
+      const startSelect = document.getElementById('maint_start_time');
+      const endSelect = document.getElementById('maint_end_time');
+      if (startSelect) startSelect.value = `${String(maintRangeStartHour).padStart(2,'0')}:00`;
+      if (endSelect) {
+        Array.from(endSelect.options).forEach(opt => {
+          const optH = parseInt(opt.value.split(':')[0], 10);
+          opt.disabled = optH <= maintRangeStartHour;
+        });
+        endSelect.value = `${String(maintRangeEndHour).padStart(2,'0')}:00`;
+      }
+
+      renderMaintTimeRangePills();
+      checkMaintConflict();
+    }
+
+    function renderMaintTimeRangePills() {
+      const hiddenInput = document.getElementById('maint_form_room_id');
+      if (!hiddenInput) return;
+      const roomId = Number(hiddenInput.value);
+
+      document.querySelectorAll('.maint-time-pill').forEach(pill => {
+        const h = parseInt(pill.getAttribute('data-hour'), 10);
+        pill.className = 'time-slot-pill maint-time-pill';
+
+        if (h >= 18) {
+          pill.classList.add('is-booked');
+          pill.title = 'อาคารปิดทำการ 18:00 น.';
+          return;
+        }
+
+        const hStartStr = `${String(h).padStart(2,'0')}:00`;
+        const hEndStr = `${String(h+1).padStart(2,'0')}:00`;
+        const slotStart = new Date(`${SELECTED_DATE}T${hStartStr}:00`);
+        const slotEnd = new Date(`${SELECTED_DATE}T${hEndStr}:00`);
+
+        const overlap = DAY_BOOKINGS.find(b => {
+          if (Number(b.room_id) !== roomId) return false;
+          if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+          const bStart = new Date(b.start_time);
+          const bEnd = new Date(b.end_time);
+          return bStart < slotEnd && bEnd > slotStart;
+        });
+
+        if (overlap) {
+          if (overlap.status === 'BLOCKED') {
+            pill.classList.add('is-booked');
+            pill.title = `ปิดซ่อมอยู่แล้ว: ${overlap.title}`;
+          } else {
+            pill.classList.add('is-booked');
+            pill.title = `มีคิวจอง: ${overlap.title} (${overlap.status})`;
+          }
+        }
+
+        if (h >= maintRangeStartHour && h < maintRangeEndHour) {
+          if (maintRangeEndHour - maintRangeStartHour === 1) {
+            pill.classList.add('is-maint-start');
+          } else if (h === maintRangeStartHour) {
+            pill.classList.add('is-maint-start');
+          } else if (h === maintRangeEndHour - 1) {
+            pill.classList.add('is-maint-end');
+          } else {
+            pill.classList.add('in-maint-range');
+          }
+        }
+      });
+    }
+
+    function checkMaintConflict() {
+      const roomInput = document.getElementById('maint_form_room_id');
+      const startInput = document.getElementById('maint_start_time');
+      const endInput = document.getElementById('maint_end_time');
+      const banner = document.getElementById('maintConflictBanner');
+      const submitBtn = document.getElementById('maintSubmitBtn');
+
+      if (!roomInput || !startInput || !endInput || !banner || !submitBtn) return;
+
+      const roomId = Number(roomInput.value);
+      const room = ROOMS.find(r => Number(r.room_id) === roomId);
+      const startTimeStr = startInput.value;
+      const endTimeStr = endInput.value;
+
+      if (!startTimeStr || !endTimeStr) return;
+
+      const start = new Date(`${SELECTED_DATE}T${startTimeStr}:00`);
+      const end = new Date(`${SELECTED_DATE}T${endTimeStr}:00`);
+
+      if (end <= start) {
+        banner.className = 'conflict-status-banner is-conflict';
+        banner.innerHTML = '<span>เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น</span>';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+        return;
+      }
+
+      const conflict = DAY_BOOKINGS.find(b => {
+        if (Number(b.room_id) !== roomId) return false;
+        if (!['PENDING_APPROVAL', 'APPROVED', 'IN_USE', 'BLOCKED'].includes(b.status)) return false;
+        const bStart = new Date(b.start_time);
+        const bEnd = new Date(b.end_time);
+        return bStart < end && bEnd > start;
+      });
+
+      if (conflict) {
+        banner.className = 'conflict-status-banner is-conflict';
+        const typeLabel = conflict.status === 'BLOCKED' ? 'ปิดซ่อมอยู่แล้ว' : 'มีคิวจองพนักงาน';
+        banner.innerHTML = `<span>⚠️ ช่วงเวลานี้ชนกับ: "${conflict.title}" (${typeLabel})</span>`;
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+      } else {
+        const durationHours = Math.round((end - start) / (1000 * 60 * 60));
+        banner.className = 'conflict-status-banner is-free';
+        banner.innerHTML = `<span>✅ พร้อมทำการบล็อกปิดซ่อมห้อง ${room ? room.room_name : ''} ช่วง ${startTimeStr} - ${endTimeStr} น. (${durationHours} ชั่วโมง)</span>`;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+      }
+
+      const sH = parseInt(startTimeStr.split(':')[0], 10);
+      const eH = parseInt(endTimeStr.split(':')[0], 10);
+      if (!isNaN(sH) && !isNaN(eH)) {
+        maintRangeStartHour = sH;
+        maintRangeEndHour = eH;
+        renderMaintTimeRangePills();
+      }
+    }
+
+    function onMaintStartTimeChange() {
+      const startSelect = document.getElementById('maint_start_time');
+      const endSelect = document.getElementById('maint_end_time');
+      if (!startSelect || !endSelect) return;
+
+      const startHour = parseInt(startSelect.value.split(':')[0], 10);
+      const endHour = parseInt(endSelect.value.split(':')[0], 10);
+
+      Array.from(endSelect.options).forEach(opt => {
+        const optHour = parseInt(opt.value.split(':')[0], 10);
+        opt.disabled = optHour <= startHour;
+      });
+
+      if (endHour <= startHour) {
+        const nextHour = Math.min(18, startHour + 1);
+        endSelect.value = `${String(nextHour).padStart(2, '0')}:00`;
+      }
+
+      checkMaintConflict();
+    }
+
+    function blockWholeDayMaint() {
+      maintRangeStartHour = 9;
+      maintRangeEndHour = 18;
+      maintIsSettingEnd = false;
+      const startSelect = document.getElementById('maint_start_time');
+      const endSelect = document.getElementById('maint_end_time');
+      if (startSelect) startSelect.value = '09:00';
+      if (endSelect) endSelect.value = '18:00';
+      renderMaintTimeRangePills();
+      checkMaintConflict();
+    }
+
+    function setMaintPresetReason(text) {
+      const input = document.getElementById('maint_reason_input');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+
   

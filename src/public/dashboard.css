@@ -161,3 +161,55 @@
   letter-spacing: 0.02em;
 }
 
+/* Maintenance UI Flow Styling */
+.maint-visual-card.selected {
+  border-color: #d97706 !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25) !important;
+  background: #fffbeb !important;
+}
+[data-theme="dark"] .maint-visual-card.selected {
+  background: #2d2008 !important;
+  border-color: #f59e0b !important;
+}
+.maint-time-pill.is-maint-start,
+.maint-time-pill.is-maint-end {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #b45309 !important;
+  font-weight: 800 !important;
+}
+.maint-time-pill.in-maint-range {
+  background: #fde68a !important;
+  color: #78350f !important;
+  border-color: #fcd34d !important;
+  font-weight: 700 !important;
+}
+[data-theme="dark"] .maint-time-pill.in-maint-range {
+  background: #78350f !important;
+  color: #fef3c7 !important;
+  border-color: #92400e !important;
+}
+.maint-preset-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--dark);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.maint-preset-btn:hover {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .maint-preset-btn:hover {
+  background: #78350f;
+  color: #fef3c7;
+  border-color: #f59e0b;
+}
+
+
