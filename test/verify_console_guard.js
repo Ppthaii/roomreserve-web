@@ -9,10 +9,13 @@ async function testConsoleGuard() {
     throw new Error(`Failed to load /console-guard.js (HTTP ${assetRes.status})`);
   }
   const assetCode = await assetRes.text();
-  if (!assetCode.includes('⛔ หยุด! (STOP!)') || !assetCode.includes('contextmenu') || !assetCode.includes('F12')) {
+  if (!assetCode.includes('⛔ หยุด! (STOP!)') || !assetCode.includes('F12') || !assetCode.includes('Ctrl+Shift+I')) {
     throw new Error('console-guard.js is missing expected security features');
   }
-  console.log('✅ /console-guard.js asset is served and contains anti-tamper logic');
+  if (assetCode.includes('contextmenu')) {
+    throw new Error('console-guard.js should NOT block right-click contextmenu');
+  }
+  console.log('✅ /console-guard.js asset is served and contains inspect blocker without blocking right-click');
 
   // 2. Verify login page includes console-guard.js
   const loginRes = await fetch('http://localhost:3000/login');

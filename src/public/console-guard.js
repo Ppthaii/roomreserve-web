@@ -1,6 +1,7 @@
 /**
  * RoomReserve Anti-Tamper & Console Security Guard
- * ป้องกันการเปิด Developer Tools, บล็อกคลิกขวา, บล็อกคีย์ลัด F12/Ctrl+Shift+I และแสดงข้อความเตือนใน Console
+ * ป้องกันการเปิด Developer Tools / Inspect Element, บล็อกคีย์ลัด F12/Ctrl+Shift+I/Ctrl+U 
+ * แสดงข้อความเตือนใน Console (อนุญาตให้คลิกขวาใช้งานได้ตามปกติ)
  */
 (function() {
   'use strict';
@@ -35,13 +36,7 @@
     window.console.debug = noop;
   }
 
-  // 3. ป้องกันการคลิกขวา (Disable Right Click / Context Menu)
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-  }, { capture: true });
-
-  // 4. บล็อกคีย์ลัดสำหรับเปิด Developer Tools และ View Source
+  // 3. บล็อกคีย์ลัดสำหรับเปิด Inspect / Developer Tools และ View Source (อนุญาตให้คลิกขวาใช้งานได้ตามปกติ)
   document.addEventListener('keydown', function(e) {
     // F12 (Developer Tools)
     if (e.key === 'F12' || e.keyCode === 123) {
