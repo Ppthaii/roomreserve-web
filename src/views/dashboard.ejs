@@ -801,12 +801,13 @@
                   แตะช่องเวลาเพื่อกำหนดเวลาเริ่มต้น
                 </div>
 
-                <!-- Grid สล็อตเวลา 09:00 - 18:00 (Hourly Buttons) -->
+                <!-- Grid สล็อตเวลา 09:00 - 18:00 (Hourly Buttons: สล็อตละ 1 ชั่วโมง) -->
                 <div class="time-range-picker-grid" id="timeRangeGrid">
-                  <% for (let h = 9; h <= 18; h++) { 
+                  <% for (let h = 9; h < 18; h++) { 
                     const hourStr = `${String(h).padStart(2, '0')}:00`;
+                    const nextHourStr = `${String(h+1).padStart(2, '0')}:00`;
                   %>
-                    <div class="time-slot-pill" data-hour="<%= h %>" data-time="<%= hourStr %>" onclick="onTimeRangePillClick(<%= h %>)">
+                    <div class="time-slot-pill" data-hour="<%= h %>" data-time="<%= hourStr %>" onclick="onTimeRangePillClick(<%= h %>)" title="<%= hourStr %> - <%= nextHourStr %> น.">
                       <%= hourStr %>
                     </div>
                   <% } %>
@@ -1681,6 +1682,27 @@
         submitBtn.style.opacity = '1';
         submitBtn.style.cursor = 'pointer';
       }
+
+      // ซิงค์ตัวเลือกเวลากับ Time Range Pills บนหน้าจอ
+      const sH = parseInt(startTimeStr.split(':')[0], 10);
+      const eH = parseInt(endTimeStr.split(':')[0], 10);
+      if (!isNaN(sH) && !isNaN(eH)) {
+        rangeStartHour = sH;
+        rangeEndHour = eH;
+        const guidePill = document.getElementById('slotGuidePill');
+        if (guidePill) {
+          if (conflict) {
+            guidePill.className = 'conflict-status-banner is-conflict';
+            guidePill.innerText = `ช่วงเวลา ${String(sH).padStart(2,'0')}:00 - ${String(eH).padStart(2,'0')}:00 น. ชนกับรายการอื่น`;
+          } else {
+            guidePill.className = 'conflict-status-banner is-free';
+            guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(sH).padStart(2,'0')}:00 - ${String(eH).padStart(2,'0')}:00 น. (${eH - sH} ชม.)`;
+          }
+        }
+        if (typeof renderTimeRangePills === 'function') {
+          renderTimeRangePills();
+        }
+      }
     }
 
     // เมื่อผู้ใช้เปลี่ยนเวลาเริ่มต้น (เลือกเฉพาะรายชั่วโมงเต็ม)
@@ -1973,7 +1995,7 @@
       checkBookingConflict();
     }
 
-    // ฟังก์ชันคลิกเลือกช่วงเวลาบน Time Range Grid (Screenshot 2)
+    // ฟังก์ชันคลิกเลือกช่วงเวลาบน Time Range Grid (แต่ละปุ่มแทนสล็อต 1 ชั่วโมงเต็ม เช่น 14:00 คือ 14:00-15:00)
     function onTimeRangePillClick(hour) {
       const pill = document.querySelector(`.time-slot-pill[data-hour="${hour}"]`);
       if (pill && pill.classList.contains('is-booked')) {
@@ -1989,19 +2011,39 @@
 
       const guidePill = document.getElementById('slotGuidePill');
 
-      if (!isSettingEnd || hour <= rangeStartHour) {
-        // กำหนดเวลาเริ่มต้น
+      if (!isSettingEnd || hour < rangeStartHour) {
+        // เลือกสล็อตเริ่มต้นเดี่ยวๆ (1 ชั่วโมง)
         rangeStartHour = hour;
-        rangeEndHour = Math.min(18, hour + 1);
+        rangeEndHour = hour + 1;
         isSettingEnd = true;
         if (guidePill) {
           guidePill.className = 'conflict-status-banner is-free';
-          guidePill.innerText = `เวลาเริ่ม: ${String(rangeStartHour).padStart(2,'0')}:00 น. -> กรุณาแตะเลือกเวลาสิ้นสุด`;
+          guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(rangeStartHour).padStart(2,'0')}:00 - ${String(rangeEndHour).padStart(2,'0')}:00 น. (แตะช่องอื่นเพื่อขยายเวลา)`;
         }
-      } else {
-        // กำหนดเวลาสิ้นสุด
-        rangeEndHour = hour;
+      } else if (hour === rangeStartHour && rangeEndHour === hour + 1) {
+        // แตะซ้ำที่สล็อตเดิม -> คงไว้ที่ 1 ชั่วโมง
         isSettingEnd = false;
+      } else {
+        // แตะสล็อตที่อยู่ถัดไป -> ตรวจสอบว่าระหว่างทางมีสล็อตที่ติดจองหรือไม่
+        let hasConflictInBetween = false;
+        for (let checkH = rangeStartHour; checkH <= hour; checkH++) {
+          const checkPill = document.querySelector(`.time-slot-pill[data-hour="${checkH}"]`);
+          if (checkPill && checkPill.classList.contains('is-booked')) {
+            hasConflictInBetween = true;
+            break;
+          }
+        }
+
+        if (hasConflictInBetween) {
+          // หากมีสล็อตติดจองคั่นกลาง ให้เริ่มเลือกใหม่ที่สล็อตปัจจุบัน 1 ชั่วโมง
+          rangeStartHour = hour;
+          rangeEndHour = hour + 1;
+          isSettingEnd = true;
+        } else {
+          rangeEndHour = hour + 1;
+          isSettingEnd = false;
+        }
+
         if (guidePill) {
           guidePill.className = 'conflict-status-banner is-free';
           guidePill.innerText = `ช่วงเวลาที่เลือก: ${String(rangeStartHour).padStart(2,'0')}:00 - ${String(rangeEndHour).padStart(2,'0')}:00 น. (${rangeEndHour - rangeStartHour} ชม.)`;
@@ -2011,13 +2053,19 @@
       const startSelect = document.getElementById('form_start_time');
       const endSelect = document.getElementById('form_end_time');
       if (startSelect) startSelect.value = `${String(rangeStartHour).padStart(2,'0')}:00`;
-      if (endSelect) endSelect.value = `${String(rangeEndHour).padStart(2,'0')}:00`;
+      if (endSelect) {
+        Array.from(endSelect.options).forEach(opt => {
+          const optH = parseInt(opt.value.split(':')[0], 10);
+          opt.disabled = optH <= rangeStartHour;
+        });
+        endSelect.value = `${String(rangeEndHour).padStart(2,'0')}:00`;
+      }
 
       renderTimeRangePills();
       checkBookingConflict();
     }
 
-    // Render ไฮไลต์ช่วงเวลาบน Grid (Start, End, In-Range, Booked)
+    // Render ไฮไลต์ช่วงเวลาบน Grid (เฉพาะสล็อตที่ครอบคลุมอยู่ใน [rangeStartHour, rangeEndHour))
     function renderTimeRangePills() {
       const roomSelect = document.getElementById('form_room_id');
       if (!roomSelect) return;
@@ -2051,12 +2099,19 @@
           }
         }
 
-        if (h === rangeStartHour) {
-          pill.classList.add('is-start');
-        } else if (h === rangeEndHour) {
-          pill.classList.add('is-end');
-        } else if (h > rangeStartHour && h < rangeEndHour) {
-          pill.classList.add('in-range');
+        // ไฮไลต์เฉพาะสล็อตที่ถูกเลือกใช้งานจริง
+        if (h >= rangeStartHour && h < rangeEndHour) {
+          if (!pill.classList.contains('is-booked')) {
+            if (rangeEndHour - rangeStartHour === 1) {
+              pill.classList.add('is-start');
+            } else if (h === rangeStartHour) {
+              pill.classList.add('is-start');
+            } else if (h === rangeEndHour - 1) {
+              pill.classList.add('is-end');
+            } else {
+              pill.classList.add('in-range');
+            }
+          }
         }
       });
     }
