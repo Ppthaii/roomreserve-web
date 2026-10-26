@@ -111,8 +111,68 @@
           allowInput: true,
           disableMobile: true
         };
-        flatpickr('#logDateFrom', fpConfig);
-        flatpickr('#logDateTo', fpConfig);
+
+        let fpTo = null;
+        const fpFrom = flatpickr('#logDateFrom', {
+          ...fpConfig,
+          onChange: function(selectedDates, dateStr) {
+            if (fpTo) {
+              if (selectedDates && selectedDates.length > 0) {
+                fpTo.set('minDate', selectedDates[0]);
+                // ถ้าวันที่ในช่อง "ถึง" ที่เคยเลือกไว้น้อยกว่าวันที่ "จาก" ให้ปรับให้ตรงกับ "จาก" ทันที
+                if (fpTo.selectedDates.length > 0 && fpTo.selectedDates[0] < selectedDates[0]) {
+                  fpTo.setDate(selectedDates[0], true);
+                }
+              } else {
+                fpTo.set('minDate', null);
+              }
+            }
+          }
+        });
+
+        fpTo = flatpickr('#logDateTo', {
+          ...fpConfig,
+          onOpen: function(selectedDates, dateStr) {
+            // เมื่อเปิดปฏิทินช่อง "ถึง" ตรวจสอบและล็อค minDate ตามช่อง "จาก" ทันที ไม่ให้กดย้อนหลังได้
+            if (fpFrom && fpFrom.selectedDates && fpFrom.selectedDates.length > 0) {
+              fpTo.set('minDate', fpFrom.selectedDates[0]);
+            }
+          },
+          onChange: function(selectedDates, dateStr) {
+            if (fpFrom) {
+              if (selectedDates && selectedDates.length > 0) {
+                fpFrom.set('maxDate', selectedDates[0]);
+                // ถ้าวันที่ในช่อง "จาก" มากกว่าวันที่ "ถึง" ให้ปรับให้ตรงกับ "ถึง" ทันที
+                if (fpFrom.selectedDates.length > 0 && fpFrom.selectedDates[0] > selectedDates[0]) {
+                  fpFrom.setDate(selectedDates[0], true);
+                }
+              } else {
+                fpFrom.set('maxDate', null);
+              }
+            }
+          }
+        });
+
+        // ซิงค์ค่าเริ่มต้นทันทีเมื่อโหลดหน้า (กรณีมี filterFrom หรือ filterTo ส่งมาจาก Server)
+        if (fpFrom && fpFrom.selectedDates && fpFrom.selectedDates.length > 0) {
+          fpTo.set('minDate', fpFrom.selectedDates[0]);
+        }
+        if (fpTo && fpTo.selectedDates && fpTo.selectedDates.length > 0) {
+          fpFrom.set('maxDate', fpTo.selectedDates[0]);
+        }
+
+        // ป้องกันการ Submit ฟอร์มกรณีพิมพ์วันที่ในช่อง "ถึง" น้อยกว่า "จาก"
+        const filterForm = document.querySelector('.admin-filter-bar');
+        if (filterForm) {
+          filterForm.addEventListener('submit', function(e) {
+            const fromEl = document.getElementById('logDateFrom');
+            const toEl = document.getElementById('logDateTo');
+            if (fromEl && toEl && fromEl.value && toEl.value && fromEl.value > toEl.value) {
+              e.preventDefault();
+              alert('วันที่ "ถึง" ต้องไม่น้อยกว่าวันที่ "จาก"');
+            }
+          });
+        }
       }
     });
   </script>

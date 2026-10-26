@@ -411,7 +411,14 @@ async function deletePermission(req, res, next) {
 // 3. หน้าตรวจสอบ Audit Logs (รองรับการกรอง Action, Status, Search และช่วงเวลา from - to)
 async function getAuditLogs(req, res, next) {
   try {
-    const { action, status, search, from, to, limit = 50 } = req.query;
+    let { action, status, search, from, to, limit = 50 } = req.query;
+
+    // ตรวจสอบและสลับช่วงเวลาหาก from > to เพื่อป้องกันการค้นหาที่ขัดแย้งกัน
+    if (from && to && from > to) {
+      const temp = from;
+      from = to;
+      to = temp;
+    }
 
     let queryStr = 'SELECT * FROM audit_logs WHERE 1=1';
     const params = [];
@@ -466,7 +473,14 @@ async function getAuditLogs(req, res, next) {
 // 3.1 ส่งออก Audit Logs เป็นไฟล์ CSV (รองรับการกรองตามเงื่อนไขที่เลือก)
 async function exportAuditLogs(req, res, next) {
   try {
-    const { action, status, search, from, to } = req.query;
+    let { action, status, search, from, to } = req.query;
+
+    // ตรวจสอบและสลับช่วงเวลาหาก from > to เพื่อป้องกันการค้นหาที่ขัดแย้งกัน
+    if (from && to && from > to) {
+      const temp = from;
+      from = to;
+      to = temp;
+    }
 
     let queryStr = 'SELECT * FROM audit_logs WHERE 1=1';
     const params = [];
