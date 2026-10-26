@@ -83,6 +83,10 @@ async function runTests() {
   assert(appHtml.includes('name="new_password"'), 'new_password input must be present');
   console.log('✅ 2.4 ฟอร์มแก้ไขข้อมูลส่วนตัว (Profile Settings) พร้อมใช้งาน');
 
+  // 2.5 ตรวจสอบว่าใน Subviews ของ dashboard ไม่มีปุ่มกลับหน้าแรกซ้ำซ้อน
+  assert(!appHtml.includes('&larr; กลับหน้าแรก'), 'Dashboard subview cards must not have redundant back buttons');
+  console.log('✅ 2.5 หัวการ์ดทุก Subview ในหน้า Dashboard สะอาด ไม่มีปุ่มกลับหน้าแรกซ้ำซ้อน');
+
   // 3. ตรวจสอบหน้า /admin/acl
   const aclRes = await request({
     hostname: 'localhost',
@@ -93,10 +97,9 @@ async function runTests() {
   });
   const aclHtml = aclRes.data;
 
-  // 3.1 ตรวจสอบปุ่มกลับหน้าแรก
+  // 3.1 ตรวจสอบลิงก์กลับหน้าแรกบน Navbar
   assert(aclHtml.includes('href="/app" style="font-weight: 700; color: #1d4ed8;">&larr; กลับหน้าแรก</a>'), 'Back to home in navbar should be present');
-  assert(aclHtml.includes('&larr; กลับหน้าแรก'), 'Back to home button in card header should be present');
-  console.log('✅ 3.1 ปุ่มกลับหน้าแรกใน /admin/acl แสดงผลถูกต้องทั้ง Navbar และ Card Header');
+  console.log('✅ 3.1 ลิงก์กลับหน้าแรกบน Navbar ใน /admin/acl แสดงผลถูกต้อง');
 
   // 3.2 ตรวจสอบการจัดตำแหน่ง Checkbox และเอาปุ่มส่วนเกินออก
   assert(!aclHtml.includes('Instant Auto-Save'), 'Instant Auto-Save badge should be removed');
@@ -107,7 +110,7 @@ async function runTests() {
   assert(aclHtml.includes('margin: 0 auto; display: block;'), 'Checkbox should be centered with margin auto');
   console.log('✅ 3.2 Checkbox ใน ACL ตารางตรงกับชื่อ Role กึ่งกลางพอดี ไม่มีไอคอนดินสอ/ถังขยะ และเอากล่องสาธิตออกแล้ว');
 
-  // 4. ตรวจสอบหน้า /admin/users และ /admin/logs มีปุ่มกลับหน้าแรก
+  // 4. ตรวจสอบหน้า /admin/users และ /admin/logs มีลิงก์กลับหน้าแรกบน Navbar
   const usersRes = await request({
     hostname: 'localhost',
     port: 3000,
@@ -115,8 +118,8 @@ async function runTests() {
     method: 'GET',
     headers: { 'Cookie': adminCookie }
   });
-  assert(usersRes.data.includes('&larr; กลับหน้าแรก'), 'Users page must have back to home button');
-  console.log('✅ 4.1 หน้า /admin/users มีปุ่มกลับหน้าแรกเรียบร้อย');
+  assert(usersRes.data.includes('href="/app" style="font-weight: 700; color: #1d4ed8;">&larr; กลับหน้าแรก</a>'), 'Users page navbar must have back link');
+  console.log('✅ 4.1 หน้า /admin/users มีลิงก์กลับหน้าแรกบน Navbar เรียบร้อย');
 
   const logsRes = await request({
     hostname: 'localhost',
@@ -125,8 +128,8 @@ async function runTests() {
     method: 'GET',
     headers: { 'Cookie': adminCookie }
   });
-  assert(logsRes.data.includes('&larr; กลับหน้าแรก'), 'Logs page must have back to home button');
-  console.log('✅ 4.2 หน้า /admin/logs มีปุ่มกลับหน้าแรกเรียบร้อย');
+  assert(logsRes.data.includes('href="/app" style="font-weight: 700; color: #1d4ed8;">&larr; กลับหน้าแรก</a>'), 'Logs page navbar must have back link');
+  console.log('✅ 4.2 หน้า /admin/logs มีลิงก์กลับหน้าแรกบน Navbar เรียบร้อย');
 
   // 5. ทดสอบ API POST /app/profile/update สำหรับผู้ใช้งานทั่วไป (somchai)
   const somchaiCookie = await login('somchai', 'user123');

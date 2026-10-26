@@ -622,14 +622,9 @@
           
           <!-- Stepper / Progress Header -->
           <div class="card" style="margin-bottom: 1rem; border-left: 4px solid #2563eb;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0;">
-                จองห้องประชุม (เลือกวันและเวลา)
-              </h3>
-              <button type="button" class="btn btn-outline btn-xs" onclick="switchRequesterView('home')">
-                &larr; กลับหน้าแรก
-              </button>
-            </div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+              จองห้องประชุม (เลือกวันและเวลา)
+            </h3>
             <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
               ขั้นตอนที่ 1/2: เลือกอาคาร ห้องประชุม และช่วงเวลาที่ต้องการใช้งาน
             </p>
@@ -1142,14 +1137,9 @@
 <% if (canApprove || isAdminUser) { %>
       <div id="req-view-approvals" class="req-subview" style="display: none;">
         <div class="card" style="margin-bottom: 1rem; border-left: 4px solid #f59e0b;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0;">
-              คิวงานรอการพิจารณาอนุมัติ (<%= pendingApprovals.length %>)
-            </h3>
-            <button type="button" class="btn btn-outline btn-xs" onclick="switchRequesterView('home')">
-              &larr; กลับหน้าแรก
-            </button>
-          </div>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+            คิวงานรอการพิจารณาอนุมัติ (<%= pendingApprovals.length %>)
+          </h3>
           <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
             ตรวจสอบรายละเอียดคำขอ อุปกรณ์ที่ต้องการ และเอกสารแนบเพื่อพิจารณาอนุมัติ
           </p>
@@ -1249,14 +1239,9 @@
     <% if (canFacility) { %>
       <div id="req-view-facility" class="req-subview" style="display: none;">
         <div class="card" style="margin-bottom: 1rem; border-left: 4px solid var(--success);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0;">
-              คิวงานส่งมอบห้อง & ตรวจรับ (<%= facilityTasks.length %>)
-            </h3>
-            <button type="button" class="btn btn-outline btn-xs" onclick="switchRequesterView('home')">
-              &larr; กลับหน้าแรก
-            </button>
-          </div>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+            คิวงานส่งมอบห้อง & ตรวจรับ (<%= facilityTasks.length %>)
+          </h3>
           <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
             ส่งมอบห้อง (Check-in) และตรวจสภาพความพร้อมของห้องหลังใช้งาน (Check-out)
           </p>
@@ -1327,14 +1312,9 @@
     <% if (canBlockSchedule) { %>
       <div id="req-view-facility-block" class="req-subview" style="display: none;">
         <div class="card" style="margin-bottom: 1rem; border-left: 4px solid var(--warning);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0;">
-              บล็อกปิดห้องซ่อมบำรุง & งานพิเศษ
-            </h3>
-            <button type="button" class="btn btn-outline btn-xs" onclick="switchRequesterView('home')">
-              &larr; กลับหน้าแรก
-            </button>
-          </div>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+            บล็อกปิดห้องซ่อมบำรุง & งานพิเศษ
+          </h3>
           <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
             ระงับการจองห้องชั่วคราวสำหรับงานช่าง ซ่อมบำรุงระบบ หรือจัดกิจกรรมเฉพาะกิจส่วนกลาง
           </p>
@@ -1435,14 +1415,9 @@
     <% if (isAdminUser) { %>
       <div id="req-view-timeline" class="req-subview" style="display: none;">
         <div class="card" style="margin-bottom: 1rem; border-left: 4px solid #6366f1;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0;">
-              แผนผังช่วงเวลาห้องประชุม (Time Slots Matrix)
-            </h3>
-            <button type="button" class="btn btn-outline btn-xs" onclick="switchRequesterView('home')">
-              &larr; กลับหน้าแรก
-            </button>
-          </div>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark); margin: 0 0 0.35rem 0;">
+            แผนผังช่วงเวลาห้องประชุม (Time Slots Matrix)
+          </h3>
           <p style="font-size: 0.82rem; color: var(--muted); margin: 0;">
             ตารางแสดงสถานะความว่างของห้องประชุมทุก 30 นาที สำหรับผู้ดูแลระบบ
           </p>
