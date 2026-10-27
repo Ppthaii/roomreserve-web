@@ -582,13 +582,14 @@ let toastTimer = null;
  rangeStartHour = hour;
  rangeEndHour = hour + 1;
  isSettingEnd = true;
- } else if (hour === rangeStartHour && rangeEndHour === hour + 1) {
+ } else if (hour === rangeStartHour) {
 
+ rangeEndHour = hour + 1;
  isSettingEnd = false;
  } else {
 
  let hasConflictInBetween = false;
- for (let checkH = rangeStartHour; checkH <= hour; checkH++) {
+ for (let checkH = rangeStartHour; checkH < hour; checkH++) {
  const checkPill = document.querySelector(`.time-slot-pill:not(.maint-time-pill)[data-hour="${checkH}"]`);
  if (checkPill && checkPill.classList.contains('is-booked')) {
  hasConflictInBetween = true;
@@ -601,7 +602,7 @@ let toastTimer = null;
  rangeEndHour = hour + 1;
  isSettingEnd = true;
  } else {
- rangeEndHour = hour + 1;
+ rangeEndHour = hour;
  isSettingEnd = false;
  }
  }
@@ -976,10 +977,11 @@ let toastTimer = null;
  maintRangeStartHour = hour;
  maintRangeEndHour = hour + 1;
  maintIsSettingEnd = true;
- } else if (hour === maintRangeStartHour && maintRangeEndHour === hour + 1) {
+ } else if (hour === maintRangeStartHour) {
+ maintRangeEndHour = hour + 1;
  maintIsSettingEnd = false;
  } else {
- maintRangeEndHour = hour + 1;
+ maintRangeEndHour = hour;
  maintIsSettingEnd = false;
  }
 
