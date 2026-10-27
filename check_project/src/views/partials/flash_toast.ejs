@@ -27,16 +27,8 @@
   </div>
   <script>
     (function() {
-      let toastTimer = setTimeout(dismissFloatingToast, 4500);
       const toastEl = document.getElementById('flashToastNotification');
-      if (toastEl) {
-        toastEl.addEventListener('mouseenter', () => clearTimeout(toastTimer));
-        toastEl.addEventListener('mouseleave', () => {
-          clearTimeout(toastTimer);
-          toastTimer = setTimeout(dismissFloatingToast, 2500);
-        });
-      }
-      window.dismissFloatingToast = function() {
+      function dismissFloatingToast() {
         if (!toastEl) return;
         toastEl.classList.add('floating-toast-hiding');
         setTimeout(() => {
@@ -44,7 +36,17 @@
             toastEl.parentElement.removeChild(toastEl);
           }
         }, 320);
-      };
+      }
+      window.dismissFloatingToast = dismissFloatingToast;
+
+      let toastTimer = setTimeout(dismissFloatingToast, 4500);
+      if (toastEl) {
+        toastEl.addEventListener('mouseenter', () => clearTimeout(toastTimer));
+        toastEl.addEventListener('mouseleave', () => {
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(dismissFloatingToast, 2500);
+        });
+      }
     })();
   </script>
 <% } %>
